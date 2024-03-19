@@ -101,7 +101,7 @@ void ocAssert::print_assert_location(
         const int buffer_length = 64;
         void *buffer[buffer_length];
         int trace_length = backtrace(buffer, buffer_length);
-#if 1
+#if 0
         for (int i = 0; i < trace_length; ++i)
         {
             Dl_info info;

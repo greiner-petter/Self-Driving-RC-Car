@@ -22,9 +22,9 @@ echo "Build all car bins and libs."
 # Provide that all binaries are written on storage from memory
 # In case of powerloss (e.g. remove battery without shutdown EDI)
 # all processes should be stored on EDI
-sync $path/occar
-sync $path/occar
-sync $path/occar
+sync
+sync
+sync
 
 # The variable $? is the return code from the previous command. This way
 # whoever runs this script can know if the build was successful or not.
