@@ -3,7 +3,6 @@
 #include <string_view>
 
 #include "ocRenderTarget.h"
-#include "ocTime.h"
 
 namespace oc
 {
@@ -11,19 +10,19 @@ namespace oc
 enum class EventType
 {
   None,
+  Draw,
   Pointer,
   Key,
   Scroll,
   Zoom,
   Resize,
-  Close,
-  Draw
+  Close
 };
 
 struct EventHeader
 {
   EventType type;
-  ocTime    time;
+  int64_t   time; // in ns
 };
 
 struct PointerEvent
@@ -159,7 +158,6 @@ struct ScrollEvent
 {
   EventHeader header;
   float x, y;
-  float mouse_x, mouse_y;
 };
 
 struct ZoomEvent
@@ -174,10 +172,8 @@ struct ResizeEvent
   EventHeader header;
   int old_width, old_height;
   float old_scaling;
-  bool old_minimized;
   int new_width, new_height;
   float new_scaling;
-  bool new_minimized;
 };
 
 union InputEvent
@@ -192,13 +188,14 @@ union InputEvent
 };
 
 
+// Forward declaration, so we can define it in the .cpp file.
+// This way we don't have to expose the horrendous X11 headers to anyone
+// who includes this window header.
+struct WindowDetails;
 
-struct Window
+class Window
 {
-  // Forward declaration, so we can define it in the .cpp file.
-  // This way we don't have to expose the horrendous X11 headers to anyone
-  // who includes this window header.
-  struct WindowDetails;
+private:
 
   int     backbuffer_width;
   int     backbuffer_height;
@@ -208,11 +205,14 @@ struct Window
 
   WindowDetails *details;
 
+public:
+
   Window(
     int initial_width,
     int initial_height,
     std::string_view title,
-    bool resizable    = true);
+    bool resizable    = true,
+    bool auto_scaling = true);
 
   ~Window();
 

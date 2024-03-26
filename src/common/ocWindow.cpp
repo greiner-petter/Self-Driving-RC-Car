@@ -1,12 +1,11 @@
 #include "ocWindow.h"
 
 #include "ocAssert.h"
-#include "ocTime.h"
 
 #include <unistd.h>
-#include <EGL/egl.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <GL/glx.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -19,7 +18,29 @@
 namespace oc
 {
 
+typedef GLXContext (*GlXCreateContextAttribsARB)(
+  Display *display,
+  GLXFBConfig fb_conf,
+  GLXContext shared_context,
+  int direct,
+  const int32_t *attrib_list);
+
+typedef int (*GlXSwapIntervalEXT)(
+  Display    *display,
+  GLXDrawable drawable,
+  int32_t     interval);
+
 typedef void (*GlBlitFramebuffer)(
+  int32_t srcX0, int32_t srcY0,
+  int32_t srcX1, int32_t srcY1,
+  int32_t dstX0, int32_t dstY0,
+  int32_t dstX1, int32_t dstY1,
+  uint32_t mask,
+  uint32_t filter);
+
+typedef void (*GlBlitNamedFramebuffer)(
+  uint32_t readFramebuffer,
+  uint32_t drawFramebuffer,
   int32_t srcX0, int32_t srcY0,
   int32_t srcX1, int32_t srcY1,
   int32_t dstX0, int32_t dstY0,
@@ -43,99 +64,67 @@ typedef void (*GlFramebufferTexture2D)(
   uint32_t texture,
   int32_t  level);
 
+typedef void (*GlNamedFramebufferTexture)(
+  uint32_t framebuffer,
+  uint32_t attachment,
+  uint32_t texture,
+  int32_t  level);
+
 typedef int32_t (*GlCheckFramebufferStatus)(
   int32_t target);
 
-typedef void (*GlGenBuffers)(
-  uint32_t n,
-  uint32_t *ids);
-
-typedef void (*GlBindBuffer)(
-  uint32_t target,
-  uint32_t buffer);
-
-typedef void *(*GlMapBuffer)(
-  int32_t target,
-  int32_t access);
-
-typedef int32_t (*GlUnmapBuffer)(
-  int32_t target);
-
-typedef void (*GlBufferData)(
-  int32_t     target,
-  uint64_t    size,
-  const void *data,
-  int32_t     usage);
-
 static struct
 {
-  GlBlitFramebuffer        glBlitFramebuffer;
-  GlGenFramebuffers        glGenFramebuffers;
-  GlBindFramebuffer        glBindFramebuffer;
-  GlFramebufferTexture2D   glFramebufferTexture2D;
-  GlCheckFramebufferStatus glCheckFramebufferStatus;
-  GlGenBuffers             glGenBuffers;
-  GlBindBuffer             glBindBuffer;
-  GlMapBuffer              glMapBuffer;
-  GlUnmapBuffer            glUnmapBuffer;
-  GlBufferData             glBufferData;
+  GlXSwapIntervalEXT         glXSwapIntervalEXT;
+  GlXCreateContextAttribsARB glXCreateContextAttribsARB;
+  GlBlitFramebuffer          glBlitFramebuffer;
+  GlBlitNamedFramebuffer     glBlitNamedFramebuffer;
+  GlGenFramebuffers          glGenFramebuffers;
+  GlNamedFramebufferTexture  glNamedFramebufferTexture;
+  GlBindFramebuffer          glBindFramebuffer;
+  GlFramebufferTexture2D     glFramebufferTexture2D;
+  GlCheckFramebufferStatus   glCheckFramebufferStatus;
 
   bool initialized = false;
 } opengl;
 
-struct Pixel
+struct ColorPlusAlpha
 {
   Color color;
   float alpha;
 };
-static_assert(sizeof(Pixel) == 16);
+static_assert(sizeof(ColorPlusAlpha) == 16);
 
-struct Window::WindowDetails
+struct WindowDetails
 {
-  Display   *x11_display;
-  ::Window   window;
-  int        screen;
-  Atom       wm_delete_window;
-  XSizeHints hints;
-  XIC        input_context;
-  Time       last_button_time[10];
-  Pixel     *backbuffer;
-  int32_t    backbuffer_stride;
-  int32_t    old_backbuffer_width;
-  int32_t    old_backbuffer_height;
-  EGLDisplay egl_display;
-  EGLSurface egl_surface;
-  uint32_t   fbo;
-  uint32_t   pixelbuffer;
-  int        num_keys_held;
-  KeyCode    keys_held[16]; // Nobody can hold more than 16 keys!
-  bool       resized;
-  bool       minimized;
+  Display *display;
+  ::Window window;
+  GLXContext ogl_context;
+  int screen;
+  Atom wm_delete_window;
+  Time last_button_time[10];
+  ColorPlusAlpha *backbuffer;
+  int32_t  backbuffer_stride;
+  int32_t  old_backbuffer_width;
+  int32_t  old_backbuffer_height;
+  uint32_t fbo;
+  int num_keys_held;
+  KeyCode keys_held[16]; // Nobody can hold more than 16 keys!
+  bool resized;
 };
 
-#define check_egl_error() check_egl_error_(__FILE__, __PRETTY_FUNCTION__, __LINE__);
-static void check_egl_error_(const char *file, const char *function, int line) {
-  int32_t error = eglGetError();
-  while (EGL_SUCCESS != error)
-  {
-    printf("EGL error: %d Function: %s File: %s (%i)\n", error, function, file, line);
-    error = eglGetError();
-  }
-}
-
-#define check_gl_error() check_gl_error_(__FILE__, __PRETTY_FUNCTION__, __LINE__);
-static void check_gl_error_(const char *file, const char *function, int line) {
+static void check_gl_error() {
   uint32_t error = glGetError();
-  while (GL_NO_ERROR != error)
+  if (GL_NO_ERROR != error)
   {
     const char *message = (const char *)gluErrorString(error);
-    printf("GL Error: %u Message: %s Function: %s File: %s (%i)\n", error, message, function, file, line);
-    error = glGetError();
+    puts(message);
+    oc_assert(!message);
   }
 }
 
 
-static void push_key(Window::WindowDetails *details, KeyCode key)
+static void push_key(WindowDetails *details, KeyCode key)
 {
   // When a key is held down, it'll be sent repeatedly. This condition
   // makes sure, that we don't completely fill the array because of that.
@@ -150,13 +139,13 @@ static void push_key(Window::WindowDetails *details, KeyCode key)
   if (details->num_keys_held < 16) ++details->num_keys_held;
 }
 
-static void pop_key(Window::WindowDetails *details, KeyCode key)
+static void pop_key(WindowDetails *details, KeyCode key)
 {
   for (int i = 0; i < details->num_keys_held; ++i)
   {
     if (key == details->keys_held[i])
     {
-      memmove(&details->keys_held[i], &details->keys_held[i + 1], sizeof(KeyCode) * uint32_t(15 - i));
+      memmove(&details->keys_held[i], &details->keys_held[i + 1], sizeof(KeyCode) * (uint32_t)(15 - i));
       --details->num_keys_held;
       --i;
     }
@@ -167,151 +156,103 @@ Window::Window(
   int initial_width,
   int initial_height,
   std::string_view title,
-  bool resizable)
+  bool resizable,
+  bool /*auto_scaling*/)
 {
   oc_assert(0 < initial_width);
   oc_assert(0 < initial_height);
 
-  details = new Window::WindowDetails();
+  details = new WindowDetails();
 
-  details->x11_display = XOpenDisplay(nullptr);
-  details->screen = DefaultScreen(details->x11_display);
+  details->backbuffer_stride = initial_width;
+  backbuffer_width           = initial_width;
+  backbuffer_height          = initial_height;
 
-  ::Window root = RootWindow(details->x11_display, details->screen);
+  details->display = XOpenDisplay(nullptr);
+  details->screen = DefaultScreen(details->display);
+
+  int visual_attribs[] =
+  {
+    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+    GLX_RENDER_TYPE  , GLX_RGBA_BIT,
+    GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
+    GLX_RED_SIZE     , 8,
+    GLX_GREEN_SIZE   , 8,
+    GLX_BLUE_SIZE    , 8,
+    GLX_DOUBLEBUFFER , 1,
+    GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB, 1,
+    0
+  };
+
+  int fb_count = 0;
+  GLXFBConfig *fb_confs = glXChooseFBConfig(details->display, details->screen, visual_attribs, &fb_count);
+  oc_assert(fb_confs);
+
+  GLXFBConfig fb_conf = fb_confs[0];
+  XVisualInfo *vi = glXGetVisualFromFBConfig(details->display, fb_conf);
+  // TODO: check that the VI has all features we want
+  oc_assert(vi);
+
+  XFree(fb_confs);
+
+  ::Window root = RootWindow(details->display, details->screen);
 
   XSetWindowAttributes swa = {};
-  swa.event_mask = KeyPressMask
-                 | KeyReleaseMask
-                 | ButtonPressMask
-                 | ButtonReleaseMask
-                 | PointerMotionMask
-                 | StructureNotifyMask; // resize
+  swa.colormap   = XCreateColormap(details->display, root, vi->visual, AllocNone);
+  swa.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
 
   details->window = XCreateWindow(
-    details->x11_display,
+    details->display,
     root,
     10, 10,
-    uint32_t(initial_width), uint32_t(initial_height),
+    (uint32_t)initial_width, (uint32_t)initial_height,
     0,
-    CopyFromParent,
+    vi->depth,
     InputOutput,
-    CopyFromParent,
-    CWEventMask,
+    vi->visual,
+    CWColormap | CWEventMask,
     &swa);
 
-  // Because XStoreName doesn't support UTF8...
-  Xutf8SetWMProperties(details->x11_display, details->window, title.data(), nullptr, nullptr, 0, nullptr, nullptr, nullptr);
+  XFree(vi);
 
-  details->wm_delete_window = XInternAtom(details->x11_display, "WM_DELETE_WINDOW", 0);
-  XSetWMProtocols(details->x11_display, details->window, &details->wm_delete_window, 1);
-
-  if (!resizable)
-  {
-    details->hints.flags      = PMinSize | PMaxSize;
-    details->hints.min_width  = initial_width;
-    details->hints.max_width  = initial_width;
-    details->hints.min_height = initial_height;
-    details->hints.max_height = initial_height;
-    XSetWMNormalHints(details->x11_display, details->window, &details->hints);
-  }
-
-  XMapWindow(details->x11_display, details->window);
-
-  XIM input_method = XOpenIM(details->x11_display, nullptr, nullptr, nullptr);
-  details->input_context = XCreateIC(input_method, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, XNClientWindow, details->window, nullptr);
-  XSetICFocus(details->input_context);
-
-  // ----------------------- EGL ----------------------------
-
-  details->egl_display = eglGetDisplay((EGLNativeDisplayType)details->x11_display);
-  oc_assert(details->egl_display);
-  check_egl_error();
-
-  EGLint version[2];
-  eglInitialize(details->egl_display, &version[0], &version[1]);
-  check_egl_error();
-
-  eglBindAPI(EGL_OPENGL_API);
-  check_egl_error();
+  XStoreName(details->display, details->window, title.data());
+  XMapWindow(details->display, details->window);
 
   if (!opengl.initialized)
   {
     opengl.initialized = true;
-    opengl.glBlitFramebuffer        = (GlBlitFramebuffer)eglGetProcAddress("glBlitFramebuffer");
-    opengl.glGenFramebuffers        = (GlGenFramebuffers)eglGetProcAddress("glGenFramebuffers");
-    opengl.glBindFramebuffer        = (GlBindFramebuffer)eglGetProcAddress("glBindFramebuffer");
-    opengl.glFramebufferTexture2D   = (GlFramebufferTexture2D)eglGetProcAddress("glFramebufferTexture2D");
-    opengl.glCheckFramebufferStatus = (GlCheckFramebufferStatus)eglGetProcAddress("glCheckFramebufferStatus");
-    opengl.glGenBuffers             = (GlGenBuffers)eglGetProcAddress("glGenBuffers");
-    opengl.glBindBuffer             = (GlBindBuffer)eglGetProcAddress("glBindBuffer");
-    opengl.glMapBuffer         = (GlMapBuffer)eglGetProcAddress("glMapBuffer");
-    opengl.glUnmapBuffer       = (GlUnmapBuffer)eglGetProcAddress("glUnmapBuffer");
-    opengl.glBufferData        = (GlBufferData)eglGetProcAddress("glBufferData");
+    opengl.glXCreateContextAttribsARB = (GlXCreateContextAttribsARB)glXGetProcAddressARB((const unsigned char *)"glXCreateContextAttribsARB");
+    opengl.glXSwapIntervalEXT         = (GlXSwapIntervalEXT)glXGetProcAddressARB((const unsigned char *)"glXSwapIntervalEXT");
+    opengl.glBlitFramebuffer          = (GlBlitFramebuffer)glXGetProcAddressARB((const unsigned char *)"glBlitFramebuffer");
+    opengl.glBlitNamedFramebuffer     = (GlBlitNamedFramebuffer)glXGetProcAddressARB((const unsigned char *)"glBlitNamedFramebuffer");
+    opengl.glGenFramebuffers          = (GlGenFramebuffers)glXGetProcAddressARB((const unsigned char *)"glGenFramebuffers");
+    opengl.glNamedFramebufferTexture  = (GlNamedFramebufferTexture)glXGetProcAddressARB((const unsigned char *)"glNamedFramebufferTexture");
+    opengl.glBindFramebuffer          = (GlBindFramebuffer)glXGetProcAddressARB((const unsigned char *)"glBindFramebuffer");
+    opengl.glFramebufferTexture2D     = (GlFramebufferTexture2D)glXGetProcAddressARB((const unsigned char *)"glFramebufferTexture2D");
+    opengl.glCheckFramebufferStatus   = (GlCheckFramebufferStatus)glXGetProcAddressARB((const unsigned char *)"glCheckFramebufferStatus");
 
+    oc_assert(opengl.glXCreateContextAttribsARB);
+    oc_assert(opengl.glXSwapIntervalEXT);
     oc_assert(opengl.glBlitFramebuffer);
+    oc_assert(opengl.glBlitNamedFramebuffer);
     oc_assert(opengl.glGenFramebuffers);
+    oc_assert(opengl.glNamedFramebufferTexture);
     oc_assert(opengl.glBindFramebuffer);
     oc_assert(opengl.glFramebufferTexture2D);
     oc_assert(opengl.glCheckFramebufferStatus);
-    oc_assert(opengl.glGenBuffers);
-    oc_assert(opengl.glBindBuffer);
-    oc_assert(opengl.glMapBuffer);
-    oc_assert(opengl.glUnmapBuffer);
-    oc_assert(opengl.glBufferData);
   }
 
-  int config_attribs[] =
-  {
-    EGL_SURFACE_TYPE,      EGL_WINDOW_BIT,
-    EGL_CONFORMANT,        EGL_OPENGL_BIT,
-    EGL_CONFIG_CAVEAT,     EGL_NONE,
-    EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,
-
-    EGL_RED_SIZE  , 8,
-    EGL_GREEN_SIZE, 8,
-    EGL_BLUE_SIZE , 8,
-
-    EGL_NONE
+  int attribs[] = {
+    GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+    GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+    GLX_CONTEXT_FLAGS_ARB, 0 /*| GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB*/ | GLX_CONTEXT_DEBUG_BIT_ARB,
+    GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+    0
   };
 
-  int config_count;
-  //eglGetConfigs(details->egl_display, nullptr, 0, &config_count);
-  eglChooseConfig(details->egl_display, config_attribs, nullptr, 1, &config_count);
-  check_egl_error();
-
-  oc_assert(0 < config_count);
-
-  EGLConfig *configs = new EGLConfig[size_t(config_count)];
-  //eglGetConfigs(details->egl_display, configs, config_count, &config_count);
-  eglChooseConfig(details->egl_display, config_attribs, configs, config_count, &config_count);
-  check_egl_error();
-
-  // TODO: chose config
-  EGLConfig config = configs[0];
-  delete[] configs;
-
-  int surface_attribs[] = {
-    EGL_GL_COLORSPACE, EGL_GL_COLORSPACE_SRGB, // or _SRGB, idk because my VM ignores this...
-    EGL_RENDER_BUFFER, EGL_SINGLE_BUFFER,
-    EGL_NONE,
-  };
-  details->egl_surface = eglCreateWindowSurface(details->egl_display, config, details->window, surface_attribs);
-  check_egl_error();
-
-  int context_attribs[] = {
-    EGL_CONTEXT_MAJOR_VERSION, 3,
-    EGL_CONTEXT_MINOR_VERSION, 0,
-    EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
-    EGL_NONE
-  };
-
-  EGLContext context = eglCreateContext(details->egl_display, config, EGL_NO_CONTEXT, context_attribs);
-  XSync(details->x11_display, 0);
-  eglMakeCurrent(details->egl_display, details->egl_surface, details->egl_surface, context);
-
-  // This call fixes the broken color in Linux, but unfortunately causes a black screen in my virtual machine.
-  glEnable(GL_FRAMEBUFFER_SRGB);
-  check_gl_error();
+  details->ogl_context = opengl.glXCreateContextAttribsARB(details->display, fb_conf, 0, 1, attribs);
+  XSync(details->display, 0);
+  glXMakeCurrent(details->display, details->window, details->ogl_context);
 
   glViewport(0, 0, initial_width, initial_height);
   check_gl_error();
@@ -331,6 +272,12 @@ Window::Window(
   opengl.glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
   check_gl_error();
 
+  size_t num_pixels = (size_t)(details->backbuffer_stride * backbuffer_height);
+
+  // Can't use new[] here, because we need to realloc the buffer when the window is resized.
+  details->backbuffer = (ColorPlusAlpha *)malloc(num_pixels * sizeof(ColorPlusAlpha));
+  for (size_t i = 0; i < num_pixels; ++i) details->backbuffer[i] = {{1.0f, 1.0f, 1.0f}, 1.0f};
+
   // upload some dummy stuff to the texture, this way it has a size and
   // should satisfy the fbo completeness check below.
   glTexImage2D(
@@ -342,35 +289,38 @@ Window::Window(
     0,
     GL_RGBA,
     GL_FLOAT,
-    nullptr);
+    details->backbuffer);
   check_gl_error();
 
   int draw_fb_complete = opengl.glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
-  oc_assert(GL_FRAMEBUFFER_COMPLETE == draw_fb_complete);
+  oc_assert(GL_FRAMEBUFFER_COMPLETE == draw_fb_complete, draw_fb_complete);
 
   int read_fb_complete = opengl.glCheckFramebufferStatus(GL_READ_FRAMEBUFFER);
-  oc_assert(GL_FRAMEBUFFER_COMPLETE == read_fb_complete);
+  oc_assert(GL_FRAMEBUFFER_COMPLETE == read_fb_complete, read_fb_complete);
 
-  eglSwapInterval(details->egl_display, 1);
+  // doesn't work in my VM at the moment, which makes me super sad
+  // glEnable(GL_FRAMEBUFFER_SRGB);
+  // check_gl_error();
+
+  opengl.glXSwapIntervalEXT(details->display, details->window, 1);
   check_gl_error();
 
-  size_t f32_size = size_t(initial_width * initial_height) * sizeof(Pixel);
+  details->wm_delete_window = XInternAtom(details->display, "WM_DELETE_WINDOW", 0);
+  XSetWMProtocols(details->display, details->window, &details->wm_delete_window, 1);
 
-  opengl.glGenBuffers(1, &details->pixelbuffer);
-  check_gl_error();
+  if (!resizable)
+  {
+    XSizeHints hints = {};
+    hints.flags      = PMinSize | PMaxSize;
+    hints.min_width  = initial_width;
+    hints.max_width  = initial_width;
+    hints.min_height = initial_height;
+    hints.max_height = initial_height;
+    XSetWMNormalHints(details->display, details->window, &hints);
+  }
 
-  opengl.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, details->pixelbuffer);
-  check_gl_error();
-  opengl.glBufferData(GL_PIXEL_UNPACK_BUFFER, f32_size, nullptr, GL_STREAM_DRAW);
-  check_gl_error();
-  void *pixelbuffer_memory = opengl.glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
-  check_gl_error();
-
-  details->backbuffer_stride = initial_width;
-  backbuffer_width           = initial_width;
-  backbuffer_height          = initial_height;
-
-  details->backbuffer = (Pixel *)pixelbuffer_memory;
+  mouse_x = 0.0f;
+  mouse_y = 0.0f;
 }
 
 Window::~Window()
@@ -385,7 +335,17 @@ void Window::close()
 
 void Window::set_size(int width, int height)
 {
-  XResizeWindow(details->x11_display, details->window, uint32_t(width), uint32_t(height));
+  glXMakeCurrent(details->display, details->window, details->ogl_context);
+  check_gl_error();
+  backbuffer_width  = width;
+  backbuffer_height = height;
+  details->backbuffer_stride = backbuffer_width;
+  size_t num_pixels  = (size_t)(details->backbuffer_stride * backbuffer_height);
+  details->backbuffer = (ColorPlusAlpha *)realloc(details->backbuffer, num_pixels * sizeof(ColorPlusAlpha));
+  glViewport(0, 0, width, height);
+  check_gl_error();
+
+  XResizeWindow(details->display, details->window, (uint32_t)width, (uint32_t)height);
 }
 
 static oc::KeyCode x11_keysym_to_keycode(KeySym x11key)
@@ -490,97 +450,52 @@ InputEvent Window::next_event(bool blocking)
   // understand, this function breaks the loop by returning.
   while (true)
   {
-    if (!XPending(details->x11_display))
+    if (details->resized)
     {
-      if (details->minimized)
-      {
-        if (!blocking)
-        {
-          return {EventType::None};
+      details->resized = false;
+      return {
+        .resize = {
+          .header = {
+            .type = EventType::Resize,
+            .time = 0LL // TODO: get current tile
+          },
+          .old_width   = details->old_backbuffer_width,
+          .old_height  = details->old_backbuffer_height,
+          .old_scaling = 1.0f,
+          .new_width   = backbuffer_width,
+          .new_height  = backbuffer_height,
+          .new_scaling = 1.0f,
         }
-      }
-      else
-      {
-        // Unfortunately, X11 doesn't give us a way to delay the drawing
-        // as much as possible to reduce input-lag.
-        return {EventType::Draw};
-      }
+      };
     }
 
-    XEvent current_event;
-    XNextEvent(details->x11_display, &current_event);
+    if (!blocking && !XPending(details->display))
+    {
+      return {EventType::Draw};
+    }
+
+    XEvent current_event; 
+    XNextEvent(details->display, &current_event);
     if (current_event.type == ClientMessage)
     {
-      if (details->wm_delete_window == uint32_t(current_event.xclient.data.l[0]))
+      if (details->wm_delete_window == (uint32_t)current_event.xclient.data.l[0])
       {
         return {EventType::Close};
       }
     }
-
-    if (current_event.type == ConfigureNotify) // resize & more
-    {
-      int width  = current_event.xconfigure.width;
-      int height = current_event.xconfigure.height;
-      details->minimized = false;
-      if (0 == width && 0 == height)
-      {
-        details->minimized = true;
-      }
-      else if (width != backbuffer_width || height != backbuffer_height)
-      {
-        int old_width  = backbuffer_width;
-        int old_height = backbuffer_height;
-
-        opengl.glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-        check_gl_error();
-
-        size_t f32_size = size_t(width * height) * sizeof(Pixel);
-        opengl.glBufferData(GL_PIXEL_UNPACK_BUFFER, f32_size, nullptr, GL_STREAM_DRAW);
-        check_gl_error();
-
-        void *data = opengl.glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
-        check_gl_error();
-
-        details->backbuffer = (Pixel *)data;
-        details->backbuffer_stride  = width;
-        backbuffer_width  = width;
-        backbuffer_height = height;
-
-        return {
-          .resize = {
-            .header = {
-              .type = EventType::Resize,
-              .time = ocTime::now() // xcofigure doesn't have a time...
-            },
-            .old_width     = old_width,
-            .old_height    = old_height,
-            .old_scaling   = 1.0f,
-            .old_minimized = false,
-            .new_width     = width,
-            .new_height    = height,
-            .new_scaling   = 1.0f,
-            .new_minimized = false // TODO: handle minization
-          }
-        };
-      }
-    }
-
     if (current_event.type == KeyPress)
     {
       KeyCode key = x11_keysym_to_keycode(XLookupKeysym(&current_event.xkey, 0));
-
-      auto time = current_event.xkey.time;
-
       push_key(details, key);
-
       return {
         .key = {
           .header = {
             .type = EventType::Key,
-            .time = ocTime::milliseconds(int64_t(time))
+            .time = (int64_t)current_event.xkey.time * 1000000LL
           },
           .code        = key,
-          .down        = true
+          .down        = true,
+          .doubleclick = false
         }
       };
     }
@@ -592,10 +507,11 @@ InputEvent Window::next_event(bool blocking)
         .key = {
           .header = {
             .type = EventType::Key,
-            .time = ocTime::milliseconds(int64_t(current_event.xkey.time))
+            .time = (int64_t)current_event.xkey.time * 1000000LL
           },
-          .code        = key,
-          .down        = false
+          .code = key,
+          .down = false,
+          .doubleclick = false
         }
       };
     }
@@ -609,16 +525,20 @@ InputEvent Window::next_event(bool blocking)
         case 8: // Mouse Button 4
         case 9: // Mouse Button 5
         {
+          Time last_time = details->last_button_time[current_event.xbutton.button];
+          details->last_button_time[current_event.xbutton.button] = current_event.xbutton.time;
           KeyCode key = x11_button_to_keycode(current_event.xbutton.button);
+          if (KeyCode::Unknown == key) continue;
           push_key(details, key);
           return {
             .key = {
               .header = {
                 .type = EventType::Key,
-                .time = ocTime::milliseconds(int64_t(current_event.xbutton.time))
+                .time = (int64_t)current_event.xbutton.time * 1000000LL
               },
               .code        = key,
-              .down        = true
+              .down        = true,
+              .doubleclick = current_event.xbutton.time - last_time <= 1000
             }
           };
         } break;
@@ -630,7 +550,7 @@ InputEvent Window::next_event(bool blocking)
               .zoom = {
                 .header = {
                   .type = EventType::Zoom,
-                  .time = ocTime::milliseconds(int64_t(current_event.xbutton.time))
+                  .time = (int64_t)current_event.xbutton.time * 1000000LL
                 },
                 .center_x = mouse_x,
                 .center_y = mouse_y,
@@ -644,12 +564,10 @@ InputEvent Window::next_event(bool blocking)
               .scroll = {
                 .header = {
                   .type = EventType::Scroll,
-                  .time = ocTime::milliseconds(int64_t(current_event.xbutton.time))
+                  .time = (int64_t)current_event.xbutton.time * 1000000LL
                 },
                 .x = (current_event.xbutton.state & ShiftMask) ? 10.0f :  0.0f,
-                .y = (current_event.xbutton.state & ShiftMask) ?  0.0f : 10.0f,
-                .mouse_x = mouse_x,
-                .mouse_y = mouse_y
+                .y = (current_event.xbutton.state & ShiftMask) ?  0.0f : 10.0f
               }
             };
           }
@@ -662,7 +580,7 @@ InputEvent Window::next_event(bool blocking)
               .zoom = {
                 .header = {
                   .type = EventType::Zoom,
-                  .time = ocTime::milliseconds(int64_t(current_event.xbutton.time))
+                  .time = (int64_t)current_event.xbutton.time * 1000000LL
                 },
                 .center_x = mouse_x,
                 .center_y = mouse_y,
@@ -676,12 +594,10 @@ InputEvent Window::next_event(bool blocking)
               .scroll = {
                 .header = {
                   .type = EventType::Scroll,
-                  .time = ocTime::milliseconds(int64_t(current_event.xbutton.time))
+                  .time = (int64_t)current_event.xbutton.time * 1000000LL
                 },
                 .x = (current_event.xbutton.state & ShiftMask) ? -10.0f :   0.0f,
-                .y = (current_event.xbutton.state & ShiftMask) ?   0.0f : -10.0f,
-                .mouse_x = mouse_x,
-                .mouse_y = mouse_y
+                .y = (current_event.xbutton.state & ShiftMask) ?   0.0f : -10.0f
               }
             };
           }
@@ -699,15 +615,17 @@ InputEvent Window::next_event(bool blocking)
         case 9: // Mouse Button 5
         {
           KeyCode key = x11_button_to_keycode(current_event.xbutton.button);
+          if (KeyCode::Unknown == key) continue;
           pop_key(details, key);
           return {
             .key = {
               .header = {
                 .type = EventType::Key,
-                .time = ocTime::milliseconds(int64_t(current_event.xbutton.time))
+                .time = (int64_t)current_event.xbutton.time * 1000000LL
               },
               .code        = key,
-                .down        = false
+              .down        = false,
+              .doubleclick = false
             }
           };
         } break;
@@ -717,13 +635,13 @@ InputEvent Window::next_event(bool blocking)
     {
       float old_x = mouse_x;
       float old_y = mouse_y;
-      mouse_x = float(current_event.xmotion.x);
-      mouse_y = float(current_event.xmotion.y);
+      mouse_x = (float)current_event.xmotion.x;
+      mouse_y = (float)current_event.xmotion.y;
       return {
         .pointer = {
           .header = {
             .type = EventType::Pointer,
-            .time = ocTime::milliseconds(int64_t(current_event.xmotion.time))
+            .time = (int64_t)current_event.xmotion.time * 1000000LL
           },
           .old_x = old_x,
           .old_y = old_y,
@@ -765,15 +683,26 @@ void Window::draw_pixel(int x, int y, const Color& color, float opacity)
 
 void Window::commit()
 {
-  if (details->minimized) return;
+  ::Window bla_window;
+  int bla;
+  int32_t window_width, window_height;
+  XGetGeometry(
+    details->display,
+    details->window,
+    &bla_window,
+    &bla, &bla,
+    (uint32_t *)&window_width, (uint32_t *)&window_height,
+    (uint32_t *)&bla, (uint32_t *)&bla);
 
-  glViewport(0, 0, backbuffer_width, backbuffer_height);
-  check_gl_error();
+  if (window_width  != backbuffer_width ||
+      window_height != backbuffer_height)
+  {
+    details->resized = true;
+    details->old_backbuffer_width  = backbuffer_width;
+    details->old_backbuffer_height = backbuffer_height;
+  }
 
-  opengl.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, details->pixelbuffer);
-  check_gl_error();
-
-  opengl.glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+  glXMakeCurrent(details->display, details->window, details->ogl_context);
   check_gl_error();
 
   glTexImage2D(
@@ -785,34 +714,43 @@ void Window::commit()
     0,
     GL_RGBA,
     GL_FLOAT,
-    0);
+    details->backbuffer);
   check_gl_error();
 
   opengl.glBlitFramebuffer(
-    0, backbuffer_height, backbuffer_width, 0,
-    0, 0, backbuffer_width, backbuffer_height,
-    GL_COLOR_BUFFER_BIT,
-    GL_NEAREST);
+      0, backbuffer_height, backbuffer_width, 0,
+      0, 0, backbuffer_width, backbuffer_height,
+      GL_COLOR_BUFFER_BIT,
+      GL_NEAREST);
+    check_gl_error();
+
+  glXSwapBuffers(details->display, details->window);
   check_gl_error();
 
-  eglSwapBuffers(details->egl_display, details->egl_surface);
-
-  details->backbuffer = (Pixel *)opengl.glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
-  check_gl_error();
+  if (details->resized)
+  {
+    backbuffer_width  = window_width;
+    backbuffer_height = window_height;
+    details->backbuffer_stride = backbuffer_width;
+    size_t num_pixels  = (size_t)(details->backbuffer_stride * backbuffer_height);
+    details->backbuffer = (ColorPlusAlpha *)realloc(details->backbuffer, num_pixels * sizeof(ColorPlusAlpha));
+    glViewport(0, 0, window_width, window_height);
+    check_gl_error();
+  }
 }
 
 void Window::fill(const Color& color)
 {
-  Pixel *first_line = details->backbuffer;
+  ColorPlusAlpha *first_line = details->backbuffer;
   for (int x = 0; x < backbuffer_width; ++x)
   {
     first_line[x] = {color, 1.0f};
   }
-  Pixel *line = first_line;
+  ColorPlusAlpha *line = first_line;
   for (int y = 1; y < backbuffer_height; ++y)
   {
     line += details->backbuffer_stride;
-    memcpy(line, first_line, (size_t)backbuffer_width * sizeof(Pixel));
+    memcpy(line, first_line, (size_t)backbuffer_width * sizeof(ColorPlusAlpha));
   }
 }
 
@@ -825,16 +763,16 @@ void Window::fill_rect(
   int start_y = std::clamp(std::min(y0, y1), 0, backbuffer_height);
   int end_x   = std::clamp(std::max(x0, x1), 0, backbuffer_width)  - start_x;
   int end_y   = std::clamp(std::max(y0, y1), 0, backbuffer_height) - start_y;
-  Pixel *first_line = &details->backbuffer[start_y * details->backbuffer_stride + start_x];
+  ColorPlusAlpha *first_line = &details->backbuffer[start_y * details->backbuffer_stride + start_x];
   for (int x = 0; x < end_x; ++x)
   {
     first_line[x] = {color, 1.0f};
   }
-  Pixel *line = first_line;
+  ColorPlusAlpha *line = first_line;
   for (int y = 1; y < end_y; ++y)
   {
     line += details->backbuffer_stride;
-    memcpy(line, first_line, size_t(end_x) * sizeof(Pixel));
+    memcpy(line, first_line, (size_t)end_x * sizeof(ColorPlusAlpha));
   }
 }
 
