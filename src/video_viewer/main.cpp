@@ -208,7 +208,7 @@ int main()
         {
             TIMED_BLOCK("Draw Camera Image");
             draw_cam = false;
-            cam_window.set_size((int)cam_width, (int)cam_height);
+            //cam_window.set_size((int)cam_width, (int)cam_height);
             for (uint32_t y = 0; y < cam_height; ++y)
             for (uint32_t x = 0; x < cam_width;  ++x)
             {

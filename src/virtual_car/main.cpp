@@ -20,6 +20,7 @@
 
 #include <cerrno> // errno
 #include <cmath>
+#include <iostream>
 
 #include "detections/detection.h"
 #include "detections/crosswalk_detection.h"
@@ -634,6 +635,7 @@ int main(int argc, const char** argv)
                     int8_t sr = reader.read<int8_t>();
                     uint8_t nr = reader.read<uint8_t>();
                     int32_t steps = reader.read<int32_t>();
+                    std::cout << "Driving: " << (int) speed << " " << (int) sf << " " << (int) sr << " " << (int) nr << " " << (int) steps << std::endl;
                     if (!car_states[0].rc_is_active)
                     {
                         car_actions[0].speed = speed;
