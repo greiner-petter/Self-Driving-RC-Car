@@ -20,7 +20,7 @@ enum class TrafficSignType : uint16_t
     COUNT
 };
 
-class TrafficSign
+struct TrafficSign
 {
     TrafficSignType type = TrafficSignType::None;
     uint64_t distanceCM = 0;
