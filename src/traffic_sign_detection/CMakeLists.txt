@@ -3,7 +3,8 @@ project(traffic_sign_detection)
 
 add_executable(traffic_sign_detection
     main.cpp
-    # add other .cpp files here when needed.
+        TrafficSign.h
+        # add other .cpp files here when needed.
 )
 
 target_compile_features(traffic_sign_detection PRIVATE cxx_std_20)
