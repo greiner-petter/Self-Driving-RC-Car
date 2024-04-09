@@ -117,12 +117,12 @@ bool is_point_in_rotated_rectangle(
 void draw_map(oc::Window& window, int overview_width, int overview_height, const float *overview_base)
 {
     for (int y = 0; y < overview_height; ++y)
-    for (int x = 0; x < overview_width;  ++x)
-    {
-        oc::Color color {
-            overview_base[(y * overview_width + x) * 4 + 0],
-            overview_base[(y * overview_width + x) * 4 + 1],
-            overview_base[(y * overview_width + x) * 4 + 2]
+        for (int x = 0; x < overview_width;  ++x)
+        {
+            oc::Color color {
+                overview_base[(y * overview_width + x) * 4 + 0],
+                overview_base[(y * overview_width + x) * 4 + 1],
+                overview_base[(y * overview_width + x) * 4 + 2]
         };
         window.draw_pixel(x, y, color);
     }
@@ -191,15 +191,14 @@ bool is_point_in_car(const ocCarState& car, Vec2 world_point)
         || is_point_in_rotated_rectangle(car_points[3], wheel_dims, car_heading + car.steering_rear, world_point);
 }
 
+// Hover and Active states need to be in this exact pattern
 enum class ManipulatorState
 {
     Default,
-    X_Hover,
-    Y_Hover,
-    R_Hover,
-    X_Active,
-    Y_Active,
-    R_Active
+    XY_Hover,   XY_Active,
+    X_Hover,    X_Active,
+    Y_Hover,    Y_Active,
+    R_Hover,    R_Active
 };
 
 ManipulatorState get_manipulator_state(Vec2 man_pos, float r_angle, Vec2 mouse_pos, bool lmb_down)
@@ -210,7 +209,12 @@ ManipulatorState get_manipulator_state(Vec2 man_pos, float r_angle, Vec2 mouse_p
     const float tip_size  =  20.0f;
     Vec2 d = mouse_pos - man_pos;
     Vec2 rotator = angle_to_vector(r_angle) * arm_end;
-    if (distance(d, rotator) < tip_size * 0.5f)
+
+    if (distance(d, Vec2(0,0)) < tip_size * 0.5f)
+    {
+        return (lmb_down) ? ManipulatorState::XY_Active : ManipulatorState::XY_Hover;
+    }
+    else if (distance(d, rotator) < tip_size * 0.5f)
     {
         return (lmb_down) ? ManipulatorState::R_Active : ManipulatorState::R_Hover;
     }
@@ -280,7 +284,7 @@ void draw_manipulator(oc::Window& window, Vec2 pos, float angle, ManipulatorStat
         default: break;
     }
 
-    oc::render(window, oc::line(base_x, tip_x, x_width), x_color); 
+    oc::render(window, oc::line(base_x, tip_x, x_width), x_color);
     oc::render(window, oc::line(arm_x0, tip_x, x_width), x_color);
     oc::render(window, oc::line(arm_x1, tip_x, x_width), x_color);
     oc::render(window, oc::line(base_y, tip_y, y_width), y_color);
@@ -354,7 +358,7 @@ void draw_action(oc::Window& window, const ocCarState& car, const ocCarAction& a
             car.steering_to_pivot(action.steering_front, action.steering_rear, &pivot.x, &pivot.y);
             float radius = car.pivot_to_radius(pivot.x, pivot.y) * draw_context.scale;
             pivot = draw_context.world_to_screen(pivot);
-  
+
             auto action_circle = oc::outline(oc::circle(pivot, radius), 1.0f);
             auto clip_circle = oc::circle(car_pos, distance * draw_context.scale);
             auto half = (action.speed < 0.0f) ? oc::half(car_norm.x, car_norm.y, car_pos.x, car_pos.y) : oc::half(-car_norm.x, -car_norm.y, car_pos.x, car_pos.y);

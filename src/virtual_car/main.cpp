@@ -31,7 +31,6 @@
 #include "detections/sign_detection.h"
 #include "detections/stop_line_detection.h"
 
-
 #define OC_USE_OPENCL 1
 
 #if OC_USE_OPENCL
@@ -309,7 +308,6 @@ int main(int argc, const char** argv)
         .triggers_active = false
     };
     ocTime trigger_timer = ocTime::null();
-
 
     bool update_overview = true;
     Rect overview_dirty = draw_context.get_visible_world_rect();
@@ -929,10 +927,12 @@ int main(int argc, const char** argv)
                     show_manipulator = false;
                     show_selection   = true;
                     bounds = selected_tile->bounds();
+                    manipulator_pose.pos = Vec3(INFINITY, INFINITY, INFINITY);
                 }
                 else
                 {
                     show_manipulator = false;
+                    manipulator_pose.pos = Vec3(INFINITY, INFINITY, INFINITY);
                 }
 
                 if (show_selection)
@@ -967,202 +967,213 @@ int main(int argc, const char** argv)
             if (event.type == oc::EventType::Draw) break;
             if (event.type == oc::EventType::Close) return 0;
 
-            if (event.type == oc::EventType::Key && event.key.down)
-            {
-                switch (event.key.code)
-                {
-                    case oc::KeyCode::Mouse_1:
-                    {
-                        if (manipulator_state == ManipulatorState::X_Hover) manipulator_state = ManipulatorState::X_Active;
-                        if (manipulator_state == ManipulatorState::Y_Hover) manipulator_state = ManipulatorState::Y_Active;
-                        if (manipulator_state == ManipulatorState::R_Hover) manipulator_state = ManipulatorState::R_Active;
-                        if (manipulator_state == ManipulatorState::Default)
-                        {
-                            if (is_point_in_car(car_states[0], mouse_in_world))
-                            {
-                                car_selected = true;
-                                selected_object = nullptr;
-                                selected_tile   = nullptr;
-                            }
-                            else
-                            {
-                                car_selected = false;
-                                selected_object = sim_data.get_object_at(mouse_in_world);
-                                if (nullptr == selected_object)
-                                {
-                                    selected_tile = sim_data.get_tile_at(mouse_in_world);
-                                }
-                            }
-                        }
-                    } break;
-                    case oc::KeyCode::Key_1: // blue button: free drive
-                    {
-                        ipc_packet.set_message_id(ocMessageId::Received_Button_Press);
-                        ipc_packet.clear_and_edit().write<int32_t>(1);
-                        send_packet(ipc_packet);
-                    } break;
-                    case oc::KeyCode::Key_2: // red button: obstacle drive
-                    {
-                        ipc_packet.set_message_id(ocMessageId::Received_Button_Press);
-                        ipc_packet.clear_and_edit().write<int32_t>(2);
-                        send_packet(ipc_packet);
-                    } break;
-                    case oc::KeyCode::Key_Space: // toggle remote control
-                    {
-                        set_rc_mode(!car_states[0].rc_is_active);
-                        car_actions[0].speed = 0.0f;
-                        car_actions[0].steering_front = 0.0f;
-                        car_actions[0].steering_rear = 0.0f;
-                    } break;
-                    // TODO: implement remote controlling
-                    case oc::KeyCode::Key_R: // reset car speed, position and orientation
-                    {
-                        set_rc_mode(true);
-                        reset_car_state();
-                        draw_context.center_at({-100.0f, -100.0f, (float)world_width * 200.0f - 100.0f, (float)world_height * 200.0f - 100.0f});
-                        schedule_redraw(draw_context.get_visible_world_rect());
-                    } break;
-                    case oc::KeyCode::Key_L:
-                    {
-                        auto result = load_track("../sim_track.bin", sim_data);
-                        if (result != ocTrackStoreReport::Success)
-                        {
-                            logger->warn("Could not load track. Error: %s", to_string(result)); 
-                        }
-                        schedule_redraw(draw_context.get_visible_world_rect());
-                    } break;
-                    case oc::KeyCode::Key_S:
-                    {
-                        auto result = save_track("../sim_track.bin", sim_data);
-                        if (result != ocTrackStoreReport::Success)
-                        {
-                            logger->warn("Could not save track. Error: %s", to_string(result)); 
-                        }
-                    } break;
-                    case oc::KeyCode::Key_B:
-                    {
-                        show_bounds = !show_bounds;
-                    } break;
-                    case oc::KeyCode::Key_C:
-                    {
-                        show_controls = !show_controls;
-                    } break;
-                    case oc::KeyCode::Key_E:
-                    {
-                        restart_on_error = !restart_on_error;
-                    } break;
-                    case oc::KeyCode::Key_F:
-                    {
-                        follow_car = !follow_car;
-                    } break;
-                    case oc::KeyCode::Key_G:
-                    {
-                        show_grid = !show_grid;
-                    } break;
-                    case oc::KeyCode::Key_V:
-                    {
-                        show_fov = !show_fov;
-                    } break;
-                    case oc::KeyCode::Key_O:
-                    {
-                        ocVirtualObject box = {
-                            .type = ocObjectType::Obstacle,
-                            .pose = ocPose({mouse_in_world.x, mouse_in_world.y, 8.0f}, 0.0f, 0.0f, 0.0f),
-                            .size = {20.0f, 20.0f, 16.0f}
-                        };
-                        sim_data.add_object(box);
-                        redraw_object(box);
-                    } break;
-                    case oc::KeyCode::Key_P:
-                    {
-                        ocVirtualObject ped = {
-                            .type = ocObjectType::Pedestrian,
-                            .pose = ocPose({mouse_in_world.x, mouse_in_world.y, 7.5f}, 0.0f, 0.0f, 0.0f),
-                            .size = {5.0f, 10.0f, 15.0f}
-                        };
-                        sim_data.add_object(ped);
-                        redraw_object(ped);
-                    } break;
-                    case oc::KeyCode::Key_Escape:
-                    {
-                        car_selected    = false;
-                        selected_object = nullptr;
-                        selected_tile   = nullptr;
-                    } break;
-                    case oc::KeyCode::Key_Delete:
-                    {
-                        if (selected_object)
-                        {
-                            redraw_object(*selected_object);
-                            sim_data.remove_object(selected_object);
-                        }
-                        car_selected    = false;
-                        selected_object = nullptr;
-                        selected_tile   = nullptr;
-                    }
-                    default: break;
-                    case oc::KeyCode::Key_Arrow_Left:
-                    {
-                        if (selected_tile)
-                        {
-                            int old_rot = (int)selected_tile->type % 4;
-                            int new_rot = (old_rot + 1) % 4;
-                            selected_tile->type = (ocRoadTileType)((int)selected_tile->type - old_rot + new_rot);
-                            sim_data.regenerate_objects();
-                            sim_data.regenerate_triggers();
-                            schedule_redraw(draw_context.get_visible_world_rect()); // Unfortunately we need to redraw everything, due to the regenerated objects
-                        }
-                    } break;
-                    case oc::KeyCode::Key_Arrow_Right:
-                    {
-                        if (selected_tile)
-                        {
-                            int old_rot = (int)selected_tile->type % 4;
-                            int new_rot = (old_rot + 3) % 4;
-                            selected_tile->type = (ocRoadTileType)((int)selected_tile->type - old_rot + new_rot);
-                            sim_data.regenerate_objects();
-                            sim_data.regenerate_triggers();
-                            schedule_redraw(draw_context.get_visible_world_rect()); // Unfortunately we need to redraw everything, due to the regenerated objects
-                        }
-                    } break;
-                    case oc::KeyCode::Key_Arrow_Up:
-                    {
-                        if (selected_tile)
-                        {
-                            int old_type = (int)selected_tile->type;
-                            int new_type = (old_type + 4) % (int)ocRoadTileType::Count;
-                            selected_tile->type = (ocRoadTileType)(new_type);
-                            sim_data.regenerate_objects();
-                            sim_data.regenerate_triggers();
-                            schedule_redraw(draw_context.get_visible_world_rect()); // Unfortunately we need to redraw everything, due to the regenerated objects
-                        }
-                    } break;
-                    case oc::KeyCode::Key_Arrow_Down:
-                    {
-                        if (selected_tile)
-                        {
-                            int old_type = (int)selected_tile->type;
-                            int new_type = (old_type + (int)ocRoadTileType::Count - 4) % (int)ocRoadTileType::Count;
-                            selected_tile->type = (ocRoadTileType)(new_type);
-                            sim_data.regenerate_objects();
-                            sim_data.regenerate_triggers();
-                            schedule_redraw(draw_context.get_visible_world_rect()); // Unfortunately we need to redraw everything, due to the regenerated objects
-                        }
-                    } break;
-                }
-            }
-            if (event.type == oc::EventType::Key && !event.key.down)
-            {
-                if (event.key.code == oc::KeyCode::Mouse_1)
+            if (event.type == oc::EventType::Key) {
+                if(event.key.code == oc::KeyCode::Mouse_1)
                 {
                     Vec2 pos = draw_context.world_to_screen(manipulator_pose.pos);
                     float angle = manipulator_pose.heading;
                     Vec2 mouse_pos = Vec2(window->get_mouse_x(), window->get_mouse_y());
-                    manipulator_state = get_manipulator_state(pos, angle, mouse_pos, false);
+                    manipulator_state = get_manipulator_state(pos, angle, mouse_pos, event.key.down);
                 }
+
+                if(event.key.down)
+                {
+                    switch (event.key.code)
+                    {
+                        case oc::KeyCode::Mouse_1:
+                        {   
+                            if(manipulator_state == ManipulatorState::Default) {
+                                if(is_point_in_car(car_states[0], mouse_in_world)) {
+                                    car_selected    = true;
+                                    selected_object = nullptr;
+                                    selected_tile   = nullptr;
+                                } else {
+                                    car_selected    = false;
+                                    selected_object = sim_data.get_object_at(mouse_in_world);
+                                    if (nullptr == selected_object)
+                                    {
+                                        selected_tile = sim_data.get_tile_at(mouse_in_world);
+                                    }
+                                }
+                            }
+                        } break;
+                        case oc::KeyCode::Key_1: // blue button: free drive
+                        {
+                            ipc_packet.set_message_id(ocMessageId::Received_Button_Press);
+                            ipc_packet.clear_and_edit().write<int32_t>(1);
+                            send_packet(ipc_packet);
+                        } break;
+                        case oc::KeyCode::Key_2: // red button: obstacle drive
+                        {
+                            ipc_packet.set_message_id(ocMessageId::Received_Button_Press);
+                            ipc_packet.clear_and_edit().write<int32_t>(2);
+                            send_packet(ipc_packet);
+                        } break;
+                        case oc::KeyCode::Key_Space: // toggle remote control
+                        {
+                            set_rc_mode(!car_states[0].rc_is_active);
+                            car_actions[0].speed = 0.0f;
+                            car_actions[0].steering_front = 0.0f;
+                            car_actions[0].steering_rear = 0.0f;
+                        } break;
+                        // TODO: implement remote controlling
+                        case oc::KeyCode::Key_R: // reset car speed, position and orientation
+                        {
+                            set_rc_mode(true);
+                            reset_car_state();
+                            draw_context.center_at({-100.0f, -100.0f, (float)world_width * 200.0f - 100.0f, (float)world_height * 200.0f - 100.0f});
+                            schedule_redraw(draw_context.get_visible_world_rect());
+                        } break;
+                        case oc::KeyCode::Key_L:
+                        {
+                            auto result = load_track("../sim_track.bin", sim_data);
+                            if (result != ocTrackStoreReport::Success)
+                            {
+                                logger->warn("Could not load track. Error: %s", to_string(result)); 
+                            }
+                            schedule_redraw(draw_context.get_visible_world_rect());
+                        } break;
+                        case oc::KeyCode::Key_S:
+                        {
+                            auto result = save_track("../sim_track.bin", sim_data);
+                            if (result != ocTrackStoreReport::Success)
+                            {
+                                logger->warn("Could not save track. Error: %s", to_string(result)); 
+                            }
+                        } break;
+                        case oc::KeyCode::Key_B:
+                        {
+                            show_bounds = !show_bounds;
+                        } break;
+                        case oc::KeyCode::Key_C:
+                        {
+                            show_controls = !show_controls;
+                        } break;
+                        case oc::KeyCode::Key_E:
+                        {
+                            restart_on_error = !restart_on_error;
+                        } break;
+                        case oc::KeyCode::Key_F:
+                        {
+                            follow_car = !follow_car;
+                        } break;
+                        case oc::KeyCode::Key_G:
+                        {
+                            show_grid = !show_grid;
+                        } break;
+                        case oc::KeyCode::Key_V:
+                        {
+                            show_fov = !show_fov;
+                        } break;
+                        case oc::KeyCode::Key_O:
+                        {
+                            ocVirtualObject box = {
+                                .type = ocObjectType::Obstacle,
+                                .pose = ocPose({mouse_in_world.x, mouse_in_world.y, 8.0f}, 0.0f, 0.0f, 0.0f),
+                                .size = {20.0f, 20.0f, 16.0f}
+                            };
+                            sim_data.add_object(box);
+                            redraw_object(box);
+                        } break;
+                        case oc::KeyCode::Key_P:
+                        {
+                            ocVirtualObject ped = {
+                                .type = ocObjectType::Pedestrian,
+                                .pose = ocPose({mouse_in_world.x, mouse_in_world.y, 7.5f}, 0.0f, 0.0f, 0.0f),
+                                .size = {5.0f, 10.0f, 15.0f}
+                            };
+                            sim_data.add_object(ped);
+                            redraw_object(ped);
+                        } break;
+                        case oc::KeyCode::Key_Escape:
+                        {
+                            car_selected    = false;
+                            selected_object = nullptr;
+                            selected_tile   = nullptr;
+                        } break;
+                        case oc::KeyCode::Key_Delete:
+                        {
+                            if (selected_object)
+                            {
+                                redraw_object(*selected_object);
+                                sim_data.remove_object(selected_object);
+                            }
+                            car_selected    = false;
+                            selected_object = nullptr;
+                            selected_tile   = nullptr;
+                        }
+                        default: break;
+                        case oc::KeyCode::Key_Arrow_Left:
+                        {
+                            if (selected_tile)
+                            {
+                                int old_rot = (int)selected_tile->type % 4;
+                                int new_rot = (old_rot + 1) % 4;
+                                selected_tile->type = (ocRoadTileType)((int)selected_tile->type - old_rot + new_rot);
+                                sim_data.regenerate_objects();
+                                sim_data.regenerate_triggers();
+                                schedule_redraw(draw_context.get_visible_world_rect()); // Unfortunately we need to redraw everything, due to the regenerated objects
+                            }
+                        } break;
+                        case oc::KeyCode::Key_Arrow_Right:
+                        {
+                            if (selected_tile)
+                            {
+                                int old_rot = (int)selected_tile->type % 4;
+                                int new_rot = (old_rot + 3) % 4;
+                                selected_tile->type = (ocRoadTileType)((int)selected_tile->type - old_rot + new_rot);
+                                sim_data.regenerate_objects();
+                                sim_data.regenerate_triggers();
+                                schedule_redraw(draw_context.get_visible_world_rect()); // Unfortunately we need to redraw everything, due to the regenerated objects
+                            }
+                        } break;
+                        case oc::KeyCode::Key_Arrow_Up:
+                        {
+                            if (selected_tile)
+                            {
+                                int old_type = (int)selected_tile->type;
+                                int new_type = (old_type + 4) % (int)ocRoadTileType::Count;
+                                selected_tile->type = (ocRoadTileType)(new_type);
+                                sim_data.regenerate_objects();
+                                sim_data.regenerate_triggers();
+                                schedule_redraw(draw_context.get_visible_world_rect()); // Unfortunately we need to redraw everything, due to the regenerated objects
+                            }
+                        } break;
+                        case oc::KeyCode::Key_Arrow_Down:
+                        {
+                            if (selected_tile)
+                            {
+                                int old_type = (int)selected_tile->type;
+                                int new_type = (old_type + (int)ocRoadTileType::Count - 4) % (int)ocRoadTileType::Count;
+                                selected_tile->type = (ocRoadTileType)(new_type);
+                                sim_data.regenerate_objects();
+                                sim_data.regenerate_triggers();
+                                schedule_redraw(draw_context.get_visible_world_rect()); // Unfortunately we need to redraw everything, due to the regenerated objects
+                            }
+                        } break;
+                    }
+                } 
             }
             if (event.type == oc::EventType::Pointer)
             {
+                if (manipulator_state == ManipulatorState::XY_Active)
+                {
+                    float dx = (event.pointer.new_x - event.pointer.old_x) / draw_context.scale;
+                    float dy = (event.pointer.new_y - event.pointer.old_y) / draw_context.scale;
+
+                    if(car_selected) {
+                        for (int i = 0; i < 10; ++i)
+                        {
+                            car_states[i].pose.pos.x += dx;
+                            car_states[i].pose.pos.y += dy;
+                        }
+                    } else {
+                        redraw_object(*selected_object);
+                        selected_object->move(dx, dy);
+                        redraw_object(*selected_object);
+                    }
+                    
+                }
                 if (manipulator_state == ManipulatorState::X_Active)
                 {
                     float dx = (event.pointer.new_x - event.pointer.old_x) / draw_context.scale;
@@ -1210,10 +1221,7 @@ int main(int argc, const char** argv)
                         redraw_object(*selected_object);
                     }
                 }
-                if (manipulator_state == ManipulatorState::Default ||
-                    manipulator_state == ManipulatorState::X_Hover ||
-                    manipulator_state == ManipulatorState::Y_Hover ||
-                    manipulator_state == ManipulatorState::R_Hover)
+                if (static_cast<int>(manipulator_state) % 2 == 1 || manipulator_state == ManipulatorState::Default) // Hover or Default
                 {
                     Vec2 pos = draw_context.world_to_screen(manipulator_pose.pos);
                     float angle = manipulator_pose.heading;

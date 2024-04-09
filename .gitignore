@@ -121,3 +121,6 @@ flash/
 
 # video files
 *.avi
+
+# Binary files like sim_track.bin
+*.bin
