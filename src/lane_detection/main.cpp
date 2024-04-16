@@ -59,13 +59,23 @@ int main() {
                             .read<size_t>(&dataSize);
                         
                         ocCamData* tempCamData = (ocCamData*) ((std::byte *)shared_memory + memoryAdressOffset);
-                        ocCamData* camData = (ocCamData*) malloc(dataSize);
 
-                        memcpy(camData, tempCamData, dataSize);
+                        shared_memory->bev_data[0] = (ocBevData) {
+                            tempCamData->frame_time,
+                            tempCamData->frame_number,
+                            0,(int32_t) 400,
+                            0,(int32_t) 400,
+                            {}
+                        };
 
-                        logger->log("Breite: %d, Höhe: %d", camData->width, camData->height);
+                        convert_bgra_u8_to_gray_u8(tempCamData->img_buffer, tempCamData->width, tempCamData->height, shared_memory->bev_data[0].img_buffer, 400, 400);
 
-                        free(camData);
+                        shared_memory->last_written_bev_data_index = 0;
+
+                        ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
+                        socket->send_packet(ipc_packet);
+
+                        //free(camData);
                     } break;
                     default:
                     {
