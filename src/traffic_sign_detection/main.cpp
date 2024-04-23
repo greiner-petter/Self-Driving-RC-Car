@@ -1,6 +1,8 @@
 #include <iostream>
 #include "../common/ocMember.h"
 
+#include "SignDetector.h"
+
 int main()
 {
     // ocMember represents the interface to the IPC system
@@ -14,6 +16,8 @@ int main()
     // pointers to them here so we don't have to call the getters every time.
     ocIpcSocket* socket = member.get_socket();
     ocLogger*    logger = member.get_logger();
+
+    SignDetector::Init(socket, logger);
 
     while (true)
     {
