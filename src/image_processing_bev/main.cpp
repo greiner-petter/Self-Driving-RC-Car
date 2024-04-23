@@ -2,12 +2,37 @@
 #include "../common/ocMember.h"
 #include <signal.h>
 #include <csignal>
+#include <opencv4/opencv2/opencv.hpp>
+#include <opencv4/opencv2/core/types.hpp>
+using namespace cv;
 
 static bool running = true;
+ocLogger *logger;
 
 static void signal_handler(int)
 {
     running = false;
+}
+
+void transform(Point2f* src_vertices, Point2f* dst_vertices, Mat &src, Mat &dst) {
+    Mat M = getPerspectiveTransform(src_vertices, dst_vertices);
+    warpPerspective(src, dst, M, dst.size());
+}
+
+void toBirdsEyeView(Mat src, Mat dst) {
+    Point2f src_vertices[4];
+    src_vertices[0] = Point2f(130,190);
+    src_vertices[1] = Point2f(270,190);
+    src_vertices[2] = Point2f(1200, 400);
+    src_vertices[3] = Point2f(-800, 400);
+
+    Point2f dst_vertices[4];
+    dst_vertices[0] = Point2f(0, 0);
+    dst_vertices[1] = Point2f(400, 0);
+    dst_vertices[2] = Point2f(400, 400);
+    dst_vertices[3] = Point2f(0, 400);
+
+    transform(src_vertices, dst_vertices, src, dst);
 }
 
 int main() {
@@ -16,14 +41,15 @@ int main() {
     signal(SIGQUIT, signal_handler);
     signal(SIGTERM, signal_handler);
     
-    ocMember member(ocMemberId::Lane_Detection, "Lane_Detection");
+
+    ocMember member(ocMemberId::Image_Processing, "Image_Processing");
     member.attach();
 
     ocIpcSocket *socket = member.get_socket();
-    ocLogger *logger = member.get_logger();
+    logger = member.get_logger();
     ocSharedMemory *shared_memory = member.get_shared_memory();
 
-    logger->log("Subscribing to camera image");
+    //logger->log("Subscribing to camera image");
 
     ocPacket ipc_packet;
     ipc_packet.set_message_id(ocMessageId::Subscribe_To_Messages);
@@ -31,7 +57,9 @@ int main() {
         .write(ocMessageId::Camera_Image_Available);
     socket->send_packet(ipc_packet);
 
-    logger->log("Waiting for camera image...");
+    //logger->log("Waiting for camera image...");
+
+    // Listen for Camera Image Available Message on IPC
 
     while(running) {
         int32_t socket_status;
@@ -45,7 +73,9 @@ int main() {
                             continue;
                         }
 
-                        logger->log("Received camera image");
+                        //logger->log("Received camera image");
+
+                        // Move to shared memory
 
                         ocTime frameTime;
                         uint32_t frameNumber;
@@ -68,14 +98,23 @@ int main() {
                             {}
                         };
 
+                        // Convert img from color to bw
+
                         convert_bgra_u8_to_gray_u8(tempCamData->img_buffer, tempCamData->width, tempCamData->height, shared_memory->bev_data[0].img_buffer, 400, 400);
 
                         shared_memory->last_written_bev_data_index = 0;
 
+                        // Apply birds eye view
+
+                        Mat src(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
+                        Mat dst(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
+
+                        toBirdsEyeView(src, dst);
+
+                        // notify others about available picture
+
                         ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
                         socket->send_packet(ipc_packet);
-
-                        //free(camData);
                     } break;
                     default:
                     {
