@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.12)
 project(traffic_sign_detection)
 
-add_executable(traffic_sign_detection
-    main.cpp
-        TrafficSign.h
-        # add other .cpp files here when needed.
-)
+file(GLOB AllSources *.cpp)
+
+add_executable(traffic_sign_detection ${AllSources})
 
 target_compile_features(traffic_sign_detection PRIVATE cxx_std_20)
 set_target_properties(traffic_sign_detection PROPERTIES
