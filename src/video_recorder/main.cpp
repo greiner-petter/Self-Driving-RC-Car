@@ -20,11 +20,6 @@ static void signal_handler(int)
     running = false;
 }
 
-int width = 400;
-int height = 400;
-ocPixelFormat pixel_format = ocPixelFormat::Gray_U8;
-
-
 cv::Mat static convert(cv::Mat cam_image, ocPixelFormat pixel_format, bool gray, ocLogger *logger)
 {
     if (gray)
@@ -150,7 +145,11 @@ int main(int argc, const char **argv)
         filename.ends_with(".jpg") ||
         filename.ends_with(".jpeg"))
     {
-        ocBevData *cam_data = &shared_memory->bev_data[shared_memory->last_written_cam_data_index];
+        ocBevData *cam_data = &shared_memory->bev_data[shared_memory->last_written_bev_data_index];
+
+        int width = cam_data->max_map_x - cam_data->min_map_x;
+        int height = cam_data->max_map_y - cam_data->min_map_y;
+        ocPixelFormat pixel_format = ocPixelFormat::Gray_U8;
 
         int type = CV_8UC1;
         if (3 == bytes_per_pixel(pixel_format)) type = CV_8UC3;
