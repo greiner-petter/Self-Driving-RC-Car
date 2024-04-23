@@ -1,16 +1,34 @@
-#include "State.h"
+#include "Crossing_3_Way_Right.h"
 
-class Crossing_3_Way_Right: public State{
-    public:
-        void on_entry(){
 
-        }
+State& Crossing_3_Way_Right::get_instance(){
+    static Crossing_3_Way_Right singleton;
+    return singleton;
+}
 
-        void run(){
-            
-        }
 
-        void on_exit(){
-            
-        }
-};
+
+void Crossing_3_Way_Right::on_entry(Statemachine* statemachine){
+    /*
+    Code
+    */
+
+   statemachine->run(nullptr);
+}
+
+
+void Crossing_3_Way_Right::run(Statemachine* statemachine, void* data){
+    /*
+    Code
+    */
+    
+    //statemachine->change_state(SomeState::getInstance());
+}
+
+
+
+void Crossing_3_Way_Right::on_exit(Statemachine* statemachine){
+    /*
+    Code
+    */
+}
