@@ -3,6 +3,7 @@ project(decider)
 
 add_executable(decider
     main.cpp
+    States/Statemachine.cpp
     # add other .cpp files here when needed.
 )
 

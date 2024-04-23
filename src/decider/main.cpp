@@ -1,6 +1,6 @@
 #include "Drive.h"
 #include "States/Statemachine.h"
-#include "States/Crossing_3_Way_Left.h"
+//#include "States/Crossing_3_Way_Left.h"
 
 /*
 enum class States {
@@ -20,9 +20,12 @@ bool on_exit = false;
 */
 
 int main(){
+    //class State;
 
     Statemachine statemachine;
-    statemachine.set_current_state((State*) new Crossing_3_Way_Left());
+    
+    
+    //statemachine.set_current_state((State*) new Crossing_3_Way_Left());
 
     /*
 
