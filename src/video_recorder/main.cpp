@@ -20,6 +20,11 @@ static void signal_handler(int)
     running = false;
 }
 
+int width = 400;
+int height = 400;
+ocPixelFormat pixel_format = ocPixelFormat::Gray_U8;
+
+
 cv::Mat static convert(cv::Mat cam_image, ocPixelFormat pixel_format, bool gray, ocLogger *logger)
 {
     if (gray)
@@ -145,23 +150,24 @@ int main(int argc, const char **argv)
         filename.ends_with(".jpg") ||
         filename.ends_with(".jpeg"))
     {
-        ocCamData *cam_data = &shared_memory->cam_data[shared_memory->last_written_cam_data_index];
+        ocBevData *cam_data = &shared_memory->bev_data[shared_memory->last_written_cam_data_index];
 
         int type = CV_8UC1;
-        if (3 == bytes_per_pixel(cam_data->pixel_format)) type = CV_8UC3;
-        if (4 == bytes_per_pixel(cam_data->pixel_format)) type = CV_8UC4;
-        if (12 == bytes_per_pixel(cam_data->pixel_format)) type = CV_32FC3;
+        if (3 == bytes_per_pixel(pixel_format)) type = CV_8UC3;
+        if (4 == bytes_per_pixel(pixel_format)) type = CV_8UC4;
+        if (12 == bytes_per_pixel(pixel_format)) type = CV_32FC3;
 
-        cv::Mat cam_image((int)cam_data->height, (int)cam_data->width, type);
+
+        cv::Mat cam_image((int)height, (int)width, type);
         cam_image.data = cam_data->img_buffer;
 
         if (crop_hor || crop_ver)
         {
-            if (!crop_hor) crop.width  = (int)cam_data->width;
-            if (!crop_ver) crop.height = (int)cam_data->height;
-            if ((int)cam_data->width < crop.x + crop.width || (int)cam_data->height < crop.y + crop.height)
+            if (!crop_hor) crop.width  = (int)width;
+            if (!crop_ver) crop.height = (int)height;
+            if ((int)width < crop.x + crop.width || (int)height < crop.y + crop.height)
             {
-                logger->error("Crop size (x: %i, y: %i, w: %i, h: %i) does not fit source size (w: %i, h: %i).", crop.x, crop.y, crop.width, crop.height, cam_data->width, cam_data->height);
+                logger->error("Crop size (x: %i, y: %i, w: %i, h: %i) does not fit source size (w: %i, h: %i).", crop.x, crop.y, crop.width, crop.height, width, height);
                 return -1;
             }
             cam_image = cam_image(crop);
@@ -174,7 +180,7 @@ int main(int argc, const char **argv)
             cv::resize(cam_image, cam_image, new_size);
         }
 
-        cam_image = convert(cam_image, cam_data->pixel_format, gray, logger);
+        cam_image = convert(cam_image, pixel_format, gray, logger);
 
         cv::imwrite(filename.data(), cam_image);
         return 0;
