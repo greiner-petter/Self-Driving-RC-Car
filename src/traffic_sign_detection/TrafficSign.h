@@ -6,7 +6,7 @@ enum class TrafficSignType : uint16_t
 {
     None = 0,
     Stop,
-    GiveWay,                // Vorfahrt beachten
+    PriorityRoad,                // "Vorfahrtstrasse"
     Park,
     Left,
     Right,
