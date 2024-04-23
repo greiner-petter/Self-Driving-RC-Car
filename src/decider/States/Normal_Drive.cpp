@@ -1,16 +1,34 @@
-#include "State.h"
+#include "Normal_Drive.h"
 
-class Normal_Drive: public State{
-    public:
-        void on_entry(){
 
-        }
+State& Normal_Drive::get_instance(){
+    static Normal_Drive singleton;
+    return singleton;
+}
 
-        void run(){
-            
-        }
 
-        void on_exit(){
-            
-        }
-};
+
+void Normal_Drive::on_entry(Statemachine* statemachine){
+    /*
+    Code
+    */
+
+   statemachine->run(nullptr);
+}
+
+
+void Normal_Drive::run(Statemachine* statemachine, void* data){
+    /*
+    Code
+    */
+    
+    //statemachine->change_state(SomeState::getInstance());
+}
+
+
+
+void Normal_Drive::on_exit(Statemachine* statemachine){
+    /*
+    Code
+    */
+}

@@ -3,8 +3,14 @@ project(decider)
 
 add_executable(decider
     main.cpp
-    States/Statemachine.cpp
+    Statemachine.cpp
     States/Crossing_3_Way_Left.cpp
+    States/Crossing_3_Way_Right.cpp
+    States/Crossing_3_Way_T.cpp
+    States/Crossing_4_Way.cpp
+    States/Is_At_Crossing.cpp
+    States/Normal_Drive.cpp
+    States/Approaching_Crossing.cpp
     # add other .cpp files here when needed.
 )
 

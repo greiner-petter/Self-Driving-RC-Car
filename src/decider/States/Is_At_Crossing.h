@@ -2,7 +2,9 @@
 #include "State.h"
 #include "../Statemachine.h"
 
-class Crossing_3_Way_T: State {
+
+
+class Is_At_Crossing: State {
     public:
         void run(Statemachine* statemachine, void* data);
         void on_entry(Statemachine* statemachine);
@@ -11,7 +13,8 @@ class Crossing_3_Way_T: State {
 
 
     private:
-        Crossing_3_Way_T(){}
-        Crossing_3_Way_T(const Crossing_3_Way_T& other);
-        Crossing_3_Way_T& operator=(const Crossing_3_Way_T& other);
+        Is_At_Crossing(){}
+        Is_At_Crossing(const Is_At_Crossing& other);
+        Is_At_Crossing& operator=(const Is_At_Crossing& other);
 };
+

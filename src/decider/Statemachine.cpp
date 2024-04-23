@@ -1,5 +1,12 @@
 #include "Statemachine.h"
-#include "Crossing_3_Way_Left.h"
+#include "States/Crossing_3_Way_Right.h"
+#include "States/Crossing_3_Way_Left.h"
+#include "States/Crossing_3_Way_T.h"
+#include "States/Crossing_4_Way.h"
+#include "States/Is_At_Crossing.h"
+#include "States/Approaching_Crossing.h"
+#include "States/Normal_Drive.h"
+
 
 
 Statemachine::Statemachine(){

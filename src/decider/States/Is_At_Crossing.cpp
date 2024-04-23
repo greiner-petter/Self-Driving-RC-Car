@@ -1,16 +1,34 @@
-#include "State.h"
+#include "Is_At_Crossing.h"
 
-class Is_At_Crossing: public State{
-    public:
-        void on_entry(){
 
-        }
+State& Is_At_Crossing::get_instance(){
+    static Is_At_Crossing singleton;
+    return singleton;
+}
 
-        void run(){
-            
-        }
 
-        void on_exit(){
-            
-        }
-};
+
+void Is_At_Crossing::on_entry(Statemachine* statemachine){
+    /*
+    Code
+    */
+
+   statemachine->run(nullptr);
+}
+
+
+void Is_At_Crossing::run(Statemachine* statemachine, void* data){
+    /*
+    Code
+    */
+    
+    //statemachine->change_state(SomeState::getInstance());
+}
+
+
+
+void Is_At_Crossing::on_exit(Statemachine* statemachine){
+    /*
+    Code
+    */
+}
