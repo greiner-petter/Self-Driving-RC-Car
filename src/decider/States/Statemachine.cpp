@@ -1,15 +1,15 @@
 #include "Statemachine.h"
+#include "Crossing_3_Way_Left.h"
 
 
 Statemachine::Statemachine(){
-    this->current_state = nullptr;
+    this->current_state = &Crossing_3_Way_Left::get_instance();
 }
 
 
 void Statemachine::change_state(State& state){
     if(current_state != nullptr){
         current_state->on_exit(this);
-        delete current_state;
     }
     current_state = &state;
     current_state->on_entry(this);

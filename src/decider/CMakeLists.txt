@@ -4,6 +4,7 @@ project(decider)
 add_executable(decider
     main.cpp
     States/Statemachine.cpp
+    States/Crossing_3_Way_Left.cpp
     # add other .cpp files here when needed.
 )
 
