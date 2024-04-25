@@ -102,8 +102,7 @@ int main() {
                         };
 
                         // Convert img from color to bw
-
-                        convert_bgra_u8_to_gray_u8(tempCamData->img_buffer, tempCamData->width, tempCamData->height, shared_memory->bev_data[0].img_buffer, 400, 400);
+                        convert_to_gray_u8(tempCamData->pixel_format, tempCamData->img_buffer, tempCamData->width, tempCamData->height, shared_memory->bev_data[0].img_buffer, 400, 400);
 
                         shared_memory->last_written_bev_data_index = 0;
 
