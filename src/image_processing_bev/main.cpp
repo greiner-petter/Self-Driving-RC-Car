@@ -50,8 +50,6 @@ int main() {
     logger = member.get_logger();
     ocSharedMemory *shared_memory = member.get_shared_memory();
 
-    //logger->log("Subscribing to camera image");
-
     ocPacket ipc_packet;
     ipc_packet.set_message_id(ocMessageId::Subscribe_To_Messages);
     ipc_packet.clear_and_edit()
@@ -59,8 +57,6 @@ int main() {
     socket->send_packet(ipc_packet);
 
     initializeTransformParams();
-
-    //logger->log("Waiting for camera image...");
 
     // Listen for Camera Image Available Message on IPC
 
@@ -75,8 +71,6 @@ int main() {
                         if(shared_memory->last_written_cam_data_index != 0) {
                             continue;
                         }
-
-                        //logger->log("Received camera image");
 
                         // Move to shared memory
 
@@ -111,8 +105,6 @@ int main() {
                         Mat src(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
                         Mat dst(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
 
-                        imwrite("test.jpg", src);
-
                         toBirdsEyeView(src, dst);
 
                         // notify others about available picture
@@ -120,9 +112,6 @@ int main() {
                         ipc_packet.set_sender(ocMemberId::Image_Processing);
                         ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
                         socket->send_packet(ipc_packet);
-
-                        imwrite("test2.jpg", src);
-                        return 0;
                     } break;
                     default:
                     {
