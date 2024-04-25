@@ -2,41 +2,42 @@
 #include "../common/ocMember.h"
 #include <signal.h>
 #include <csignal>
-#include <opencv4/opencv2/opencv.hpp>
-#include <opencv4/opencv2/core/types.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/types.hpp>
 using namespace cv;
 
 static bool running = true;
 ocLogger *logger;
+
+Point2f src_vertices[4];
+Point2f dst_vertices[4];
+Mat M;
 
 static void signal_handler(int)
 {
     running = false;
 }
 
-void transform(Point2f* src_vertices, Point2f* dst_vertices, Mat &src, Mat &dst) {
-    Mat M = getPerspectiveTransform(src_vertices, dst_vertices);
-    warpPerspective(src, dst, M, dst.size());
-}
-
-void toBirdsEyeView(Mat src, Mat dst) {
-    Point2f src_vertices[4];
+void initializeTransformParams() {
     src_vertices[0] = Point2f(130,190);
     src_vertices[1] = Point2f(270,190);
     src_vertices[2] = Point2f(1200, 400);
     src_vertices[3] = Point2f(-800, 400);
 
-    Point2f dst_vertices[4];
     dst_vertices[0] = Point2f(0, 0);
     dst_vertices[1] = Point2f(400, 0);
     dst_vertices[2] = Point2f(400, 400);
     dst_vertices[3] = Point2f(0, 400);
 
-    transform(src_vertices, dst_vertices, src, dst);
+    M = getPerspectiveTransform(src_vertices, dst_vertices);
+}
+
+void toBirdsEyeView(Mat &src, Mat &dst) {
+    warpPerspective(src, dst, M, dst.size());
 }
 
 int main() {
-    // Catch some signals to allow us to gracefully shut down the camera
+    // Catch some signals to allow us to gracefully shut down the process
     signal(SIGINT, signal_handler);
     signal(SIGQUIT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -56,6 +57,8 @@ int main() {
     ipc_packet.clear_and_edit()
         .write(ocMessageId::Camera_Image_Available);
     socket->send_packet(ipc_packet);
+
+    initializeTransformParams();
 
     //logger->log("Waiting for camera image...");
 
@@ -109,12 +112,18 @@ int main() {
                         Mat src(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
                         Mat dst(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
 
+                        imwrite("test.jpg", src);
+
                         toBirdsEyeView(src, dst);
 
                         // notify others about available picture
 
+                        ipc_packet.set_sender(ocMemberId::Image_Processing);
                         ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
                         socket->send_packet(ipc_packet);
+
+                        imwrite("test2.jpg", src);
+                        return 0;
                     } break;
                     default:
                     {
