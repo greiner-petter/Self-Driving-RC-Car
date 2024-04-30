@@ -19,10 +19,16 @@ void Normal_Drive::on_entry(Statemachine* statemachine){
 
 void Normal_Drive::run(Statemachine* statemachine, void* data){
     /*
-    Code
+    while(true){
+        bool crossing_dtected = IPC-HUB has crossing been detected
+        if (crossing_detected){
+            break;
+        }
+        drive.drive_forward();
+    }
     */
     
-    //statemachine->change_state(SomeState::getInstance());
+    //statemachine->change_state(Approaching_Crossing::getInstance());
 }
 
 
