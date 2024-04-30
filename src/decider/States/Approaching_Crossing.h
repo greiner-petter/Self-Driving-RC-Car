@@ -16,5 +16,6 @@ class Approaching_Crossing: State {
         Approaching_Crossing(){}
         Approaching_Crossing(const Approaching_Crossing& other);
         Approaching_Crossing& operator=(const Approaching_Crossing& other);
+        double* smooth_speed(int current_speed);
 };
 
