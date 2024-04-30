@@ -1,6 +1,7 @@
 #pragma once
 #include "State.h"
 #include "../Statemachine.h"
+#include "ocMember.h"
 
 class Crossing_3_Way_T: State {
     public:
