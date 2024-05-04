@@ -5,6 +5,14 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/types.hpp>
 using namespace cv;
+using std::vector;
+
+// if this is set the BEV is redrawn only with the
+// detected lines for easier debugging/visuliazation. This
+// is normally disabled since it requires an entire Matrix copy
+// and adds other graphical overhead by the drawing itself
+
+// #define DRAW_POLYLINES_ON_EMPTY_OUTPUT
 
 static bool running = true;
 ocLogger *logger;
@@ -12,6 +20,8 @@ ocLogger *logger;
 Point2f src_vertices[4];
 Point2f dst_vertices[4];
 Mat M;
+
+static constexpr auto BLUR_SIZE = 7;
 
 static void signal_handler(int)
 {
@@ -95,6 +105,8 @@ int main() {
                             {}
                         };
 
+                        // TODO: Consider changing the internal implementation to use
+                        // OpenCV. Currently it's a single threaded loop! Convert img
                         // Convert img from color to bw
                         convert_to_gray_u8(tempCamData->pixel_format, tempCamData->img_buffer, tempCamData->width, tempCamData->height, shared_memory->bev_data[0].img_buffer, 400, 400);
 
@@ -106,6 +118,32 @@ int main() {
                         Mat dst(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
 
                         toBirdsEyeView(src, dst);
+
+                        GaussianBlur(dst, dst, Size_(BLUR_SIZE, BLUR_SIZE), 0);
+                        Canny(dst, dst, 50, 200, 3);
+
+                        vector<vector<Point>> contours;
+                        findContours(dst, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
+#ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
+                        Mat redrewed_image = Mat::zeros(dst.size(), CV_8UC1);
+#endif
+                        logger->log("Detected contours: %zd", contours.size());
+                        for (auto &contour : contours)
+                        {
+                            vector<Point> reduced_contour;
+                            auto epsilon = 0.01 * arcLength(contour, false);
+                            approxPolyDP(contour, reduced_contour, epsilon, false);
+                            // TODO: Publish & process reduced_contour objects
+#ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
+                            Scalar color = Scalar(255);
+                            polylines(redrewed_image, reduced_contour, false, color, 2,
+                                      LINE_8, 0);
+#endif
+                        }
+
+#ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
+                        redrewed_image.copyTo(dst);
+#endif
 
                         // notify others about available picture
 
