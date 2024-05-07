@@ -33,6 +33,8 @@ enum class ocMemberId: uint16_t
     Virtual_Car        = 15,
     Tachometer         = 16,
     Apriltag_Detection = 17,
+
+    Driver             = 18,
 };
 
 const char *to_string(ocMemberId member_id);

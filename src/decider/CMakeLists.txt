@@ -4,6 +4,7 @@ project(decider)
 add_executable(decider
     main.cpp
     Statemachine.cpp
+    Drive.cpp
     States/Crossing_3_Way_Left.cpp
     States/Crossing_3_Way_Right.cpp
     States/Crossing_3_Way_T.cpp
