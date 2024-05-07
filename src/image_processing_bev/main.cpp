@@ -141,34 +141,51 @@ int main() {
                         GaussianBlur(dst, dst, Size_(BLUR_SIZE, BLUR_SIZE), 0);
                         Canny(dst, dst, 50, 200, 3);
 
+                        // notify others about available picture
+                        ipc_packet.set_sender(ocMemberId::Image_Processing);
+                        ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
+                        socket->send_packet(ipc_packet);
+
                         vector<vector<Point>> contours;
                         findContours(dst, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
                         Mat redrewed_image = Mat::zeros(dst.size(), CV_8UC1);
 #endif
-                        logger->log("Detected contours: %zd", contours.size());
-                        for (auto &contour : contours)
+                        static struct ocBevLines reduced_lines;
+                        reduced_lines = {};
+                        for (size_t i = 0; i < contours.size(); ++i)
                         {
+                            auto &contour = contours.at(i);
                             vector<Point> reduced_contour;
-                            auto epsilon = 0.01 * arcLength(contour, false);
+                            double epsilon = 0.01 * arcLength(contour, false);
                             approxPolyDP(contour, reduced_contour, epsilon, false);
-                            // TODO: Publish & process reduced_contour objects
+                            if (i < NUMBER_OF_CONTOURS) {
+                                reduced_lines.poly_num[i] = std::min(NUMBER_OF_POLYGONS_PER_CONTOUR, (int) reduced_contour.size());
+                                for (size_t j = 0; j < reduced_contour.size() && j < NUMBER_OF_POLYGONS_PER_CONTOUR; ++j) {
+                                    Point &p = reduced_contour.at(j);
+                                    reduced_lines.lines[i][j][0] = p.x;
+                                    reduced_lines.lines[i][j][1] = p.y;
+                                }
+                            }
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
                             cv::Scalar color = cv::Scalar(255);
                             polylines(redrewed_image, reduced_contour, false, color, 2,
                                       cv::LINE_8, 0);
 #endif
                         }
+                        reduced_lines.contour_num = std::min(NUMBER_OF_CONTOURS, (int) contours.size());
+
+                        // notify other about found lines in BEV
+                        ipc_packet.set_sender(ocMemberId::Image_Processing);
+                        ipc_packet.set_message_id(ocMessageId::Lines_Available);
+                        ipc_packet.clear_and_edit().write(reduced_lines);
+                        socket->send_packet(ipc_packet);
+
 
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
                         redrewed_image.copyTo(dst);
 #endif
 
-                        // notify others about available picture
-
-                        ipc_packet.set_sender(ocMemberId::Image_Processing);
-                        ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
-                        socket->send_packet(ipc_packet);
                     } break;
                     default:
                     {

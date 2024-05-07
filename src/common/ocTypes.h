@@ -55,6 +55,7 @@ enum class ocMessageId: uint16_t
     Birdseye_Image_Available = 0x13,
 
     Lane_Found               = 0x22,
+    Lines_Available          = 0x23,
 
     Set_Lights               = 0x48,
     Start_Driving_Task       = 0x49,
@@ -314,4 +315,12 @@ struct ocSharedMemory final
 
     uint64_t _canary7;
 };
+
+// Lines detected in the BEV
+struct ocBevLines {
+    int contour_num;
+    int poly_num[NUMBER_OF_CONTOURS];
+    int lines[NUMBER_OF_CONTOURS][NUMBER_OF_POLYGONS_PER_CONTOUR][2];
+};
+
 static_assert(std::is_trivial_v<ocSharedMemory>);

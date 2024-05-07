@@ -49,6 +49,7 @@ const char *to_string(ocMessageId message_id)
   case ocMessageId::Binary_Image_Available:   return "ocMessageId::Binary_Image_Available";
   case ocMessageId::Birdseye_Image_Available: return "ocMessageId::Birdseye_Image_Available";
   case ocMessageId::Lane_Found:               return "ocMessageId::Lane_Found";
+  case ocMessageId::Lines_Available:          return "ocMessageId::Lines_Available";
   case ocMessageId::Set_Lights:               return "ocMessageId::Set_Lights";
   case ocMessageId::Start_Driving_Task:       return "ocMessageId::Start_Driving_Task";
   case ocMessageId::Ai_Switched_State:        return "ocMessageId::Ai_Switched_State";
