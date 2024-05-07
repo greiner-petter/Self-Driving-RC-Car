@@ -4,8 +4,9 @@
 #include <csignal>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/types.hpp>
-using namespace cv;
-using std::vector;
+
+// uncomment to use on systems that have no CUDA
+// #define FORBID_CUDA
 
 // if this is set the BEV is redrawn only with the
 // detected lines for easier debugging/visuliazation. This
@@ -13,6 +14,24 @@ using std::vector;
 // and adds other graphical overhead by the drawing itself
 
 // #define DRAW_POLYLINES_ON_EMPTY_OUTPUT
+
+
+// use cuda acceleration by default
+#ifndef FORBID_CUDA
+using namespace cv::cuda;
+#else
+using namespace cv;
+#endif
+
+using cv::Point2f;
+using cv::Mat;
+using cv::Point;
+
+using cv::RETR_LIST;
+using cv::CHAIN_APPROX_SIMPLE;
+using cv::Size_;
+
+using std::vector;
 
 static bool running = true;
 ocLogger *logger;
@@ -135,9 +154,9 @@ int main() {
                             approxPolyDP(contour, reduced_contour, epsilon, false);
                             // TODO: Publish & process reduced_contour objects
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-                            Scalar color = Scalar(255);
+                            cv::Scalar color = cv::Scalar(255);
                             polylines(redrewed_image, reduced_contour, false, color, 2,
-                                      LINE_8, 0);
+                                      cv::LINE_8, 0);
 #endif
                         }
 
