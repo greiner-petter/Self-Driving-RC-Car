@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.12)
 project(lane_detection)
 
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+
 add_executable(lane_detection
     main.cpp
 )
@@ -12,3 +15,4 @@ set_target_properties(lane_detection PROPERTIES
     CXX_EXTENSIONS OFF
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../bin")
 
+target_link_libraries(lane_detection PRIVATE liboccar ${OpenCV_LIBS})
