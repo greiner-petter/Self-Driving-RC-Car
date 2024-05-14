@@ -1,3 +1,5 @@
+//#include "../common/ocMember.h"
+#include "../common/ocHistoryBuffer.h"
 #include "Crossing_3_Way_T.h"
 
 
@@ -6,6 +8,7 @@ State& Crossing_3_Way_T::get_instance(){
     return singleton;
 }
 
+//ocHistoryBuffer<ocTime, TrafficSign> read_signs_history(12);
 
 
 void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
@@ -16,25 +19,22 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
 
     //Bekommen Array vom struct übergeben
     struct TrafficSign{
-        Type trafficSign
-        int distance
-    }
+        TrafficSignType trafficSign;
+        uint64_t distance;
+    };
 
 
-    ocMember member = ocMember(ocMemberId::, "Traffic Sign");
+
+    ocMember member(ocMemberId::Sign_Detection, "Sign_Detection");
     member.attach();
     ocIpcSocket *socket = member.get_socket();
     ocLogger *logger = member.get_logger();
-    ocPacket sup;
-    sup.set_message_id(ocMessageId::Subscribe_To_Messages);
-    sup.clear_and_edit().write(ocMessageId::);
-    socket->send_packet(sup);
     ocPacket recv_packet;
-    int counter = 0;
 
     while (true) {
        
         int result = socket->read_packet(recv_packet);
+        ocTime now = ocTime::now();
 
         if (result < 0) {
             logger->error("Error reading the IPC socket: (%i) %s", errno, strerror(errno));
@@ -43,8 +43,9 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
 
         switch (recv_packet.get_message_id())
         {
-        case ocMemberId:: :
+        case ocMessageId::Sign_Detection:
             auto reader = recv_packet.read_from_start();
+            read_signs_history.push(now, reader.read<TrafficSign>());
             break;
         
         default:
@@ -53,12 +54,12 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
             logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
             break;
         }
-        
+
     }
 
-    statemachine->run(Crossing_3_Way_T::get_instance, trafficSigns[]);    
-    */
+    statemachine->run(Crossing_3_Way_T::get_instance);    
     
+    */
 }
 
 
@@ -74,7 +75,7 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
                 case Stop:
                     drive.stop(2000); //stop for 2s
                     break;
-                case RightOfWay:
+                case PriorityRoad:
                     drive_right = true;
                     break;
                 case Left:
