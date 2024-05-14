@@ -28,7 +28,7 @@ using cv::Mat;
 using cv::Point;
 
 using cv::RETR_LIST;
-using cv::CHAIN_APPROX_SIMPLE;
+using cv::CHAIN_APPROX_NONE;
 using cv::Size_;
 
 using std::vector;
@@ -147,7 +147,7 @@ int main() {
                         socket->send_packet(ipc_packet);
 
                         vector<vector<Point>> contours;
-                        findContours(dst, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
+                        findContours(dst, contours, RETR_LIST, CHAIN_APPROX_NONE);
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
                         Mat redrewed_image = Mat::zeros(dst.size(), CV_8UC1);
 #endif
@@ -170,7 +170,7 @@ int main() {
                             }
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
                             cv::Scalar color = cv::Scalar(255);
-                            polylines(redrewed_image, reduced_contour, false, color, 2,
+                            polylines(redrewed_image, reduced_contour, false, color, 1,
                                       cv::LINE_8, 0);
 #endif
                         }
