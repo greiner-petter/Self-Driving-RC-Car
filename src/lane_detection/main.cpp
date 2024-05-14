@@ -5,11 +5,10 @@
 #include <opencv2/opencv.hpp>
 
 struct LineVectorData {
-    float slope;
-    float length;
-    std::pair<float, float> closest_point;
-    float distance;
-    float weight;
+    double slope;
+    double length;
+    std::pair<double, double> closest_point;
+    double distance;
 };
 
 ocLogger *logger;
@@ -21,9 +20,9 @@ static void signal_handler(int)
     running = false;
 }
 
-std::pair<float, float> linearRegression(int (data)[NUMBER_OF_POLYGONS_PER_CONTOUR][2], int count) {
-    float x_mean;
-    float y_mean;
+std::pair<double, double> linearRegression(int (data)[NUMBER_OF_POLYGONS_PER_CONTOUR][2], int count) {
+    double x_mean = 0;
+    double y_mean = 0;
 
     for(int j = 0; j < count; j++) {
         x_mean += data[j][0];
@@ -33,30 +32,26 @@ std::pair<float, float> linearRegression(int (data)[NUMBER_OF_POLYGONS_PER_CONTO
     x_mean = x_mean / count;
     y_mean = y_mean / count;
 
-    logger->log("test4.2");
-
-    float numerator;
-    float denominator;
+    double numerator = 0;
+    double denominator = 1;
 
     for(int j = 0; j < count; j++) {
         numerator += (data[j][0] - x_mean) * (data[j][1] - y_mean);
-        denominator += (data[j][0] - x_mean) * (data[j][0] - x_mean);
+        denominator += (data[j][1] - y_mean) * (data[j][1] - y_mean);
     } 
 
-    float slope = numerator/denominator;
+    double slope = numerator/denominator;
 
-    logger->log("test4.3");
-
-    float y_intercept = y_mean - slope * x_mean;  
+    double y_intercept = x_mean - slope * y_mean;  
 
     return {slope, y_intercept};
 };
 
-float calcDist(std::pair<float, float> p1, std::pair<float, float> p2) {
+double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
     return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
 }
 
-int main(int argc, const char **argv)
+int main()
 {
     // Catch some signals to allow us to gracefully shut down the process
     signal(SIGINT, signal_handler);
@@ -84,32 +79,39 @@ int main(int argc, const char **argv)
             {
                 case ocMessageId::Lines_Available:
                 {
-                    logger->log("test");
                     //Find Lane
                     static struct ocBevLines lines;
                     ipc_packet.read_from_start().read(&lines);
 
-                    LineVectorData vectors[lines.contour_num];
+                    //TODO summarize small dots to a bigger line for better vectorization
 
-                    logger->log("test1");
+                    
+
+                    LineVectorData vectors[lines.contour_num];
+                    int vector_counter = 0;
 
                     for(int i = 0; i < lines.contour_num; i++) {
+                        if(lines.poly_num[i] < 2) continue;
                         //do for every shape a linear regression to prepare a vector 
 
-                        std::vector<float> vector;
+                        std::vector<double> vector;
 
-                        std::pair<float, float> linReg = linearRegression((lines.lines[i]), (lines.poly_num[i]));
+                        std::pair<double, double> linReg = linearRegression((lines.lines[i]), (lines.poly_num[i]));
 
-                        std::pair<float, float> closest_point = {0, 0}; 
-                        std::pair<float, float> furthest_point = {199, 399};
+                        double slope = (atan(std::get<0>(linReg))*-180/M_PI);
 
-                        float dist;
-                        float longest_dist = 0;
-                        float shortest_dist = 0;
+                        if(slope != slope || abs(slope) > 80) continue;
+
+                        std::pair<double, double> closest_point = {0, 0}; 
+                        std::pair<double, double> furthest_point = {199, 399};
+
+                        double dist = 0;
+                        double longest_dist = 0;
+                        double shortest_dist = 0;
 
                         for(int j = 0; j < lines.poly_num[i]; j++) {
-                            dist = calcDist(((std::pair<float, float>){lines.lines[i][j][0], lines.lines[i][j][1]}), 
-                                ((std::pair<float,float>){199, 399}));
+                            dist = calcDist(((std::pair<double, double>){lines.lines[i][j][0], lines.lines[i][j][1]}), 
+                                ((std::pair<double,double>){199, 399}));
 
                             if(dist < shortest_dist || j == 0) {
                                 shortest_dist = dist;
@@ -122,53 +124,47 @@ int main(int argc, const char **argv)
                             }
                         } 
                         
-                        vectors[i] = {
-                            .slope = std::get<0>(linReg)-90,
-                            .distance = shortest_dist,
+                        vectors[vector_counter++] = {
+                            .slope = slope,
+                            .length = calcDist(closest_point, furthest_point),
                             .closest_point = closest_point,
-                            .length = calcDist(closest_point, furthest_point)
+                            .distance = shortest_dist,
                         };
                     }
 
-                    logger->log("test2");
-
-                    float item_count = (sizeof(vectors) / sizeof(LineVectorData));
-                    float normalized_length = 0;
+                    double normalized_length = 0;
                     
                     //normalizing them according to how importend the vectorized object is.
                     for(LineVectorData vector : vectors) {
                         vector.length =  1 / (vector.distance + 1) * vector.length;
+                        logger->log("%f", vector.length);
                         normalized_length += vector.length;
                     } 
 
-                    logger->log("test3");
-
-                    normalized_length /= item_count;
+                    normalized_length /= vector_counter;
 
                     //scalar products for overall direction
-                    float avg_slope;
+                    double avg_slope = 0;
+                    double total_distance = 0;
 
                     for(LineVectorData vector : vectors) {
-                        avg_slope += 1 / (vector.distance + 1) * vector.slope;
+                        avg_slope += (vector.distance + 1) * vector.slope;
+                        total_distance += vector.distance+1;
                     } 
 
-                    avg_slope /= item_count;
-
+                    avg_slope /= total_distance;
                     // TODO: problem detected if lanes are too long and not linear --> lane dectection object has to be split into smaller pieces in the processing of the BEV
 
-                    float values[] = {normalized_length, avg_slope};
+                    double xStart = 200;
+                    double yStart = 400;
 
-                    float xStart = 200;
-                    float yStart = 400;
+                    double factor = avg_slope / abs(avg_slope);
+                    double xDest = xStart + cos(factor * 90 + avg_slope) * normalized_length * 100;
+                    double yDest = yStart - abs(sin(factor * 90 + avg_slope)) * normalized_length * 200;
 
-                    //normalized_length = 100;
+                    logger->log("x: %f, y: %f, slope: %f, length: %f", xDest, yDest, avg_slope, normalized_length);
 
-                    float xDest = xStart + sin(avg_slope) * normalized_length * 400;
-                    float yDest = yStart - cos(avg_slope) * normalized_length * 400;
-
-                    logger->log("x: %f, y: %f, slope: %f, lnengtj: %f", xDest, yDest, avg_slope, normalized_length);
-
-                    cv::line(cv::InputOutputArray(shared_memory->bev_data->img_buffer), cv::Point(xStart, yStart), cv::Point(xDest, yDest), cv::Scalar(180), 3);
+                    cv::line(cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer), cv::Point(xStart, yStart), cv::Point(xDest, yDest), cv::Scalar(255,255,255,1), 10);
 
                     /*ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Lane_Found);
@@ -179,6 +175,12 @@ int main(int argc, const char **argv)
                     ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
                     socket->send_packet(ipc_packet);
                 } break;
+                default:
+                    {
+                        ocMessageId msg_id = ipc_packet.get_message_id();
+                        ocMemberId  mbr_id = ipc_packet.get_sender();
+                        logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+                    } break;
             }
         }
     }
