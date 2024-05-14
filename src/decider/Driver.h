@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../common/ocMember.h"
+#include "../common/ocCar.h"
 #include <cstdint>
 
 const int KP_SPEED = 0;
@@ -39,19 +40,18 @@ class Driver {
 
         static inline ocMember member = ocMember(ocMemberId::Driver, "Driver");
         static inline ocIpcSocket *socket;
-        static inline ocLogger    *logger;
-
-        static inline struct start_driving_task_t start_driving_task;
     
 
     public:
+        static inline ocLogger    *logger;
         static void initialize();
 
         static void turn_right();
         static void turn_left();
         static void drive_forward();
-        static void drive_forward(int16_t speed);
-        static void stop(int duration);
+        static void drive(int16_t speed, int8_t steering=0, float cm=0);
+        static void stop(float duration=0);
+        static void wait(float duration=0);
 };
 
 

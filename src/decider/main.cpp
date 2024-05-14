@@ -1,5 +1,6 @@
-#include "Drive.h"
+#include "Driver.h"
 #include "Statemachine.h"
+#include <chrono>
 
 
 int main(){
@@ -8,14 +9,12 @@ int main(){
     statemachine.run(nullptr);
 
     Driver::initialize();
-    //Driver::drive_forward(32);
 
-    
-    while(true){
-        Driver::drive_forward(15);
-        Driver::stop(1);
-    }
-    
+    //Driver::drive(20, 0, 0);
+    //Driver::turn_left();
+    Driver::turn_right();
+    //Driver::stop();
+
     
 
     return 0;
