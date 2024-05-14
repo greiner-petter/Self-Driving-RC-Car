@@ -39,9 +39,7 @@ void SignDetector::Run()
     cv::CascadeClassifier stop_sign;
     stop_sign.load(GetStopSignXML().string());
 
-    cv::VideoCapture cap(0);
-
-    while (cap.isOpened())
+    while (true)
     {
         ocCamData *cam_data = &s_SharedMemory->cam_data[s_SharedMemory->last_written_cam_data_index];
 
@@ -53,32 +51,30 @@ void SignDetector::Run()
         cv::Mat cam_image((int)cam_data->height, (int)cam_data->width, type);
         cam_image.data = cam_data->img_buffer;
 
-
-        cv::Mat img;
-        cap.read(img);
         cv::Mat gray;
-        cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
+        cv::cvtColor(cam_image, gray, cv::COLOR_BGR2GRAY);
 
         std::vector<cv::Rect> stop_sign_scaled;
         stop_sign.detectMultiScale(gray, stop_sign_scaled, 1.3, 5);
 
         // Detect the stop sign, x,y = origin points, w = width, h = height
-        for (size_t i = 0; i < stop_sign_scaled.size(); i++) {
+        for (size_t i = 0; i < stop_sign_scaled.size(); i++)
+        {
             cv::Rect roi = stop_sign_scaled[i];
             // Draw rectangle around the stop sign
-            cv::rectangle(img, cv::Point(roi.x, roi.y),
+            cv::rectangle(cam_image, cv::Point(roi.x, roi.y),
                           cv::Point(roi.x + roi.width, roi.y + roi.height),
                           cv::Scalar(0, 255, 0), 3);
             // Write "Stop sign" on the bottom of the rectangle
-            cv::putText(img, "Stop Sign", cv::Point(roi.x, roi.y + roi.height + 30),
+            cv::putText(cam_image, "Stop Sign", cv::Point(roi.x, roi.y + roi.height + 30),
                         cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2, cv::LINE_4);
 
             s_Logger->log("Stop Sign!");
         }
-        cv::imshow("img", img);
+        cv::imshow("Traffic Sign Detection", cam_image);
         char key = cv::waitKey(30);
-        if (key == 'q') {
-            cap.release();
+        if (key == 'q')
+        {
             cv::destroyAllWindows();
             break;
         }
