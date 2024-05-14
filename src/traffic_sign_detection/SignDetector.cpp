@@ -1,19 +1,25 @@
 #include "SignDetector.h"
 
-#include <darknet.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/videoio/videoio.hpp>
 
+static ocIpcSocket* s_Socket = nullptr;
+static ocLogger* s_Logger = nullptr;
 
-int Run(ocLogger* logger);
 void SignDetector::Init(ocIpcSocket* socket, ocLogger* logger)
 {
     logger->log("SignDetector::Init()");
-    Run(logger);
+    s_Socket = socket;
+    s_Logger = logger;
+    Run();
+}
 
+std::filesystem::path SignDetector::GetStopSignXML()
+{
+    return std::filesystem::current_path().parent_path() / "res" / "cascade_stop_sign.xml";
 }
 
 #include <opencv2/opencv.hpp>
@@ -25,11 +31,11 @@ void SignDetector::Init(ocIpcSocket* socket, ocLogger* logger)
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
-int Run(ocLogger* logger)
+void SignDetector::Run()
 {
     // Load stop sign cascade classifier
     cv::CascadeClassifier stop_sign;
-    stop_sign.load("cascade_stop_sign.xml");
+    stop_sign.load(GetStopSignXML().string());
 
     cv::VideoCapture cap(0);
 
@@ -53,7 +59,7 @@ int Run(ocLogger* logger)
             cv::putText(img, "Stop Sign", cv::Point(roi.x, roi.y + roi.height + 30),
                         cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2, cv::LINE_4);
 
-            logger->log("Stop Sign!");
+            s_Logger->log("Stop Sign!");
         }
         cv::imshow("img", img);
         char key = cv::waitKey(30);
@@ -63,5 +69,5 @@ int Run(ocLogger* logger)
             break;
         }
     }
-    return 0;
+
 }

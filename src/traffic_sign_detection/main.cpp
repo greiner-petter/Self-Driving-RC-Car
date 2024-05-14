@@ -6,7 +6,7 @@
 int main()
 {
     // ocMember represents the interface to the IPC system
-    ocMember member = ocMember(ocMemberId::Sign_Detection, "Traffic Sign Detection Process");
+    ocMember member = ocMember(ocMemberId::Sign_Detection, "Traffic-Sign-Detection Process");
 
     // Creating an ocMember alone is not enough. This call will make the
     // ocMember try to connect to the IPC system.
@@ -19,10 +19,7 @@ int main()
 
     SignDetector::Init(socket, logger);
 
-    while (true)
-    {
-        logger->log("No Signs detected.");
-    }
+    logger->warn("Traffic-Sign-Detection: Process Shutdown.");
 
     return 0;
 }
