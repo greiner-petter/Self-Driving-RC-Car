@@ -317,11 +317,4 @@ struct ocSharedMemory final
     uint64_t _canary7;
 };
 
-// Lines detected in the BEV
-struct ocBevLines {
-    int contour_num;
-    int poly_num[NUMBER_OF_CONTOURS];
-    int lines[NUMBER_OF_CONTOURS][NUMBER_OF_POLYGONS_PER_CONTOUR][2];
-};
-
 static_assert(std::is_trivial_v<ocSharedMemory>);

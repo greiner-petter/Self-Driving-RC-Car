@@ -47,10 +47,25 @@ int main() {
                 {
                     case ocMessageId::Lines_Available:
                     {
-                        static struct ocBevLines lines;
-                        ipc_packet.read_from_start().read(&lines);
+                        vector<vector<Point>> lines;
+                        ocBufferReader reader = ipc_packet.read_from_start();
+                        size_t num_contours;
+                        reader.read(&num_contours);
+
+                        for (size_t i = 0; i < num_contours; ++i) {
+                            vector<Point> points;
+                            size_t num_points;
+                            reader.read(&num_points);
+                            for (size_t j = 0; j < num_points; ++j) {
+                                Point p;
+                                reader.read(&p.x);
+                                reader.read(&p.y);
+                                points.push_back(p);
+                            }
+                            lines.push_back(points);
+                        }
                         // TODO: Handle data
-                        // logger->log("Got data!");
+                        // logger->log("Got %zd lines", lines.size());
 
                     } break;
                     default:

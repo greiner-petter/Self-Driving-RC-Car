@@ -151,21 +151,22 @@ int main() {
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
                         Mat redrewed_image = Mat::zeros(dst.size(), CV_8UC1);
 #endif
-                        static struct ocBevLines reduced_lines;
-                        reduced_lines = {};
+                        ipc_packet.set_sender(ocMemberId::Image_Processing);
+                        ipc_packet.set_message_id(ocMessageId::Lines_Available);
+                        ocBufferWriter writer = ipc_packet.clear_and_edit();
+                        writer.write(contours.size());
+
                         for (size_t i = 0; i < contours.size(); ++i)
                         {
                             auto &contour = contours.at(i);
                             vector<Point> reduced_contour;
                             double epsilon = 0.01 * arcLength(contour, false);
                             approxPolyDP(contour, reduced_contour, epsilon, false);
-                            if (i < NUMBER_OF_CONTOURS) {
-                                reduced_lines.poly_num[i] = std::min(NUMBER_OF_POLYGONS_PER_CONTOUR, (int) reduced_contour.size());
-                                for (size_t j = 0; j < reduced_contour.size() && j < NUMBER_OF_POLYGONS_PER_CONTOUR; ++j) {
-                                    Point &p = reduced_contour.at(j);
-                                    reduced_lines.lines[i][j][0] = p.x;
-                                    reduced_lines.lines[i][j][1] = p.y;
-                                }
+                            writer.write(reduced_contour.size());
+                            for (size_t j = 0; j < reduced_contour.size(); ++j) {
+                                Point &point = reduced_contour.at(j);
+                                writer.write(point.x);
+                                writer.write(point.y);
                             }
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
                             cv::Scalar color = cv::Scalar(255);
@@ -173,12 +174,8 @@ int main() {
                                       cv::LINE_8, 0);
 #endif
                         }
-                        reduced_lines.contour_num = std::min(NUMBER_OF_CONTOURS, (int) contours.size());
 
                         // notify other about found lines in BEV
-                        ipc_packet.set_sender(ocMemberId::Image_Processing);
-                        ipc_packet.set_message_id(ocMessageId::Lines_Available);
-                        ipc_packet.clear_and_edit().write(reduced_lines);
                         socket->send_packet(ipc_packet);
 
 

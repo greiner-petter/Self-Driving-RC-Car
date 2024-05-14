@@ -13,7 +13,3 @@
 #define OC_NUM_BIN_BUFFERS 2
 #define OC_BEV_BUFFER_SIZE (400 * 400 * 1)
 #define OC_NUM_BEV_BUFFERS 2
-
-// BEV Line message properites
-#define NUMBER_OF_CONTOURS 16
-#define NUMBER_OF_POLYGONS_PER_CONTOUR 40
