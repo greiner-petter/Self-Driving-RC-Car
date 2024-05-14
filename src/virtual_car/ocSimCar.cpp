@@ -120,7 +120,7 @@ void ocSimCarDydx::operator()(size_t /*y_count*/, float /*x*/, const float* y, f
   Vec2 ry = right(rx);
 
   float target_speed = action.speed;
-  if (action.stop_after && ((action.speed < 0.0f && car.milage() <= action.distance) || (0.0f < action.speed && action.speed <= car.milage()))) target_speed = 0.0f;
+  if (action.stop_after && ((action.speed < 0.0f && car.milage() <= action.distance) || (0.0f < action.speed && action.distance <= car.milage()))) target_speed = 0.0f;
   float motor_accel = std::clamp(
       (target_speed - car.speed()) * 10.0f,
       properties->max_deceleration,

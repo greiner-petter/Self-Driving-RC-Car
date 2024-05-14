@@ -19,6 +19,7 @@ inline bool oc_assert_dump_core = true;
 #include <string_view>
 #include <cxxabi.h>
 #include <cstdlib> // abort, exit
+#include <cstdint>
 
 #if OC_ASSERT_DISABLED
 
