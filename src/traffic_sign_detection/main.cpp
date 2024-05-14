@@ -15,9 +15,10 @@ int main()
     // Some functionality of the ocMember is put in separate types. We grab
     // pointers to them here so we don't have to call the getters every time.
     ocIpcSocket* socket = member.get_socket();
+    ocSharedMemory* shared_memory = member.get_shared_memory();
     ocLogger*    logger = member.get_logger();
 
-    SignDetector::Init(socket, logger);
+    SignDetector::Init(socket, shared_memory, logger);
 
     logger->warn("Traffic-Sign-Detection: Process Shutdown.");
 

@@ -7,12 +7,14 @@
 #include <opencv2/videoio/videoio.hpp>
 
 static ocIpcSocket* s_Socket = nullptr;
+static ocSharedMemory* s_SharedMemory = nullptr;
 static ocLogger* s_Logger = nullptr;
 
-void SignDetector::Init(ocIpcSocket* socket, ocLogger* logger)
+void SignDetector::Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger)
 {
     logger->log("SignDetector::Init()");
     s_Socket = socket;
+    s_SharedMemory = shared_memory;
     s_Logger = logger;
     Run();
 }
@@ -39,7 +41,19 @@ void SignDetector::Run()
 
     cv::VideoCapture cap(0);
 
-    while (cap.isOpened()) {
+    while (cap.isOpened())
+    {
+        ocCamData *cam_data = &s_SharedMemory->cam_data[s_SharedMemory->last_written_cam_data_index];
+
+        int type = CV_8UC1;
+        if (3 == bytes_per_pixel(cam_data->pixel_format)) type = CV_8UC3;
+        if (4 == bytes_per_pixel(cam_data->pixel_format)) type = CV_8UC4;
+        if (12 == bytes_per_pixel(cam_data->pixel_format)) type = CV_32FC3;
+
+        cv::Mat cam_image((int)cam_data->height, (int)cam_data->width, type);
+        cam_image.data = cam_data->img_buffer;
+
+
         cv::Mat img;
         cap.read(img);
         cv::Mat gray;

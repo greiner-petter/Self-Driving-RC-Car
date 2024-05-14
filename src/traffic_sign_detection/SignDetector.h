@@ -6,7 +6,7 @@
 class SignDetector
 {
 public:
-    static void Init(ocIpcSocket* socket, ocLogger* logger);
+    static void Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger);
     static void Run();
 
 
