@@ -33,6 +33,16 @@ std::filesystem::path SignDetector::GetStopSignXML()
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
+// Converts into an estimated distance
+static float ConvertRectSizeToEstimatedDistance(float rectSize)
+{
+    return std::max(SignDetector::Remap<float>(rectSize, 0.0f, 0.3f, 100.0f, 0.0f), 0.0f);
+}
+static uint32_t ConvertRectToDistanceInCM(const cv::Rect& rect, const int cam_width, const int cam_height)
+{
+    return static_cast<uint32_t>(ConvertRectSizeToEstimatedDistance((static_cast<float>(rect.width) / (float)cam_width + static_cast<float>(rect.height) / (float)cam_height) / 2.0f));
+}
+
 void SignDetector::Run()
 {
     // Load stop sign cascade classifier
@@ -61,6 +71,9 @@ void SignDetector::Run()
         for (size_t i = 0; i < stop_sign_scaled.size(); i++)
         {
             cv::Rect roi = stop_sign_scaled[i];
+            const uint32_t distance = ConvertRectToDistanceInCM(roi, (int)cam_data->width, (int)cam_data->height);
+            s_Logger->log("distance: %d", distance);
+
             // Draw rectangle around the stop sign
             cv::rectangle(cam_image, cv::Point(roi.x, roi.y),
                           cv::Point(roi.x + roi.width, roi.y + roi.height),
