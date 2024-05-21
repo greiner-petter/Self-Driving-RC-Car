@@ -81,6 +81,7 @@ int main()
             {
                 case ocMessageId::Lines_Available:
                 {
+                    logger->log("LINES");
                     //Find Lane
                     static struct ocBevLines lines;
                     ipc_packet.read_from_start().read(&lines);
@@ -173,7 +174,7 @@ int main()
                     ipc_packet.clear_and_edit().write(values);
                     socket->send_packet(ipc_packet);*/
 
-                    if(image_i == 100) {
+                    if(image_i == 10) {
                         logger->log("image saved");
                         cv::imwrite("test.jpg", *shared_memory->bev_data->img_buffer);
 
