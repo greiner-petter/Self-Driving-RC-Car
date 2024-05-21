@@ -119,11 +119,11 @@ int main()
                                 ((std::pair<double,double>){199, 399}));
 
                             if(dist < 50 || dist > 100) {
-                                continue;
+                                goto outter_for_end;
                             }
 
                             if (lines.lines[i][j][0] < 100 || lines.lines[i][j][0] > 240) {
-                                continue;
+                                goto outter_for_end;
                             }
 
                             if(dist < shortest_dist || j == 0) {
@@ -143,6 +143,8 @@ int main()
                             .closest_point = closest_point,
                             .distance = shortest_dist,
                         };
+
+                        outter_for_end:
                     }
 
                     double normalized_length = 0;
