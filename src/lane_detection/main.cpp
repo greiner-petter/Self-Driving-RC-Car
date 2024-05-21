@@ -169,7 +169,9 @@ int main()
 
                     logger->log("x: %f, y: %f, slope: %f, length: %f", xDest, yDest, avg_slope, normalized_length);
 
-                    cv::line(cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer), cv::Point(xStart, yStart), cv::Point(xDest, yDest), cv::Scalar(255,255,255,1), 10);
+                    cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer);
+
+                    cv::line(matrix, cv::Point(xStart, yStart), cv::Point(xDest, yDest), cv::Scalar(255,255,255,1), 10);
 
                     /*ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Lane_Found);
@@ -178,7 +180,7 @@ int main()
 
                     if(image_i == 10) {
                         logger->log("image saved");
-                        cv::imwrite("test.jpg", *shared_memory->bev_data->img_buffer);
+                        cv::imwrite("test.jpg", matrix);
 
                         return 0;
                     }
