@@ -53,8 +53,6 @@ double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
 
 #define DRAW_LINE_SAMPLES
 
-int image_i = 0;
-
 // Starts at y = 40
 int line_samples[6][2] = {
     {50, 290},
@@ -207,27 +205,18 @@ int main()
                     */
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer);
 
-                    for(int i = 40; i < 165; i+=25) {
-                        int *line_sample = line_samples[(i-40)/25];
+                    #ifdef DRAW_LINE_SAMPLES
+                        for(int i = 40; i < 165; i+=25) {
+                            int *line_sample = line_samples[(i-40)/25];
 
-                        cv::line(matrix, cv::Point(line_sample[0], i), cv::Point(line_sample[1], i), cv::Scalar(255,255,255,1), 10);
-                    }
+                            cv::line(matrix, cv::Point(line_sample[0], i), cv::Point(line_sample[1], i), cv::Scalar(255,255,255,1), 10);
+                        }
+                    #endif
 
                     /*ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Lane_Found);
                     ipc_packet.clear_and_edit().write(values);
                     socket->send_packet(ipc_packet);*/
-
-                    if(image_i == 10) {
-                        logger->log("image saved");
-                        cv::imwrite("test.jpg", matrix);
-
-                        return 0;
-                    }
-
-                    image_i++;
-
-                    
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
