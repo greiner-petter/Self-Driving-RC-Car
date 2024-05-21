@@ -118,6 +118,10 @@ int main()
                             dist = calcDist(((std::pair<double, double>){lines.lines[i][j][0], lines.lines[i][j][1]}), 
                                 ((std::pair<double,double>){199, 399}));
 
+                            if(dist < 50 || dist > 100) {
+                                continue;
+                            }
+
                             if(dist < shortest_dist || j == 0) {
                                 shortest_dist = dist;
                                 closest_point = {lines.lines[i][j][0], lines.lines[i][j][1]};
