@@ -173,7 +173,7 @@ int main()
 
                     cv::imwrite("test.jpg", *shared_memory->bev_data->img_buffer);
 
-                    return;
+                    return 0;
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
