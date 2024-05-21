@@ -171,6 +171,10 @@ int main()
                     ipc_packet.clear_and_edit().write(values);
                     socket->send_packet(ipc_packet);*/
 
+                    cv::imwrite("test.jpg", *shared_memory->bev_data->img_buffer);
+
+                    return;
+
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
                     socket->send_packet(ipc_packet);
