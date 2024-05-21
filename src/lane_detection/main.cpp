@@ -54,13 +54,24 @@ double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
 #define DRAW_LINE_SAMPLES
 
 // Starts at y = 40
-int line_samples[6][2] = {
-    {50, 290},
-    {60, 280},
-    {70, 270},
-    {80, 260},
-    {90, 250},
-    {100, 240},
+const int line_samples[6][2] = {
+    {10, 340},
+    {20, 330},
+    {30, 320},
+    {40, 310},
+    {50, 300},
+    {60, 290}
+};
+
+const int line_sample_mid = 175;
+
+const int line_three_split_samples[6][2] = {
+    {110, 230},
+    {117, 223},
+    {124, 210},
+    {140, 200},
+    {143, 197},
+    {147, 193}
 };
 
 int main()
@@ -93,7 +104,6 @@ int main()
             {
                 case ocMessageId::Lines_Available:
                 {
-                    logger->log("LINES");
                     //Find Lane
                     static struct ocBevLines lines;
                     ipc_packet.read_from_start().read(&lines);
@@ -205,11 +215,100 @@ int main()
                     */
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer);
 
-                    #ifdef DRAW_LINE_SAMPLES
-                        for(int i = 40; i < 165; i+=25) {
-                            int *line_sample = line_samples[(i-40)/25];
+                    for(int y = 40; y <= 165; y+=25) {
+                        const int *line_sample = line_samples[5 - (y-40)/25];
+                        const int *line_three_sample = line_three_split_samples[5 - (y-40)/25];
 
-                            cv::line(matrix, cv::Point(line_sample[0], i), cv::Point(line_sample[1], i), cv::Scalar(255,255,255,1), 10);
+                        std::vector<cv::Point> intersections;
+
+                        for(int x = line_sample[0]; x < line_sample[1]; x++) {
+                            int color = matrix.at<uint8_t>(400-y, x);
+
+                            if(color == 255) { // White Point
+                                intersections.push_back(cv::Point(x, 400-y));
+                            }
+                        }
+
+                        if(intersections.size() == 0) {
+                            continue;
+                        }
+
+                        int index = 1;
+                        int sum = intersections.at(0).x;
+                        int xOld = intersections.at(0).x;
+                        
+
+                        std::vector<cv::Point> new_intersections;
+
+                        for(int i = 1; i < intersections.size(); i++) {
+                            int xNew = intersections.at(i).x;
+                            
+                            if(xNew - xOld <= 8) {
+                                sum += xNew;
+                                xOld = xNew;
+                                index++;
+                            } else {
+                                int x_cor = sum / index;
+                                //logger->log("%d, %d, %d", x_cor, sum, index);
+                                new_intersections.push_back(cv::Point(x_cor, 400-y));
+                                xOld = xNew;
+                                sum = xOld;
+                                index = 1;
+                            }
+                        }
+
+                        new_intersections.push_back(cv::Point(sum / index, 400-y));
+                        cv::Point *left = nullptr;
+                        cv::Point *right = nullptr;
+                        cv::Point *mid = nullptr; 
+
+                        for(int i = 0; i < new_intersections.size(); i++) {
+                            cv::Point *point = &new_intersections.at(i);
+                            if(point->x < line_three_sample[0]) {
+                                left = point;
+                            } else if(point->x > line_three_sample[1]) {
+                                right = point;
+                            } else {
+                                mid = point;
+                            }
+                        }
+
+                        int result;
+
+                        if (mid != nullptr && right != nullptr) {
+                            result = (mid->x + right->x)/2;
+                        } else if (left != nullptr && right != nullptr) {
+                            result = (left->x + 3*right->x)/4;
+                        } else if (mid != nullptr) {
+                            result = mid->x + 25;
+                        } else if (left != nullptr) {
+                            result = left->x + 75;
+                        } else if (right != nullptr) {
+                            result = right->x - 25;
+                        } else {
+                            continue;
+                        }
+
+                        cv::Point target = cv::Point(result, 400-y);
+
+                        #ifdef DRAW_LINE_SAMPLES
+                            cv::circle(matrix, target, 8, 255, 1);
+                        #endif
+
+                        #ifdef DRAW_LINE_SAMPLES
+                            for(int i = 0; i < new_intersections.size(); i++) {
+                                cv::Point point = new_intersections.at(i);
+                                cv::circle(matrix, point, 8, 255, 1);
+                            }
+                        #endif
+
+                    }
+
+                    #ifdef DRAW_LINE_SAMPLES
+                        for(int i = 40; i <= 165; i+=25) {
+                            const int *line_sample = line_samples[5 - (i-40)/25];
+
+                            cv::line(matrix, cv::Point(line_sample[0], 400-i), cv::Point(line_sample[1], 400-i), cv::Scalar(255,255,255,1), 2);
                         }
                     #endif
 
