@@ -144,7 +144,7 @@ int main()
                             .distance = shortest_dist,
                         };
 
-                        outter_for_end:
+                        outter_for_end:;
                     }
 
                     double normalized_length = 0;
