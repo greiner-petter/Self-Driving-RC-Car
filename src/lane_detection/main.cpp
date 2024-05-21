@@ -174,12 +174,15 @@ int main()
                     socket->send_packet(ipc_packet);*/
 
                     if(image_i == 100) {
+                        logger->log("image saved");
                         cv::imwrite("test.jpg", *shared_memory->bev_data->img_buffer);
 
                         return 0;
                     }
 
                     image_i++;
+
+                    
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
