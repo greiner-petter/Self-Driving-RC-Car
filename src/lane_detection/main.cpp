@@ -73,6 +73,8 @@ int main()
         .write(ocMessageId::Lines_Available);
     socket->send_packet(ipc_packet);
 
+    logger->log("Lane Detection started!");
+
     while(running) {
         int32_t socket_status;
         while (0 < (socket_status = socket->read_packet(ipc_packet, false)))
