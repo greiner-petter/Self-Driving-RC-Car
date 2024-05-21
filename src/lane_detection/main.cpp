@@ -51,7 +51,19 @@ double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
     return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
 }
 
+#define DRAW_LINE_SAMPLES
+
 int image_i = 0;
+
+// Starts at y = 40
+int line_samples[6][2] = {
+    {50, 290},
+    {60, 280},
+    {70, 270},
+    {80, 260},
+    {90, 250},
+    {100, 240},
+};
 
 int main()
 {
@@ -88,10 +100,24 @@ int main()
                     static struct ocBevLines lines;
                     ipc_packet.read_from_start().read(&lines);
 
+                    /*for(int i = 0; ;i++) {
+                        for(int j = 0; ; j++) {
+                            if(isInsideLine(lines.lines[i][j][0]+i, 50)) {
+                            right_x = 199+i;
+                        }
+
+                        if(isInsideLine(lines.lines[i][j][0]-i, 50)) {
+                            left_x = 199-i;
+                        }
+                        }
+                    }*/
+
+                    // --> turn right_x - left_x to the right
+
                     //TODO summarize small dots to a bigger line for better vectorization
 
                     
-
+                    /*
                     LineVectorData vectors[lines.contour_num];
                     int vector_counter = 0;
 
@@ -178,10 +204,14 @@ int main()
                     double yDest = yStart - abs(sin(factor * 90 + avg_slope)) * normalized_length * 200;
 
                     logger->log("x: %f, y: %f, slope: %f, length: %f", xDest, yDest, avg_slope, normalized_length);
-
+                    */
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer);
 
-                    cv::line(matrix, cv::Point(xStart, yStart), cv::Point(xDest, yDest), cv::Scalar(255,255,255,1), 10);
+                    for(int i = 40; i < 165; i+=25) {
+                        int *line_sample = line_samples[(i-40)/25];
+
+                        cv::line(matrix, cv::Point(line_sample[0], i), cv::Point(line_sample[1], i), cv::Scalar(255,255,255,1), 10);
+                    }
 
                     /*ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Lane_Found);
