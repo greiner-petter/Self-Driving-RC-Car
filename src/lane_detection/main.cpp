@@ -51,6 +51,8 @@ double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
     return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
 }
 
+int image_i = 0;
+
 int main()
 {
     // Catch some signals to allow us to gracefully shut down the process
@@ -171,9 +173,13 @@ int main()
                     ipc_packet.clear_and_edit().write(values);
                     socket->send_packet(ipc_packet);*/
 
-                    cv::imwrite("test.jpg", *shared_memory->bev_data->img_buffer);
+                    if(image_i == 100) {
+                        cv::imwrite("test.jpg", *shared_memory->bev_data->img_buffer);
 
-                    return 0;
+                        return 0;
+                    }
+
+                    image_i++;
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
