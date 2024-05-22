@@ -2,6 +2,7 @@
 #include "../common/ocMember.h"
 
 #include <filesystem>
+#include <memory>
 
 class SignDetector
 {
