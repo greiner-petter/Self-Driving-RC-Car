@@ -1,10 +1,6 @@
 #include "SignDetector.h"
 
-
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/videoio/videoio.hpp>
 
 static ocIpcSocket* s_Socket = nullptr;
 static ocSharedMemory* s_SharedMemory = nullptr;
@@ -25,13 +21,9 @@ std::filesystem::path SignDetector::GetStopSignXML()
 }
 
 #include <opencv2/opencv.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/objdetect.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/videoio.hpp>
 
 // Converts into an estimated distance
 static float ConvertRectSizeToEstimatedDistance(float rectSize)
