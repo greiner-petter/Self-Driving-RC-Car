@@ -1,8 +1,12 @@
 #include "../common/ocPacket.h"
 #include "../common/ocMember.h"
+#include "../common/ocCar.h"
+#include "../common/ocCarConfig.h"
 #include <signal.h>
 #include <vector>
 #include <opencv2/opencv.hpp>
+
+#define CAR_CONFIG_FILE "../car_properties.conf"
 
 struct LineVectorData {
     double slope;
@@ -20,24 +24,24 @@ static void signal_handler(int)
     running = false;
 }
 
-std::pair<double, double> linearRegression(int (data)[NUMBER_OF_POLYGONS_PER_CONTOUR][2], int count) {
+std::pair<double, double> linearRegression(std::vector<cv::Point> data) {
     double x_mean = 0;
     double y_mean = 0;
 
-    for(int j = 0; j < count; j++) {
-        x_mean += data[j][0];
-        y_mean += data[j][1];
+    for(int i = 0; i < data.size(); i++) {
+        x_mean += data.at(i).x;
+        y_mean += data.at(i).y;
     } 
 
-    x_mean = x_mean / count;
-    y_mean = y_mean / count;
+    x_mean = x_mean / data.size();
+    y_mean = y_mean / data.size();
 
     double numerator = 0;
     double denominator = 1;
 
-    for(int j = 0; j < count; j++) {
-        numerator += (data[j][0] - x_mean) * (data[j][1] - y_mean);
-        denominator += (data[j][1] - y_mean) * (data[j][1] - y_mean);
+    for(int i = 0; i < data.size(); i++) {
+        numerator += (data.at(i).x - x_mean) * (data.at(i).y - y_mean);
+        denominator += (data.at(i).y - y_mean) * (data.at(i).y - y_mean);
     } 
 
     double slope = numerator/denominator;
@@ -87,6 +91,9 @@ int main()
     ocIpcSocket *socket = member.get_socket();
     ocSharedMemory *shared_memory = member.get_shared_memory();
     logger = member.get_logger();
+
+    ocCarProperties car_properties;
+    read_config_file(CAR_CONFIG_FILE, car_properties, *logger);
 
     ocPacket ipc_packet;
     ipc_packet.set_message_id(ocMessageId::Subscribe_To_Messages);
@@ -214,6 +221,8 @@ int main()
                     logger->log("x: %f, y: %f, slope: %f, length: %f", xDest, yDest, avg_slope, normalized_length);
                     */
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer);
+                    int lane_mid_x_sum = 0;
+                    int lane_mid_x_count = 0;
 
                     for(int y = 40; y <= 165; y+=25) {
                         const int *line_sample = line_samples[5 - (y-40)/25];
@@ -243,7 +252,7 @@ int main()
                         for(int i = 1; i < intersections.size(); i++) {
                             int xNew = intersections.at(i).x;
                             
-                            if(xNew - xOld <= 8) {
+                            if(xNew - xOld <= 16) {
                                 sum += xNew;
                                 xOld = xNew;
                                 index++;
@@ -291,6 +300,11 @@ int main()
 
                         cv::Point target = cv::Point(result, 400-y);
 
+                        for(int i = 0; i < 6-(y-40)/25; i++) {
+                            lane_mid_x_sum += target.x;
+                            lane_mid_x_count++;
+                        }
+
                         #ifdef DRAW_LINE_SAMPLES
                             cv::circle(matrix, target, 8, 255, 1);
                         #endif
@@ -301,8 +315,21 @@ int main()
                                 cv::circle(matrix, point, 8, 255, 1);
                             }
                         #endif
-
                     }
+
+                    if(0 == lane_mid_x_count) {
+                        continue;
+                    }
+
+                    double xDest = lane_mid_x_sum / lane_mid_x_count;
+                    float xAngleFromMidline = 2*M_PI / (atan(48.5 / xDest) - M_PI) * 30 + 60;
+
+                    double xStart = 200;
+                    double yStart = 400;
+
+                    #ifdef DRAW_LINE_SAMPLES
+                        cv::line(matrix, cv::Point(xStart, yStart), cv::Point(xDest, 400-48.5), cv::Scalar(255,255,255,1), 8);
+                    #endif
 
                     #ifdef DRAW_LINE_SAMPLES
                         for(int i = 40; i <= 165; i+=25) {
@@ -312,13 +339,19 @@ int main()
                         }
                     #endif
 
-                    /*ipc_packet.set_sender(ocMemberId::Lane_Detection);
+                   /* ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Lane_Found);
-                    ipc_packet.clear_and_edit().write(values);
+                    ipc_packet.clear_and_edit().write(xDest - 200);
                     socket->send_packet(ipc_packet);*/
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
-                    ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
+                    ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
+                    ipc_packet.clear_and_edit()
+                        .write<int16_t>(12)
+                        .write<int8_t>(car_properties.front_steering_angle_to_byte(-xAngleFromMidline))
+                        .write<int8_t>(car_properties.rear_steering_angle_to_byte(0))
+                        .write<uint8_t>(0x8)
+                        .write<int32_t>(car_properties.cm_to_steps(10));
                     socket->send_packet(ipc_packet);
                 } break;
                 default:
