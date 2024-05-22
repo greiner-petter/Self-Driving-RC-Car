@@ -101,7 +101,7 @@ void SignDetector::Run()
                 cv::putText(cam_image, "Found " + signClassifier->label + " Sign", cv::Point(roi.x, roi.y + roi.height + 30),
                             cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2, cv::LINE_4);
 
-                s_Logger->log("Found " + signClassifier->label + " Sign");
+                s_Logger->log("Found %s Sign", signClassifier->label.c_str());
             }
         }
 
