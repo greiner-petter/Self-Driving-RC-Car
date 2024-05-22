@@ -28,10 +28,14 @@ std::filesystem::path SignDetector::GetStopSignXML()
 struct ClassifierInstance
 {
     cv::CascadeClassifier classifier;
+    std::string label;
+    TrafficSignType type;
 
-    ClassifierInstance(const std::string& path)
+    ClassifierInstance(const std::string& path, const std::string& signLabel, TrafficSignType signType)
     {
         classifier.load(path);
+        label = signLabel;
+        type = signType;
     }
 };
 
@@ -50,7 +54,8 @@ static std::vector<std::shared_ptr<ClassifierInstance>> s_Instances;
 void SignDetector::Run()
 {
     // Load sign cascade classifiers
-    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetStopSignXML().string()));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetStopSignXML().string(), "Stop", TrafficSignType::Stop));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetStopSignXML().string(), "?", TrafficSignType::Stop));
 
     while (true)
     {

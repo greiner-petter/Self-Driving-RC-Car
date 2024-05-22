@@ -1,5 +1,6 @@
 #pragma once
 #include "../common/ocMember.h"
+#include "TrafficSign.h"
 
 #include <filesystem>
 #include <memory>
