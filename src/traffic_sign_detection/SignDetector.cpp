@@ -1,6 +1,17 @@
 #include "SignDetector.h"
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/imgcodecs/imgcodecs.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/videoio/videoio.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/objdetect.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/videoio.hpp>
 
 static ocIpcSocket* s_Socket = nullptr;
 static ocSharedMemory* s_SharedMemory = nullptr;
@@ -20,10 +31,6 @@ std::filesystem::path SignDetector::GetStopSignXML()
     return std::filesystem::current_path().parent_path() / "res" / "cascade_stop_sign.xml";
 }
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/objdetect.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
 
 struct ClassifierInstance
 {
