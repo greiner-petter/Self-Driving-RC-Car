@@ -8,6 +8,32 @@
 
 #define CAR_CONFIG_FILE "../car_properties.conf"
 
+#define DRAW_LINE_SAMPLES
+
+// Starts at y = 40
+const int line_samples[6][2] = {
+    {10, 340},
+    {20, 330},
+    {30, 320},
+    {40, 310},
+    {50, 300},
+    {60, 290}
+};
+
+const int line_sample_mid = 175;
+
+const int line_three_split_samples[6][2] = {
+    {110, 230},
+    {117, 223},
+    {124, 210},
+    {140, 200},
+    {143, 197},
+    {147, 193}
+};
+
+std::list<float> oldAngles;
+
+
 struct LineVectorData {
     double slope;
     double length;
@@ -22,6 +48,28 @@ static bool running = true;
 static void signal_handler(int)
 {
     running = false;
+}
+
+void addToOldAngleQueue(float val)
+{
+   oldAngles.push_front(val);
+   if (oldAngles.size() > 3)
+      oldAngles.pop_back();
+}
+
+float getAverageOfOldAngles()
+{
+   float val = 0;
+
+   for(auto i = oldAngles.begin(); i != oldAngles.end(); ++i) {
+    val += *i;
+   }
+
+   if(oldAngles.size() == 0) {
+    return 0;
+   }
+
+   return val / oldAngles.size();
 }
 
 std::pair<double, double> linearRegression(std::vector<cv::Point> data) {
@@ -54,29 +102,6 @@ std::pair<double, double> linearRegression(std::vector<cv::Point> data) {
 double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
     return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
 }
-
-#define DRAW_LINE_SAMPLES
-
-// Starts at y = 40
-const int line_samples[6][2] = {
-    {10, 340},
-    {20, 330},
-    {30, 320},
-    {40, 310},
-    {50, 300},
-    {60, 290}
-};
-
-const int line_sample_mid = 175;
-
-const int line_three_split_samples[6][2] = {
-    {110, 230},
-    {117, 223},
-    {124, 210},
-    {140, 200},
-    {143, 197},
-    {147, 193}
-};
 
 int main()
 {
@@ -115,111 +140,6 @@ int main()
                     static struct ocBevLines lines;
                     ipc_packet.read_from_start().read(&lines);
 
-                    /*for(int i = 0; ;i++) {
-                        for(int j = 0; ; j++) {
-                            if(isInsideLine(lines.lines[i][j][0]+i, 50)) {
-                            right_x = 199+i;
-                        }
-
-                        if(isInsideLine(lines.lines[i][j][0]-i, 50)) {
-                            left_x = 199-i;
-                        }
-                        }
-                    }*/
-
-                    // --> turn right_x - left_x to the right
-
-                    //TODO summarize small dots to a bigger line for better vectorization
-
-                    
-                    /*
-                    LineVectorData vectors[lines.contour_num];
-                    int vector_counter = 0;
-
-                    for(int i = 0; i < lines.contour_num; i++) {
-                        if(lines.poly_num[i] < 2) continue;
-                        //do for every shape a linear regression to prepare a vector 
-
-                        std::vector<double> vector;
-
-                        std::pair<double, double> linReg = linearRegression((lines.lines[i]), (lines.poly_num[i]));
-
-                        double slope = (atan(std::get<0>(linReg))*-180/M_PI);
-
-                        if(slope != slope || abs(slope) > 80) continue;
-
-                        std::pair<double, double> closest_point = {0, 0}; 
-                        std::pair<double, double> furthest_point = {199, 399};
-
-                        double dist = 0;
-                        double longest_dist = 0;
-                        double shortest_dist = 0;
-
-                        for(int j = 0; j < lines.poly_num[i]; j++) {
-                            dist = calcDist(((std::pair<double, double>){lines.lines[i][j][0], lines.lines[i][j][1]}), 
-                                ((std::pair<double,double>){199, 399}));
-
-                            if(dist < 50 || dist > 100) {
-                                goto outter_for_end;
-                            }
-
-                            if (lines.lines[i][j][0] < 100 || lines.lines[i][j][0] > 240) {
-                                goto outter_for_end;
-                            }
-
-                            if(dist < shortest_dist || j == 0) {
-                                shortest_dist = dist;
-                                closest_point = {lines.lines[i][j][0], lines.lines[i][j][1]};
-                            }
-
-                            if(dist > longest_dist || j == 0) {
-                                longest_dist = dist;
-                                furthest_point = {lines.lines[i][j][0], lines.lines[i][j][1]};
-                            }
-                        } 
-                        
-                        vectors[vector_counter++] = {
-                            .slope = slope,
-                            .length = calcDist(closest_point, furthest_point),
-                            .closest_point = closest_point,
-                            .distance = shortest_dist,
-                        };
-
-                        outter_for_end:;
-                    }
-
-                    double normalized_length = 0;
-                    
-                    //normalizing them according to how importend the vectorized object is.
-                    for(LineVectorData vector : vectors) {
-                        vector.length =  1 / (vector.distance + 1) * vector.length;
-                        logger->log("%f", vector.length);
-                        normalized_length += vector.length;
-                    } 
-
-                    normalized_length /= vector_counter;
-
-                    //scalar products for overall direction
-                    double avg_slope = 0;
-                    double total_distance = 0;
-
-                    for(LineVectorData vector : vectors) {
-                        avg_slope += (vector.distance + 1) * vector.slope;
-                        total_distance += vector.distance+1;
-                    } 
-
-                    avg_slope /= total_distance;
-                    // TODO: problem detected if lanes are too long and not linear --> lane dectection object has to be split into smaller pieces in the processing of the BEV
-
-                    double xStart = 200;
-                    double yStart = 400;
-
-                    double factor = avg_slope / abs(avg_slope);
-                    double xDest = xStart + cos(factor * 90 + avg_slope) * normalized_length * 100;
-                    double yDest = yStart - abs(sin(factor * 90 + avg_slope)) * normalized_length * 200;
-
-                    logger->log("x: %f, y: %f, slope: %f, length: %f", xDest, yDest, avg_slope, normalized_length);
-                    */
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer);
                     int lane_mid_x_sum = 0;
                     int lane_mid_x_count = 0;
@@ -324,6 +244,8 @@ int main()
                     double xDest = lane_mid_x_sum / lane_mid_x_count;
                     float xAngleFromMidline = 2*M_PI / (atan(48.5 / xDest) - M_PI) * 30 + 60;
 
+                    addToOldAngleQueue(xAngleFromMidline);
+
                     double xStart = 200;
                     double yStart = 400;
 
@@ -347,11 +269,11 @@ int main()
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
-                        .write<int16_t>(12)
-                        .write<int8_t>(car_properties.front_steering_angle_to_byte(-xAngleFromMidline))
+                        .write<int16_t>(36)
+                        .write<int8_t>(car_properties.front_steering_angle_to_byte(getAverageOfOldAngles()))
                         .write<int8_t>(car_properties.rear_steering_angle_to_byte(0))
                         .write<uint8_t>(0x8)
-                        .write<int32_t>(car_properties.cm_to_steps(10));
+                        .write<int32_t>(car_properties.cm_to_steps(1));
                     socket->send_packet(ipc_packet);
                 } break;
                 default:
