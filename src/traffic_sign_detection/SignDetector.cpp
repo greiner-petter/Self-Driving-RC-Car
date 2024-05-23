@@ -30,6 +30,14 @@ std::filesystem::path SignDetector::GetStopSignXML()
 {
     return std::filesystem::current_path().parent_path() / "res" / "cascade_stop_sign.xml";
 }
+std::filesystem::path SignDetector::GetLeftSignXML()
+{
+    return std::filesystem::current_path().parent_path() / "res" / "cascade_left_sign.xml";
+}
+std::filesystem::path SignDetector::GetRightSignXML()
+{
+    return std::filesystem::current_path().parent_path() / "res" / "cascade_right_sign.xml";
+}
 
 
 struct ClassifierInstance
@@ -62,7 +70,8 @@ void SignDetector::Run()
 {
     // Load sign cascade classifiers
     s_Instances.push_back(std::make_shared<ClassifierInstance>(GetStopSignXML().string(), "Stop", TrafficSignType::Stop));
-    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetStopSignXML().string(), "?", TrafficSignType::Stop));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetLeftSignXML().string(), "Left", TrafficSignType::Left));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetRightSignXML().string(), "Right", TrafficSignType::Right));
 
     while (true)
     {
