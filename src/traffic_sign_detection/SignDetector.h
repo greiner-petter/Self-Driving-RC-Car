@@ -1,16 +1,21 @@
 #pragma once
 #include "../common/ocMember.h"
+#include "TrafficSign.h"
 
 #include <filesystem>
+#include <memory>
 
 class SignDetector
 {
 public:
     static void Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger);
     static void Run();
+    static void SendPacket(TrafficSign sign);
 
 
     static std::filesystem::path GetStopSignXML();
+    static std::filesystem::path GetLeftSignXML();
+    static std::filesystem::path GetRightSignXML();
 
     // This function remaps a given value in space from in1 to in2, into the space from out1 to out2
     template<typename T>
