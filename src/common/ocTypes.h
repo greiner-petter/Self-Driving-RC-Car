@@ -83,6 +83,8 @@ enum class ocMessageId: uint16_t
     Rc_State_Changed         = 0xCB,
 
     Set_Camera_Parameter     = 0xD3,
+
+    Traffic_Sign_Detected     = 0xE1,
 };
 
 const char *to_string(ocMessageId message_id);
