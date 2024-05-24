@@ -10,6 +10,7 @@ class SignDetector
 public:
     static void Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger);
     static void Run();
+    static void SendPacket(TrafficSign sign);
 
 
     static std::filesystem::path GetStopSignXML();

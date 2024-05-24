@@ -124,3 +124,10 @@ void SignDetector::Run()
     }
 
 }
+
+void SignDetector::SendPacket(TrafficSign sign)
+{
+    ocPacket s(ocMessageId::Traffic_Sign_Detected);
+    s.clear_and_edit().write(sign);
+    socket->send_packet(s);
+}
