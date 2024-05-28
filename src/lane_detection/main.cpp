@@ -287,7 +287,8 @@ int main()
 
                     int8_t front_angle = car_properties.rear_steering_angle_to_byte(0);
                     int8_t back_angle = car_properties.rear_steering_angle_to_byte(getAverageOfOldAngles());
-                    float max_back_angle = 15;
+                    float min_back_angle = 3.0f/12.0 * M_PI;
+                    float max_back_angle = 5.0f/12.0 * M_PI;
 
                     logger->log("S. %f", getAverageOfOldAngles());
                     logger->log("%f", getAverageOfOldAngles() - max_back_angle);
@@ -295,9 +296,9 @@ int main()
                     if (getAverageOfOldAngles() > max_back_angle) {
                         front_angle = (car_properties.front_steering_angle_to_byte(getAverageOfOldAngles() - max_back_angle));
                         back_angle = car_properties.rear_steering_angle_to_byte(max_back_angle);                   
-                    } else if (getAverageOfOldAngles() < -max_back_angle) {
-                        front_angle = (car_properties.front_steering_angle_to_byte(getAverageOfOldAngles()+ max_back_angle));
-                        back_angle = -car_properties.rear_steering_angle_to_byte(max_back_angle);                   
+                    } else if (getAverageOfOldAngles() < min_back_angle) {
+                        front_angle = (car_properties.front_steering_angle_to_byte(getAverageOfOldAngles() + min_back_angle));
+                        back_angle = car_properties.rear_steering_angle_to_byte(min_back_angle);                   
                     }
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
@@ -305,7 +306,7 @@ int main()
                     ipc_packet.clear_and_edit()
                         .write<int16_t>(36)
                         .write<int8_t>(front_angle)
-                        .write<int8_t>(car_properties.rear_steering_angle_to_byte(85))
+                        .write<int8_t>(back_angle)
                         .write<uint8_t>(0x8)
                         .write<int32_t>(car_properties.cm_to_steps(1));
                     socket->send_packet(ipc_packet);
