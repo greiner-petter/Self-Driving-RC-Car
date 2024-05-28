@@ -13,7 +13,7 @@
 // is normally disabled since it requires an entire Matrix copy
 // and adds other graphical overhead by the drawing itself
 
-#define DRAW_POLYLINES_ON_EMPTY_OUTPUT
+// #define DRAW_POLYLINES_ON_EMPTY_OUTPUT
 
 
 // use cuda acceleration by default
