@@ -287,7 +287,7 @@ int main()
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
-                        .write<int16_t>(0)
+                        .write<int16_t>(24)
                         .write<int8_t>(front_angle)
                         .write<int8_t>(back_angle)
                         .write<uint8_t>(0x8)
