@@ -35,6 +35,14 @@ enum class ocMemberId: uint16_t
     Apriltag_Detection = 17,
 
     Driver             = 18,
+    Parking            = 19,
+    Normal_Drive       = 20,
+    Is_At_Crossing     = 21,
+    Approaching_Crossing = 22,
+    Crossing_3_Way_Left = 23,
+    Crossing_3_Way_Right = 24,
+    Crossing_3_Way_T   = 25,
+    Crossing_4_Way     = 26
 };
 
 const char *to_string(ocMemberId member_id);

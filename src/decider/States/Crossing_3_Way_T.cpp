@@ -8,10 +8,25 @@ State& Crossing_3_Way_T::get_instance(){
     return singleton;
 }
 
+void Crossing_3_Way_T::initialize(){
+    if(!is_initialized){
+        member.attach();
+        socket = member.get_socket();
+        logger = member.get_logger();
+        ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        sup.clear_and_edit()
+            .write(ocMessageId::Driving_Task_Finished);
+        socket->send_packet(sup);
+
+        is_initialized = true;
+    }
+}
+
 //ocHistoryBuffer<ocTime, TrafficSign> read_signs_history(12);
 
 
 void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
+    initialize();
     /*
     Get IPC-hub messages regarding traffic signs;
     Create array of traffic-signs (types and distances);

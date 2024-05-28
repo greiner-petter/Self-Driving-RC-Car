@@ -7,13 +7,27 @@ State& Normal_Drive::get_instance(){
     return singleton;
 }
 
+void Normal_Drive::initialize(){
+    if(!is_initialized){
+        member.attach();
+        socket = member.get_socket();
+        logger = member.get_logger();
+        ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        sup.clear_and_edit()
+            .write(ocMessageId::Driving_Task_Finished);
+        socket->send_packet(sup);
+
+        is_initialized = true;
+    }
+}
+
 
 
 void Normal_Drive::on_entry(Statemachine* statemachine){
     /*
     Code
     */
-   
+   initialize();
 
    statemachine->run(nullptr);
 }

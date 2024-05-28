@@ -6,6 +6,20 @@ State& Crossing_3_Way_Right::get_instance(){
     return singleton;
 }
 
+void Crossing_3_Way_Right::initialize(){
+    if(!is_initialized){
+        member.attach();
+        socket = member.get_socket();
+        logger = member.get_logger();
+        ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        sup.clear_and_edit()
+            .write(ocMessageId::Driving_Task_Finished);
+        socket->send_packet(sup);
+
+        is_initialized = true;
+    }
+}
+
 
 
 void Crossing_3_Way_Right::on_entry(Statemachine* statemachine){
@@ -14,6 +28,7 @@ void Crossing_3_Way_Right::on_entry(Statemachine* statemachine){
     Create array of traffic-signs (types and distances);
     Array an statemachine->run übergeben;
     */
+   initialize();
 
    statemachine->run(nullptr);
 }
