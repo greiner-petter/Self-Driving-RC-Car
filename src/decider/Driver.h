@@ -49,8 +49,9 @@ class Driver {
         static void turn_right();
         static void turn_left();
         static void drive_forward();
-        static void drive(int16_t speed, int8_t steering=0, float cm=0);
+        static void drive(int16_t speed, int8_t steering=0);
         static void stop(float duration=0);
+        static void park();
         static void wait(float duration=0);
 };
 

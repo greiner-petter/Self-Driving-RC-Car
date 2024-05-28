@@ -10,7 +10,7 @@
 
 
 Statemachine::Statemachine(){
-    this->current_state = &Crossing_3_Way_Left::get_instance();
+    this->current_state = &Normal_Drive::get_instance();
 }
 
 

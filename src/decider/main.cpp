@@ -1,19 +1,20 @@
 #include "Driver.h"
 #include "Statemachine.h"
-#include <chrono>
+#include "States/Normal_Drive.h"
 
 
 int main(){
 
+    Driver::initialize();
+
     Statemachine statemachine;
     statemachine.run(nullptr);
 
-    Driver::initialize();
-
     //Driver::drive(20, 0, 0);
     //Driver::turn_left();
-    Driver::turn_right();
+    //Driver::turn_right();
     //Driver::stop();
+    //Driver::park();
 
     
 

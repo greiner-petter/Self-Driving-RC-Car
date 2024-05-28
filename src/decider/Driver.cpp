@@ -71,13 +71,13 @@ int8_t calculate_steering_rear(){
 
 
 void Driver::turn_right(){
-    drive(25, 0, 1);
+    drive(25, 0);
     wait(0.2);
 
-    drive(25, 100, 1);
+    drive(25, 100);
     wait(3.2);
 
-    drive(20, 0, 1);
+    drive(20, 0);
     wait(1);
     stop();
 }
@@ -85,13 +85,13 @@ void Driver::turn_right(){
 
 
 void Driver::turn_left(){
-    drive(25, 0, 1);
+    drive(25, 0);
     wait(2);
 
-    drive(25, -100, 1);
+    drive(25, -100);
     wait(3.25);
 
-    drive(20, 0, 1);
+    drive(20, 0);
     wait(1);
     stop();
 }
@@ -117,7 +117,7 @@ void Driver::drive_forward(){
 
 
 
-void Driver::drive(int16_t speed, int8_t steering, float cm){
+void Driver::drive(int16_t speed, int8_t steering){
     ocCarProperties ocCarProperties;
 
     struct start_driving_task_t start_driving_task = {
@@ -125,7 +125,7 @@ void Driver::drive(int16_t speed, int8_t steering, float cm){
         .steering_front = steering,
         .steering_rear  = 0,
         .id             = 1,
-        .steps_ab       = ocCarProperties.cm_to_steps(cm)
+        .steps_ab       = 0
     };
 
     int32_t send_result = socket->send(ocMessageId::Start_Driving_Task, start_driving_task);
@@ -148,6 +148,28 @@ void Driver::stop(float duration){
     logger->log("Result of sending stop task: %d", send_result);
 
     wait(duration);
+}
+
+
+
+void Driver::park(){
+    drive(25, 0);
+    wait(7);
+    stop();
+
+    drive(-20, -100);
+    wait(2);
+    drive(-20, 0);
+    wait(1.5);
+
+    drive(-20, 100);
+    wait(1.5);
+    stop();
+
+    drive(20, 0);
+    wait(1);
+
+    stop();
 }
 
 
