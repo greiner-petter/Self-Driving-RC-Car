@@ -266,8 +266,8 @@ int main()
                     ipc_packet.clear_and_edit().write(xDest - 200);
                     socket->send_packet(ipc_packet);*/
 
-                    float front_angle = car_properties.rear_steering_angle_to_byte(0);
-                    float back_angle = car_properties.rear_steering_angle_to_byte(getAverageOfOldAngles());
+                    int8_t front_angle = car_properties.rear_steering_angle_to_byte(0);
+                    int8_t back_angle = car_properties.rear_steering_angle_to_byte(getAverageOfOldAngles());
                     float max_back_angle = 15;
 
                     logger->log("S. %f", getAverageOfOldAngles());
@@ -286,7 +286,7 @@ int main()
                     ipc_packet.clear_and_edit()
                         .write<int16_t>(36)
                         .write<int8_t>(front_angle)
-                        .write<int8_t>(car_properties.rear_steering_angle_to_byte(-15))
+                        .write<int8_t>(car_properties.rear_steering_angle_to_byte(30))
                         .write<uint8_t>(0x8)
                         .write<int32_t>(car_properties.cm_to_steps(1));
                     socket->send_packet(ipc_packet);
