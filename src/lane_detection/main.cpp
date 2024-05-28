@@ -140,8 +140,6 @@ int main()
                     //static struct ocBevLines lines;
                     //ipc_packet.read_from_start().read(&lines);
 
-                    logger->log("test");
-
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer);
                     int lane_mid_x_sum = 0;
                     int lane_mid_x_count = 0;
@@ -271,6 +269,9 @@ int main()
                     float front_angle = car_properties.rear_steering_angle_to_byte(0);
                     float back_angle = car_properties.rear_steering_angle_to_byte(getAverageOfOldAngles());
                     float max_back_angle = 15;
+
+                    logger->log("S. %f", getAverageOfOldAngles());
+                    logger->log("%f", getAverageOfOldAngles() - max_back_angle);
 
                     if (getAverageOfOldAngles() > max_back_angle) {
                         front_angle = (car_properties.rear_steering_angle_to_byte(getAverageOfOldAngles() - max_back_angle));
