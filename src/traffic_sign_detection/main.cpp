@@ -2,9 +2,12 @@
 #include "../common/ocMember.h"
 
 #include "SignDetector.h"
+#include <chrono>
+#include <thread>
 
 int main()
 {
+    std::this_thread::sleep_for(std::chrono::milliseconds(8000));
     // ocMember represents the interface to the IPC system
     ocMember member = ocMember(ocMemberId::Sign_Detection, "Traffic-Sign-Detection Process");
 

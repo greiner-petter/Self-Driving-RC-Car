@@ -85,6 +85,8 @@ enum class ocMessageId: uint16_t
     Rc_State_Changed         = 0xCB,
 
     Set_Camera_Parameter     = 0xD3,
+
+    Traffic_Sign_Detected     = 0xE1,
 };
 
 const char *to_string(ocMessageId message_id);
@@ -315,13 +317,6 @@ struct ocSharedMemory final
     uint16_t online_members;
 
     uint64_t _canary7;
-};
-
-// Lines detected in the BEV
-struct ocBevLines {
-    int contour_num;
-    int poly_num[NUMBER_OF_CONTOURS];
-    int lines[NUMBER_OF_CONTOURS][NUMBER_OF_POLYGONS_PER_CONTOUR][2];
 };
 
 static_assert(std::is_trivial_v<ocSharedMemory>);

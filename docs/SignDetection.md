@@ -27,10 +27,13 @@ In diesem Protokoll sind grob alle Aktivitäten unserer Aufgabengruppe *Verkehrs
     - Also entweder neues Modell trainieren oder Keras konvertieren
 - Beides hat nicht wirklich funktioniert, weswegen wir uns an reines OpenCV gewendet haben
 
-## Woche 9 bis 11 (aktueller Stand)
+## Woche 9 bis 11
 - Zunächst haben wir eine HAAR Cascade Classifier XML datei für Erkennung von Stoppschildern generieren lassen.
 - In Python haben wir das Modell sofort testen können und das Stoppschild wurde über die Webcam erkannt
 - Nun mussten wir nur noch die C++ Implementation von OpenCV nutzen und unseren Classifier für die Schilderkennung nutzen
 - Es gab einige Anfangsschwierigkeiten mit der Konfiguration von OpenCV, da einige weitere Moduke notwendig waren.
 - Wir konnten das Setup jedoch letztenedlich umsetzen und können nun Stoppschilder über die Kamera des  Autos erkennen.
 - Für die Distanzberechnung verwenden wir momentan eine sehr einfache Lösung, wir *schätzen* die Entfernung anhand der Größe der Box eines erkannten Schildes 
+
+## Woche 12 (aktueller Stand)
+- In der C++ Implementation wurde die Möglichkeit hinzugefügt, mehr als nur ein Schild gleichzeitig zu erkennen
