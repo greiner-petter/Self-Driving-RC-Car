@@ -140,6 +140,8 @@ int main()
                     //static struct ocBevLines lines;
                     //ipc_packet.read_from_start().read(&lines);
 
+                    logger->log("test");
+
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer);
                     int lane_mid_x_sum = 0;
                     int lane_mid_x_count = 0;
@@ -265,6 +267,8 @@ int main()
                     ipc_packet.set_message_id(ocMessageId::Lane_Found);
                     ipc_packet.clear_and_edit().write(xDest - 200);
                     socket->send_packet(ipc_packet);*/
+
+                    logger->log("test2");
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
