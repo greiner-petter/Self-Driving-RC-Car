@@ -268,12 +268,23 @@ int main()
                     ipc_packet.clear_and_edit().write(xDest - 200);
                     socket->send_packet(ipc_packet);*/
 
+                    float front_angle = 0;
+                    float back_angle = getAverageOfOldAngles();
+
+                    if (getAverageOfOldAngles() > 30) {
+                        front_angle = (getAverageOfOldAngles() - 30);
+                        back_angle = 30;
+                    } else if (getAverageOfOldAngles() < -30) {
+                        front_angle = (getAverageOfOldAngles() + 30);
+                        back_angle = -30;
+                    }
+
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
                         .write<int16_t>(36)
-                        .write<int8_t>(0)
-                        .write<int8_t>(-car_properties.rear_steering_angle_to_byte(getAverageOfOldAngles()))
+                        .write<int8_t>(car_properties.rear_steering_angle_to_byte(front_angle))
+                        .write<int8_t>(-car_properties.rear_steering_angle_to_byte(back_angle))
                         .write<uint8_t>(0x8)
                         .write<int32_t>(car_properties.cm_to_steps(1));
                     socket->send_packet(ipc_packet);
