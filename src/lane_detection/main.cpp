@@ -137,8 +137,8 @@ int main()
                 case ocMessageId::Lines_Available:
                 {
                     //Find Lane
-                    static struct ocBevLines lines;
-                    ipc_packet.read_from_start().read(&lines);
+                    //static struct ocBevLines lines;
+                    //ipc_packet.read_from_start().read(&lines);
 
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer);
                     int lane_mid_x_sum = 0;
@@ -269,7 +269,7 @@ int main()
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
-                        .write<int16_t>(36)
+                        .write<int16_t>(26)
                         .write<int8_t>(car_properties.front_steering_angle_to_byte(getAverageOfOldAngles()))
                         .write<int8_t>(car_properties.rear_steering_angle_to_byte(0))
                         .write<uint8_t>(0x8)

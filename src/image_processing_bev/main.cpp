@@ -13,7 +13,7 @@
 // is normally disabled since it requires an entire Matrix copy
 // and adds other graphical overhead by the drawing itself
 
- #define DRAW_POLYLINES_ON_EMPTY_OUTPUT
+#define DRAW_POLYLINES_ON_EMPTY_OUTPUT
 
 
 // use cuda acceleration by default
@@ -138,14 +138,17 @@ int main() {
 
                         toBirdsEyeView(src, dst);
 
-                        GaussianBlur(dst, dst, Size_(BLUR_SIZE, BLUR_SIZE), 0);
+GaussianBlur(dst, dst, Size_(BLUR_SIZE, BLUR_SIZE), 0);
+#ifndef hideContours
+                        
                         Canny(dst, dst, 50, 200, 3);
+#endif
 
                         // notify others about available picture
                         ipc_packet.set_sender(ocMemberId::Image_Processing);
                         ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
                         socket->send_packet(ipc_packet);
-
+#ifndef hideContours
                         vector<vector<Point>> contours;
                         findContours(dst, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
@@ -185,7 +188,7 @@ int main() {
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
                         redrewed_image.copyTo(dst);
 #endif
-
+#endif
                     } break;
                     default:
                     {
