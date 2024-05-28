@@ -52,6 +52,7 @@ class Driver {
         static void drive(int16_t speed, int8_t steering=0);
         static void stop(float duration=0);
         static void park();
+        static void park_out();
         static void wait(float duration=0);
 };
 

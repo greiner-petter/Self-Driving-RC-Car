@@ -8,14 +8,18 @@ int main(){
     Driver::initialize();
 
     Statemachine statemachine;
-    statemachine.run(nullptr);
+    //statemachine.run(nullptr);
 
     //Driver::drive(20, 0, 0);
     //Driver::turn_left();
     //Driver::turn_right();
     //Driver::stop();
-    //Driver::park();
+    Driver::park();
+    Driver::wait(2);
+    Driver::park_out();
 
+    
+    
     
 
     return 0;

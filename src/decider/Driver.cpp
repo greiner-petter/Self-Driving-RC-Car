@@ -153,21 +153,45 @@ void Driver::stop(float duration){
 
 
 void Driver::park(){
+    /*Drive forward a little bit*/
     drive(25, 0);
-    wait(7);
+    wait(6.5);
     stop();
 
+    /*Drive backward to the right*/
     drive(-20, -100);
     wait(2);
     drive(-20, 0);
-    wait(1.5);
+    wait(1.25);
 
+    /*Drive backward to the left*/
     drive(-20, 100);
-    wait(1.5);
+    wait(1);
     stop();
 
-    drive(20, 0);
+    /*Drive forward to the right*/
+    drive(20, 100);
     wait(1);
+    drive(20, 0);
+    wait(0.9);
+
+    stop();
+}
+
+
+
+void Driver::park_out(){
+    /*Drive forward to the left*/
+    drive(25, -100);
+    wait(1.5);
+
+    /*Drive foward a little bit*/
+    drive(25, 0);
+    wait(1);
+    
+    /*Drive forward to the right*/
+    drive(25, 100);
+    wait(1.15);
 
     stop();
 }
