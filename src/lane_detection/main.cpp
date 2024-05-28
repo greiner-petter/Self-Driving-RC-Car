@@ -131,23 +131,6 @@ int main()
     logger->log("Lane Detection started!");
 
     while(running) {
-        for(float i = 3.0/12 * M_PI; i < 5.0/12 * M_PI; i+=0.1) {
-            ipc_packet.set_sender(ocMemberId::Lane_Detection);
-                    ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
-                    ipc_packet.clear_and_edit()
-                        .write<int16_t>(36)
-                        .write<int8_t>(car_properties.front_steering_angle_to_byte(0))
-                        .write<int8_t>(car_properties.rear_steering_angle_to_byte(i))
-                        .write<uint8_t>(0x8)
-                        .write<int32_t>(car_properties.cm_to_steps(1));
-                    socket->send_packet(ipc_packet);
-
-            logger->log("%f", i);
-            sleep(1);
-        }
-    }
-
-    while(running) {
         int32_t socket_status;
         while (0 < (socket_status = socket->read_packet(ipc_packet, false)))
         {
