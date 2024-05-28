@@ -270,13 +270,14 @@ int main()
 
                     float front_angle = 0;
                     float back_angle = getAverageOfOldAngles();
+                    float max_back_angle = 15;
 
-                    if (getAverageOfOldAngles() > 30) {
-                        front_angle = (getAverageOfOldAngles() - 30);
-                        back_angle = 30;
-                    } else if (getAverageOfOldAngles() < -30) {
-                        front_angle = (getAverageOfOldAngles() + 30);
-                        back_angle = -30;
+                    if (getAverageOfOldAngles() > max_back_angle) {
+                        front_angle = (getAverageOfOldAngles() - max_back_angle);
+                        back_angle = max_back_angle;
+                    } else if (getAverageOfOldAngles() < -max_back_angle) {
+                        front_angle = (getAverageOfOldAngles() + max_back_angle);
+                        back_angle = -max_back_angle;
                     }
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
