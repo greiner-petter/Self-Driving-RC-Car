@@ -273,7 +273,7 @@ int main()
                     ipc_packet.clear_and_edit()
                         .write<int16_t>(36)
                         .write<int8_t>(car_properties.front_steering_angle_to_byte(getAverageOfOldAngles()))
-                        .write<int8_t>(car_properties.rear_steering_angle_to_byte(getAverageOfOldAngles()))
+                        .write<int8_t>(-car_properties.rear_steering_angle_to_byte(getAverageOfOldAngles()))
                         .write<uint8_t>(0x8)
                         .write<int32_t>(car_properties.cm_to_steps(1));
                     socket->send_packet(ipc_packet);
