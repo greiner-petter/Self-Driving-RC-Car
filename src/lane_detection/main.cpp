@@ -131,7 +131,7 @@ int main()
     logger->log("Lane Detection started!");
 
     while(running) {
-        for(int i = -360; i < 360; i++) {
+        for(int i = -2*M_PI; i < 2*M_PI; i+=0.01) {
             ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
@@ -142,6 +142,7 @@ int main()
                         .write<int32_t>(car_properties.cm_to_steps(1));
                     socket->send_packet(ipc_packet);
 
+            logger->log("%d", i);
             sleep(1);
         }
     }
