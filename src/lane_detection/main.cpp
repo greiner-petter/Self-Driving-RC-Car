@@ -131,7 +131,7 @@ int main()
     logger->log("Lane Detection started!");
 
     while(running) {
-        for(float i = 1.0/6 * M_PI; i < 1.0/2 * M_PI; i+=0.1) {
+        for(float i = 3.0/12 * M_PI; i < 5.0/12 * M_PI; i+=0.1) {
             ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
