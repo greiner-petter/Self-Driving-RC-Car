@@ -4,6 +4,8 @@
 #include "../common/ocCarConfig.h"
 #include <signal.h>
 #include <vector>
+#include <unistd.h>
+
 #include <opencv2/opencv.hpp>
 
 #define CAR_CONFIG_FILE "../car_properties.conf"
@@ -140,7 +142,7 @@ int main()
                         .write<int32_t>(car_properties.cm_to_steps(1));
                     socket->send_packet(ipc_packet);
 
-                    sleep(1);
+            sleep(1);
         }
     }
 
