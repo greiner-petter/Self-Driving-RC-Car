@@ -41,6 +41,7 @@ Point2f dst_vertices[4];
 Mat M;
 
 static constexpr auto BLUR_SIZE = 7;
+static constexpr auto POST_CANNY_BLUE_SIZE = 9;
 
 static void signal_handler(int)
 {
@@ -140,6 +141,7 @@ int main() {
 
                         GaussianBlur(dst, dst, Size_(BLUR_SIZE, BLUR_SIZE), 0);
                         Canny(dst, dst, 50, 200, 3, true);
+                        GaussianBlur(dst, dst, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
 
                         // notify others about available picture
                         ipc_packet.set_sender(ocMemberId::Image_Processing);
@@ -151,26 +153,36 @@ int main() {
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
                         Mat redrewed_image = Mat::zeros(dst.size(), CV_8UC1);
 #endif
-                        ipc_packet.set_sender(ocMemberId::Image_Processing);
-                        ipc_packet.set_message_id(ocMessageId::Lines_Available);
-                        ocBufferWriter writer = ipc_packet.clear_and_edit();
-                        writer.write(contours.size());
 
-                        for (size_t i = 0; i < contours.size(); ++i)
-                        {
-                            auto &contour = contours.at(i);
+                        vector<vector<Point>> cleaned_data;
+                        for (auto &contour : contours) {
+                            double len = cv::arcLength(contour, false);
+                            if (len < 30) {
+                                continue;
+                            }
                             vector<Point> reduced_contour;
                             double epsilon = 0.01 * arcLength(contour, false);
                             approxPolyDP(contour, reduced_contour, epsilon, false);
-                            writer.write(reduced_contour.size());
-                            for (size_t j = 0; j < reduced_contour.size(); ++j) {
-                                Point &point = reduced_contour.at(j);
+                            cleaned_data.push_back(reduced_contour);
+                        }
+
+                        ipc_packet.set_sender(ocMemberId::Image_Processing);
+                        ipc_packet.set_message_id(ocMessageId::Lines_Available);
+                        ocBufferWriter writer = ipc_packet.clear_and_edit();
+                        writer.write(cleaned_data.size());
+
+                        for (size_t i = 0; i < cleaned_data.size(); ++i)
+                        {
+                            auto &contour = contours.at(i);
+                            writer.write(cleaned_data.size());
+                            for (size_t j = 0; j < contour.size(); ++j) {
+                                Point &point = contour.at(j);
                                 writer.write(point.x);
                                 writer.write(point.y);
                             }
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
                             cv::Scalar color = cv::Scalar(255);
-                            polylines(redrewed_image, reduced_contour, false, color, 1,
+                            polylines(redrewed_image, contour, false, color, 1,
                                       cv::LINE_8, 0);
 #endif
                         }
