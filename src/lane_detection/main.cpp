@@ -244,7 +244,7 @@ int main()
                     }
 
                     double xDest = lane_mid_x_sum / lane_mid_x_count;
-                    float xAngleFromMidline = 2*M_PI / (atan(48.5 / xDest) - M_PI) * 30 + 60;
+                    float xAngleFromMidline = atan(48.5 / xDest);
 
                     addToOldAngleQueue(xAngleFromMidline);
 
@@ -269,7 +269,7 @@ int main()
                     socket->send_packet(ipc_packet);*/
 
                     int8_t front_angle = car_properties.rear_steering_angle_to_byte(0);
-                    int8_t back_angle = car_properties.rear_steering_angle_to_byte(getAverageOfOldAngles());
+                    int8_t back_angle = car_properties.rear_steering_angle_to_byte(0);
                     float min_back_angle = 3.0f/12.0 * M_PI;
                     float max_back_angle = 5.0f/12.0 * M_PI;
 
@@ -287,7 +287,7 @@ int main()
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
-                        .write<int16_t>(36)
+                        .write<int16_t>(0)
                         .write<int8_t>(front_angle)
                         .write<int8_t>(back_angle)
                         .write<uint8_t>(0x8)
