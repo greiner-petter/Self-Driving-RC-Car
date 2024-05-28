@@ -49,10 +49,10 @@ static void signal_handler(int)
 }
 
 void initializeTransformParams() {
-    src_vertices[0] = Point2f(130,190);
-    src_vertices[1] = Point2f(270,190);
-    src_vertices[2] = Point2f(1200, 400);
-    src_vertices[3] = Point2f(-800, 400);
+    src_vertices[0] = Point2f(160,210);
+    src_vertices[1] = Point2f(240,210);
+    src_vertices[2] = Point2f(380, 350);
+    src_vertices[3] = Point2f(20, 350);
 
     dst_vertices[0] = Point2f(0, 0);
     dst_vertices[1] = Point2f(400, 0);
@@ -147,11 +147,15 @@ int main() {
                         ipc_packet.set_sender(ocMemberId::Image_Processing);
                         ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
                         socket->send_packet(ipc_packet);
+
+                        
 #ifndef hideContours
+                        Mat dst2(400, 400, CV_8UC1, shared_memory->bev_data[1].img_buffer);
+
                         vector<vector<Point>> contours;
                         findContours(dst, contours, RETR_LIST, CHAIN_APPROX_NONE);
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-                        Mat redrewed_image = Mat::zeros(dst.size(), CV_8UC1);
+                        Mat redrewed_image = Mat::zeros(dst2.size(), CV_8UC1);
 #endif
 
                         vector<vector<Point>> cleaned_data;
@@ -192,7 +196,7 @@ int main() {
 
 
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-                        redrewed_image.copyTo(dst);
+                        redrewed_image.copyTo(dst2);
 #endif
 #endif
                     } break;

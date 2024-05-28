@@ -6,6 +6,8 @@
 #include <vector>
 #include <unistd.h>
 
+#include "../common/ocWindow.h"
+
 #include <opencv2/opencv.hpp>
 
 #define CAR_CONFIG_FILE "../car_properties.conf"
@@ -13,28 +15,35 @@
 #define DRAW_LINE_SAMPLES
 
 // Starts at y = 40
-const int line_samples[6][2] = {
-    {10, 340},
+#define AMOUNT_OF_LINES 3
+
+const int line_samples[AMOUNT_OF_LINES][2] = {
+    /*{10, 340},
     {20, 330},
-    {30, 320},
+    {30, 320},*/
     {40, 310},
     {50, 300},
     {60, 290}
 };
 
-const int line_sample_mid = 175;
+float getYDest() {
+    float yDest = 0;
+    for (int i=0; i<AMOUNT_OF_LINES; i++) {
+        yDest += (i*25 + 40) * (AMOUNT_OF_LINES-i);
+    }
+    return yDest /= AMOUNT_OF_LINES;
+}
+float yDest = getYDest();
 
-const int line_three_split_samples[6][2] = {
-    {110, 230},
-    {117, 223},
-    {124, 210},
+const int line_sample_mid = 200;
+const int line_three_split_samples[AMOUNT_OF_LINES][2] = {
+    /*{100, 200},
+    {110, 200},
+    {120, 200},*/
+    {130, 200},
     {140, 200},
-    {143, 197},
-    {147, 193}
+    {150, 200}
 };
-
-std::list<float> oldAngles;
-
 
 struct LineVectorData {
     double slope;
@@ -50,28 +59,6 @@ static bool running = true;
 static void signal_handler(int)
 {
     running = false;
-}
-
-void addToOldAngleQueue(float val)
-{
-   oldAngles.push_front(val);
-   if (oldAngles.size() > 3)
-      oldAngles.pop_back();
-}
-
-float getAverageOfOldAngles()
-{
-   float val = 0;
-
-   for(auto i = oldAngles.begin(); i != oldAngles.end(); ++i) {
-    val += *i;
-   }
-
-   if(oldAngles.size() == 0) {
-    return 0;
-   }
-
-   return val / oldAngles.size();
 }
 
 std::pair<double, double> linearRegression(std::vector<cv::Point> data) {
@@ -103,7 +90,11 @@ std::pair<double, double> linearRegression(std::vector<cv::Point> data) {
 
 double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
     return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
-}
+};
+
+std::pair<float, float> getWindow(float x) {
+    return std::pair<float, float> (x-25, x+25);
+};
 
 int main()
 {
@@ -142,13 +133,13 @@ int main()
                     //static struct ocBevLines lines;
                     //ipc_packet.read_from_start().read(&lines);
 
-                    cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data->img_buffer);
+                    cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[1].img_buffer);
                     int lane_mid_x_sum = 0;
                     int lane_mid_x_count = 0;
 
-                    for(int y = 40; y <= 165; y+=25) {
-                        const int *line_sample = line_samples[5 - (y-40)/25];
-                        const int *line_three_sample = line_three_split_samples[5 - (y-40)/25];
+                    for(int y = 40; y <= (AMOUNT_OF_LINES-1)*25 + 40; y+=25) {
+                        const int *line_sample = line_samples[AMOUNT_OF_LINES-1 - (y-40)/25];
+                        const int *line_three_sample = line_three_split_samples[AMOUNT_OF_LINES - 1 - (y-40)/25];
 
                         std::vector<cv::Point> intersections;
 
@@ -174,7 +165,7 @@ int main()
                         for(int i = 1; i < intersections.size(); i++) {
                             int xNew = intersections.at(i).x;
                             
-                            if(xNew - xOld <= 16) {
+                            if(xNew - xOld <= 25) {
                                 sum += xNew;
                                 xOld = xNew;
                                 index++;
@@ -222,7 +213,7 @@ int main()
 
                         cv::Point target = cv::Point(result, 400-y);
 
-                        for(int i = 0; i < 6-(y-40)/25; i++) {
+                        for(int i = 0; i < AMOUNT_OF_LINES-(y-40)/25; i++) {
                             lane_mid_x_sum += target.x;
                             lane_mid_x_count++;
                         }
@@ -244,20 +235,19 @@ int main()
                     }
 
                     double xDest = lane_mid_x_sum / lane_mid_x_count;
-                    float xAngleFromMidline = atan(48.5 / xDest);
-
-                    addToOldAngleQueue(xAngleFromMidline);
 
                     double xStart = 200;
                     double yStart = 400;
 
+                    float xAngleFromMidline = atan((xDest-xStart) / yDest);
+
                     #ifdef DRAW_LINE_SAMPLES
-                        cv::line(matrix, cv::Point(xStart, yStart), cv::Point(xDest, 400-48.5), cv::Scalar(255,255,255,1), 8);
+                        cv::line(matrix, cv::Point(xStart, yStart), cv::Point(xDest, 400-yDest), cv::Scalar(255,255,255,1), 8);
                     #endif
 
                     #ifdef DRAW_LINE_SAMPLES
-                        for(int i = 40; i <= 165; i+=25) {
-                            const int *line_sample = line_samples[5 - (i-40)/25];
+                        for(int i = 40; i <= 40+(AMOUNT_OF_LINES-1)*25; i+=25) {
+                            const int *line_sample = line_samples[AMOUNT_OF_LINES-1 - (i-40)/25];
 
                             cv::line(matrix, cv::Point(line_sample[0], 400-i), cv::Point(line_sample[1], 400-i), cv::Scalar(255,255,255,1), 2);
                         }
@@ -268,26 +258,40 @@ int main()
                     ipc_packet.clear_and_edit().write(xDest - 200);
                     socket->send_packet(ipc_packet);*/
 
-                    int8_t front_angle = car_properties.rear_steering_angle_to_byte(0);
+                    int8_t front_angle = car_properties.front_steering_angle_to_byte(4.0f/12.0 * M_PI);
                     int8_t back_angle = car_properties.rear_steering_angle_to_byte(0);
                     float min_back_angle = 3.0f/12.0 * M_PI;
                     float max_back_angle = 5.0f/12.0 * M_PI;
 
-                    logger->log("S. %f", getAverageOfOldAngles());
-                    logger->log("%f", getAverageOfOldAngles() - max_back_angle);
+                    float xRadian = xAngleFromMidline;
 
-                    if (getAverageOfOldAngles() > max_back_angle) {
-                        front_angle = (car_properties.front_steering_angle_to_byte(getAverageOfOldAngles() - max_back_angle));
-                        back_angle = car_properties.rear_steering_angle_to_byte(max_back_angle);                   
-                    } else if (getAverageOfOldAngles() < min_back_angle) {
-                        front_angle = (car_properties.front_steering_angle_to_byte(getAverageOfOldAngles() + min_back_angle));
-                        back_angle = car_properties.rear_steering_angle_to_byte(min_back_angle);                   
+                    front_angle = car_properties.front_steering_angle_to_byte(xRadian * 180/M_PI);
+                   
+
+                    /*if (xRadian > max_back_angle) {
+                        front_angle = (car_properties.front_steering_angle_to_byte(xRadian - max_back_angle));
+                        back_angle = car_properties.rear_steering_angle_to_byte(max_back_angle);       
+                        logger->log("test");            
+                    } else if (xRadian < min_back_angle) {
+                        front_angle = (car_properties.front_steering_angle_to_byte(xRadian + min_back_angle));
+                        back_angle = car_properties.rear_steering_angle_to_byte(min_back_angle);   
+                        logger->log("test2");                      
+                    }*/
+
+                    logger->log("%f %f %f", front_angle, back_angle, xRadian);
+
+                    cv::imshow("Lane Detection", matrix);
+                    char key = cv::waitKey(30);
+                    if (key == 'q')
+                    {
+                        cv::destroyAllWindows();
+                        return 0;
                     }
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
-                        .write<int16_t>(24)
+                        .write<int16_t>(10)
                         .write<int8_t>(front_angle)
                         .write<int8_t>(back_angle)
                         .write<uint8_t>(0x8)
