@@ -174,7 +174,7 @@ int main() {
                         for (size_t i = 0; i < cleaned_data.size(); ++i)
                         {
                             auto &contour = contours.at(i);
-                            writer.write(cleaned_data.size());
+                            writer.write(contour.size());
                             for (size_t j = 0; j < contour.size(); ++j) {
                                 Point &point = contour.at(j);
                                 writer.write(point.x);
