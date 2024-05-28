@@ -161,7 +161,7 @@ int main() {
                                 continue;
                             }
                             vector<Point> reduced_contour;
-                            double epsilon = 0.01 * arcLength(contour, false);
+                            double epsilon = 0.007 * arcLength(contour, false);
                             approxPolyDP(contour, reduced_contour, epsilon, false);
                             cleaned_data.push_back(reduced_contour);
                         }
@@ -173,7 +173,7 @@ int main() {
 
                         for (size_t i = 0; i < cleaned_data.size(); ++i)
                         {
-                            auto &contour = contours.at(i);
+                            auto &contour = cleaned_data.at(i);
                             writer.write(contour.size());
                             for (size_t j = 0; j < contour.size(); ++j) {
                                 Point &point = contour.at(j);
