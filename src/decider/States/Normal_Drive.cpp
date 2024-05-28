@@ -21,14 +21,19 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
     /*
     while(true){
         bool crossing_dtected = IPC-HUB has crossing been detected
+        bool parking_detected = IPC-HUB sign detection: parking
         if (crossing_detected){
+            statemachine->change_state(Approaching_Crossing::getInstance());
+            break;
+        }
+        if (parking_detected) {
+            statemachine->change_state(Parking::getInstance());
             break;
         }
         drive.drive_forward();
     }
     */
     
-    //statemachine->change_state(Approaching_Crossing::getInstance());
 }
 
 
