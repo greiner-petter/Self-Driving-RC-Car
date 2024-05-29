@@ -22,8 +22,8 @@ struct Point {
     double x, y;
 };
 
-std::vector<Point> topLeftPolygon = {{20,0}, {200,0}, {200, 20}, {20, 20}};
-std::vector<Point> topRightPolygon = {{200,0}, {380,0}, {380, 20}, {200, 20}};
+std::vector<Point> topLeftPolygon = {{20,0}, {150,0}, {150, 20}, {20, 20}};
+std::vector<Point> topRightPolygon = {{250,0}, {380,0}, {380, 20}, {250, 20}};
 
 std::vector<Point> leftTopPolygon = {{0,0}, {20,0}, {20, 400}, {0, 400}};
 
@@ -122,6 +122,7 @@ int main()
     logger->log("Lane Detection started!");
 
     int direction = 0;
+    std::vector<int> oldValues;
 
     while(running) {
         int32_t socket_status;
@@ -143,7 +144,6 @@ int main()
                             int color = matrix.at<uint8_t>(y, x);
 
                             if(color >= 200) { // White Point
-                                logger->log("%f %f", x, y);
                                 if(!isTopLeft && point_in_polygon({.x= x, .y= y}, topLeftPolygon)) {
                                     isTopLeft = true;
                                 } else if(!isTopRight && point_in_polygon({.x= x, .y= y}, topRightPolygon)) {
@@ -175,7 +175,21 @@ int main()
                         direction = -1;
                     } 
 
-                    double xDest = 200 + 110 * direction;
+                    oldValues.insert(oldValues.begin(), direction);
+
+                    if(oldValues.size() > 4) {
+                        oldValues.pop_back();
+                    }
+
+                    float newDirection = 0;
+
+                    for(const int& value : oldValues) {
+                        newDirection += value;
+                    }
+
+                    newDirection /= oldValues.size();
+
+                    double xDest = 200 + 110 * newDirection;
 
                     double xStart = 200;
                     double yStart = 400;
@@ -191,7 +205,7 @@ int main()
                         cv::line(matrix, cv::Point(20, 380), cv::Point(380, 380), cv::Scalar(255,255,255,1), 2);
                     #endif
 
-                    int8_t front_angle = car_properties.front_steering_angle_to_byte(15 * direction * M_PI / 180);
+                    int8_t front_angle = car_properties.front_steering_angle_to_byte(15 * newDirection * M_PI / 180);
                     int8_t back_angle = car_properties.rear_steering_angle_to_byte(0);
 
                     cv::imshow("Lane Detection", matrix);
@@ -205,7 +219,7 @@ int main()
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
-                        .write<int16_t>(30)
+                        .write<int16_t>(20)
                         .write<int8_t>(front_angle)
                         .write<int8_t>(back_angle)
                         .write<uint8_t>(0x8)

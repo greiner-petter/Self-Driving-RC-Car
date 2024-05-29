@@ -49,10 +49,16 @@ static void signal_handler(int)
 }
 
 void initializeTransformParams() {
+    /*src_vertices[0] = Point2f(220,250);
+    src_vertices[1] = Point2f(440,250);
+    src_vertices[2] = Point2f(1189, 510);
+    src_vertices[3] = Point2f(-550, 510);*/
+
     src_vertices[0] = Point2f(120,230);
     src_vertices[1] = Point2f(280,230);
     src_vertices[2] = Point2f(420, 370);
     src_vertices[3] = Point2f(-20, 370);
+
 
     dst_vertices[0] = Point2f(0, 0);
     dst_vertices[1] = Point2f(400, 0);
@@ -139,19 +145,21 @@ int main() {
 
                         toBirdsEyeView(src, dst);
 
+                        Mat dst2(400, 400, CV_8UC1, shared_memory->bev_data[1].img_buffer);
+                        dst.copyTo(dst2);
+
                         GaussianBlur(dst, dst, Size_(BLUR_SIZE, BLUR_SIZE), 0);
-                        Canny(dst, dst, 50, 200, 3, true);
+                        Canny(dst, dst, 100, 150, 3, true);
                         GaussianBlur(dst, dst, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
+
+                        dst.copyTo(dst2);
 
                         // notify others about available picture
                         ipc_packet.set_sender(ocMemberId::Image_Processing);
                         ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
                         socket->send_packet(ipc_packet);
-
                         
 #ifndef hideContours
-                        Mat dst2(400, 400, CV_8UC1, shared_memory->bev_data[1].img_buffer);
-
                         vector<vector<Point>> contours;
                         findContours(dst, contours, RETR_LIST, CHAIN_APPROX_NONE);
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
@@ -196,7 +204,7 @@ int main() {
 
 
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-                        redrewed_image.copyTo(dst2);
+                        //redrewed_image.copyTo(dst2);
 #endif
 #endif
                     } break;
