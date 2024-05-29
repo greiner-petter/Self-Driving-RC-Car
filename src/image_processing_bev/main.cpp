@@ -49,10 +49,10 @@ static void signal_handler(int)
 }
 
 void initializeTransformParams() {
-    src_vertices[0] = Point2f(160,210);
-    src_vertices[1] = Point2f(240,210);
-    src_vertices[2] = Point2f(380, 350);
-    src_vertices[3] = Point2f(20, 350);
+    src_vertices[0] = Point2f(120,230);
+    src_vertices[1] = Point2f(280,230);
+    src_vertices[2] = Point2f(420, 370);
+    src_vertices[3] = Point2f(-20, 370);
 
     dst_vertices[0] = Point2f(0, 0);
     dst_vertices[1] = Point2f(400, 0);

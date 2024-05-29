@@ -14,79 +14,25 @@
 
 #define DRAW_LINE_SAMPLES
 
-// Starts at y = 40
-#define AMOUNT_OF_LINES 3
-
-const int line_samples[AMOUNT_OF_LINES][2] = {
-    /*{10, 340},
-    {20, 330},
-    {30, 320},*/
-    {40, 310},
-    {50, 300},
-    {60, 290}
-};
-
-float getYDest() {
-    float yDest = 0;
-    for (int i=0; i<AMOUNT_OF_LINES; i++) {
-        yDest += (i*25 + 40) * (AMOUNT_OF_LINES-i);
-    }
-    return yDest /= AMOUNT_OF_LINES;
-}
-float yDest = getYDest();
-
-const int line_sample_mid = 200;
-const int line_three_split_samples[AMOUNT_OF_LINES][2] = {
-    /*{100, 200},
-    {110, 200},
-    {120, 200},*/
-    {130, 200},
-    {140, 200},
-    {150, 200}
-};
-
-struct LineVectorData {
-    double slope;
-    double length;
-    std::pair<double, double> closest_point;
-    double distance;
-};
-
 ocLogger *logger;
 
 static bool running = true;
+
+struct Point {
+    double x, y;
+};
+
+std::vector<Point> topLeftPolygon = {{20,0}, {200,0}, {200, 20}, {20, 20}};
+std::vector<Point> topRightPolygon = {{200,0}, {380,0}, {380, 20}, {200, 20}};
+
+std::vector<Point> leftTopPolygon = {{0,0}, {20,0}, {20, 400}, {0, 400}};
+
+std::vector<Point> rightTopPolygon = {{400,0}, {400,400}, {380, 400}, {380, 0}};
 
 static void signal_handler(int)
 {
     running = false;
 }
-
-std::pair<double, double> linearRegression(std::vector<cv::Point> data) {
-    double x_mean = 0;
-    double y_mean = 0;
-
-    for(int i = 0; i < data.size(); i++) {
-        x_mean += data.at(i).x;
-        y_mean += data.at(i).y;
-    } 
-
-    x_mean = x_mean / data.size();
-    y_mean = y_mean / data.size();
-
-    double numerator = 0;
-    double denominator = 1;
-
-    for(int i = 0; i < data.size(); i++) {
-        numerator += (data.at(i).x - x_mean) * (data.at(i).y - y_mean);
-        denominator += (data.at(i).y - y_mean) * (data.at(i).y - y_mean);
-    } 
-
-    double slope = numerator/denominator;
-
-    double y_intercept = x_mean - slope * y_mean;  
-
-    return {slope, y_intercept};
-};
 
 double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
     return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
@@ -95,6 +41,60 @@ double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
 std::pair<float, float> getWindow(float x) {
     return std::pair<float, float> (x-25, x+25);
 };
+
+
+// Checking if a point is inside a polygon
+bool point_in_polygon(Point point, std::vector<Point> polygon)
+{
+    int num_vertices = polygon.size();
+    double x = point.x, y = point.y;
+    bool inside = false;
+ 
+    // Store the first point in the polygon and initialize
+    // the second point
+    Point p1 = polygon[0], p2;
+ 
+    // Loop through each edge in the polygon
+    for (int i = 1; i <= num_vertices; i++) {
+        // Get the next point in the polygon
+        p2 = polygon[i % num_vertices];
+ 
+        // Check if the point is above the minimum y
+        // coordinate of the edge
+        if (y > std::min(p1.y, p2.y)) {
+            // Check if the point is below the maximum y
+            // coordinate of the edge
+            if (y <= std::max(p1.y, p2.y)) {
+                // Check if the point is to the left of the
+                // maximum x coordinate of the edge
+                if (x <= std::max(p1.x, p2.x)) {
+                    // Calculate the x-intersection of the
+                    // line connecting the point to the edge
+                    double x_intersection
+                        = (y - p1.y) * (p2.x - p1.x)
+                              / (p2.y - p1.y)
+                          + p1.x;
+ 
+                    // Check if the point is on the same
+                    // line as the edge or to the left of
+                    // the x-intersection
+                    if (p1.x == p2.x
+                        || x <= x_intersection) {
+                        // Flip the inside flag
+                        inside = !inside;
+                    }
+                }
+            }
+        }
+ 
+        // Store the current point as the first point for
+        // the next iteration
+        p1 = p2;
+    }
+ 
+    // Return the value of the inside flag
+    return inside;
+}
 
 int main()
 {
@@ -121,6 +121,8 @@ int main()
 
     logger->log("Lane Detection started!");
 
+    int direction = 0;
+
     while(running) {
         int32_t socket_status;
         while (0 < (socket_status = socket->read_packet(ipc_packet, false)))
@@ -129,156 +131,68 @@ int main()
             {
                 case ocMessageId::Lines_Available:
                 {
-                    //Find Lane
-                    //static struct ocBevLines lines;
-                    //ipc_packet.read_from_start().read(&lines);
-
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[1].img_buffer);
-                    int lane_mid_x_sum = 0;
-                    int lane_mid_x_count = 0;
+                   
+                    bool isTopLeft = false;
+                    bool isTopRight = false;
+                    bool isLeft = false;
+                    bool isRight = false;
 
-                    for(int y = 40; y <= (AMOUNT_OF_LINES-1)*25 + 40; y+=25) {
-                        const int *line_sample = line_samples[AMOUNT_OF_LINES-1 - (y-40)/25];
-                        const int *line_three_sample = line_three_split_samples[AMOUNT_OF_LINES - 1 - (y-40)/25];
+                    for(double x = 0; x < 400; x++) {
+                        for(double y = 0; y < 200; y++) {
+                            int color = matrix.at<uint8_t>(y, x);
 
-                        std::vector<cv::Point> intersections;
-
-                        for(int x = line_sample[0]; x < line_sample[1]; x++) {
-                            int color = matrix.at<uint8_t>(400-y, x);
-
-                            if(color == 255) { // White Point
-                                intersections.push_back(cv::Point(x, 400-y));
+                            if(color >= 200) { // White Point
+                                logger->log("%f %f", x, y);
+                                if(!isTopLeft && point_in_polygon({.x= x, .y= y}, topLeftPolygon)) {
+                                    isTopLeft = true;
+                                } else if(!isTopRight && point_in_polygon({.x= x, .y= y}, topRightPolygon)) {
+                                    isTopRight = true;
+                                } else if(!isLeft && point_in_polygon({.x= x, .y= y}, leftTopPolygon)) {
+                                    isLeft = true;
+                                } else if(!isRight && point_in_polygon({.x= x, .y= y}, rightTopPolygon)) {
+                                    isRight = true;
+                                }else if(isLeft) {
+                                    direction = -2;
+                                } else if( isRight) {
+                                  direction = 2;
+                                }
                             }
                         }
-
-                        if(intersections.size() == 0) {
-                            continue;
-                        }
-
-                        int index = 1;
-                        int sum = intersections.at(0).x;
-                        int xOld = intersections.at(0).x;
-                        
-
-                        std::vector<cv::Point> new_intersections;
-
-                        for(int i = 1; i < intersections.size(); i++) {
-                            int xNew = intersections.at(i).x;
-                            
-                            if(xNew - xOld <= 25) {
-                                sum += xNew;
-                                xOld = xNew;
-                                index++;
-                            } else {
-                                int x_cor = sum / index;
-                                //logger->log("%d, %d, %d", x_cor, sum, index);
-                                new_intersections.push_back(cv::Point(x_cor, 400-y));
-                                xOld = xNew;
-                                sum = xOld;
-                                index = 1;
-                            }
-                        }
-
-                        new_intersections.push_back(cv::Point(sum / index, 400-y));
-                        cv::Point *left = nullptr;
-                        cv::Point *right = nullptr;
-                        cv::Point *mid = nullptr; 
-
-                        for(int i = 0; i < new_intersections.size(); i++) {
-                            cv::Point *point = &new_intersections.at(i);
-                            if(point->x < line_three_sample[0]) {
-                                left = point;
-                            } else if(point->x > line_three_sample[1]) {
-                                right = point;
-                            } else {
-                                mid = point;
-                            }
-                        }
-
-                        int result;
-
-                        if (mid != nullptr && right != nullptr) {
-                            result = (mid->x + right->x)/2;
-                        } else if (left != nullptr && right != nullptr) {
-                            result = (left->x + 3*right->x)/4;
-                        } else if (mid != nullptr) {
-                            result = mid->x + 25;
-                        } else if (left != nullptr) {
-                            result = left->x + 75;
-                        } else if (right != nullptr) {
-                            result = right->x - 25;
-                        } else {
-                            continue;
-                        }
-
-                        cv::Point target = cv::Point(result, 400-y);
-
-                        for(int i = 0; i < AMOUNT_OF_LINES-(y-40)/25; i++) {
-                            lane_mid_x_sum += target.x;
-                            lane_mid_x_count++;
-                        }
-
-                        #ifdef DRAW_LINE_SAMPLES
-                            cv::circle(matrix, target, 8, 255, 1);
-                        #endif
-
-                        #ifdef DRAW_LINE_SAMPLES
-                            for(int i = 0; i < new_intersections.size(); i++) {
-                                cv::Point point = new_intersections.at(i);
-                                cv::circle(matrix, point, 8, 255, 1);
-                            }
-                        #endif
                     }
 
-                    if(0 == lane_mid_x_count) {
-                        continue;
-                    }
+                    if(isTopRight) {
+                        direction = 0;
+                    } 
+                    
+                    if(!isTopLeft && !isTopRight && isLeft) {
+                        direction = -2;
+                    } else if(!isTopLeft && !isTopRight && isRight) {
+                        direction = 2;
+                    } else if(!isTopRight && isRight) {
+                        direction = 1;
+                    } else if(!isTopLeft && isLeft) {
+                        direction = -1;
+                    } 
 
-                    double xDest = lane_mid_x_sum / lane_mid_x_count;
+                    double xDest = 200 + 110 * direction;
 
                     double xStart = 200;
                     double yStart = 400;
 
-                    float xAngleFromMidline = atan((xDest-xStart) / yDest);
-
                     #ifdef DRAW_LINE_SAMPLES
-                        cv::line(matrix, cv::Point(xStart, yStart), cv::Point(xDest, 400-yDest), cv::Scalar(255,255,255,1), 8);
+                        cv::line(matrix, cv::Point(xStart, yStart), cv::Point(xDest, 100), cv::Scalar(255,255,255,1), 8);
                     #endif
 
                     #ifdef DRAW_LINE_SAMPLES
-                        for(int i = 40; i <= 40+(AMOUNT_OF_LINES-1)*25; i+=25) {
-                            const int *line_sample = line_samples[AMOUNT_OF_LINES-1 - (i-40)/25];
-
-                            cv::line(matrix, cv::Point(line_sample[0], 400-i), cv::Point(line_sample[1], 400-i), cv::Scalar(255,255,255,1), 2);
-                        }
+                        cv::line(matrix, cv::Point(380, 20), cv::Point(380, 380), cv::Scalar(255,255,255,1), 2);
+                        cv::line(matrix, cv::Point(20, 20), cv::Point(20, 380), cv::Scalar(255,255,255,1), 2);
+                        cv::line(matrix, cv::Point(20, 20), cv::Point(380, 20), cv::Scalar(255,255,255,1), 2);
+                        cv::line(matrix, cv::Point(20, 380), cv::Point(380, 380), cv::Scalar(255,255,255,1), 2);
                     #endif
 
-                   /* ipc_packet.set_sender(ocMemberId::Lane_Detection);
-                    ipc_packet.set_message_id(ocMessageId::Lane_Found);
-                    ipc_packet.clear_and_edit().write(xDest - 200);
-                    socket->send_packet(ipc_packet);*/
-
-                    int8_t front_angle = car_properties.front_steering_angle_to_byte(4.0f/12.0 * M_PI);
+                    int8_t front_angle = car_properties.front_steering_angle_to_byte(15 * direction * M_PI / 180);
                     int8_t back_angle = car_properties.rear_steering_angle_to_byte(0);
-                    float min_back_angle = 3.0f/12.0 * M_PI;
-                    float max_back_angle = 5.0f/12.0 * M_PI;
-
-                    float xRadian = xAngleFromMidline;
-
-                    front_angle = car_properties.front_steering_angle_to_byte(xRadian * 180/M_PI);
-                   
-
-                    /*if (xRadian > max_back_angle) {
-                        front_angle = (car_properties.front_steering_angle_to_byte(xRadian - max_back_angle));
-                        back_angle = car_properties.rear_steering_angle_to_byte(max_back_angle);       
-                        logger->log("test");            
-                    } else if (xRadian < min_back_angle) {
-                        front_angle = (car_properties.front_steering_angle_to_byte(xRadian + min_back_angle));
-                        back_angle = car_properties.rear_steering_angle_to_byte(min_back_angle);   
-                        logger->log("test2");                      
-                    }*/
-
-                    logger->log("%f %f %f", front_angle, back_angle, xRadian);
 
                     cv::imshow("Lane Detection", matrix);
                     char key = cv::waitKey(30);
@@ -291,7 +205,7 @@ int main()
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
-                        .write<int16_t>(10)
+                        .write<int16_t>(30)
                         .write<int8_t>(front_angle)
                         .write<int8_t>(back_angle)
                         .write<uint8_t>(0x8)
