@@ -2,6 +2,7 @@
 #include "../common/ocMember.h"
 #include "../common/ocCar.h"
 #include "../common/ocCarConfig.h"
+#include "./own_pid.cpp"
 #include <signal.h>
 #include <vector>
 #include <unistd.h>
@@ -17,6 +18,10 @@
 ocLogger *logger;
 
 static bool running = true;
+
+const double Kp = 1.0;
+const double Ki = 0;
+const double Kd = 0;
 
 static void signal_handler(int)
 {
@@ -76,6 +81,8 @@ int main()
     signal(SIGQUIT, signal_handler);
     signal(SIGTERM, signal_handler);
 
+    PIDController pid(Kp, Ki, Kd, 0);
+
     ocMember member(ocMemberId::Lane_Detection, "Lane Detection");
     member.attach();
 
@@ -104,8 +111,10 @@ int main()
                 {
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[1].img_buffer);
                    
-                    std::array<int, 25> histogram = calcHistogram(&matrix).first;
-                    std::vector<cv::Point> intersections = calcHistogram(&matrix).second;
+                    auto histoIntersections = calcHistogram(&matrix);
+
+                    std::array<int, 25> histogram = histoIntersections.first;
+                    std::vector<cv::Point> intersections = histoIntersections.second;
 
                     std::vector<std::pair<int, int>> max;
 
@@ -115,11 +124,13 @@ int main()
                         } 
                     }
 
+                    float angle = 0;
+
                     std::sort(max.begin(), max.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
                         return a.second > b.second;
                     });
 
-                    std::vector<std::pair<int, int>> greatest_values(max.begin(), max.begin() + 3);
+                    std::vector<std::pair<int, int>> greatest_values(max.begin(), max.begin() + (max.size() >= 3 ? 3 : max.size()));
 
                     std::sort(greatest_values.begin(), greatest_values.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
                         return a.first < b.first;
@@ -132,30 +143,56 @@ int main()
                     for(int i = 0; i < intersections.size(); i++) {
                         int x = intersections.at(i).x/16;
 
-                        if(greatest_values.at(0).first == x) {
-                            leftVec.push_back(intersections.at(i));
-                        } else if(greatest_values.at(1).first == x) {
-                            midVec.push_back(intersections.at(i));
-                        } else if(greatest_values.at(2).first == x) {
-                            rightVec.push_back(intersections.at(i));
+                        if(greatest_values.size() == 1) {
+                            if(greatest_values.at(0).first == x || greatest_values.at(0).first == x-1) {
+                                rightVec.push_back(intersections.at(i));
+                            } 
+                        } else if(greatest_values.size() == 2) {
+                            if(greatest_values.at(0).first == x) {
+                                midVec.push_back(intersections.at(i));
+                            } else if(greatest_values.at(1).first == x || greatest_values.at(1).first == x-1) {
+                                rightVec.push_back(intersections.at(i));
+                            } 
+                        } else {
+                            if(greatest_values.at(0).first == x || greatest_values.at(0).first == x+1) {
+                                leftVec.push_back(intersections.at(i));
+                            } else if(greatest_values.at(1).first == x) {
+                                midVec.push_back(intersections.at(i));
+                            } else if(greatest_values.at(2).first == x || greatest_values.at(2).first == x-1) {
+                                rightVec.push_back(intersections.at(i));
+                            } 
                         }
                     }
 
                     int right = 0;
                     int mid = 0;
 
-                    for(const auto& i : rightVec) {
-                        right += i.x;
+                    if(rightVec.size() != 0) {
+                        for(const auto& i : rightVec) {
+                            right += i.x;
+                        }
+
+                        right /= rightVec.size();
                     }
 
-                    for(const auto& i : midVec) {
-                        mid += i.x;
+                    if(midVec.size() != 0) {
+                        for(const auto& i : midVec) {
+                            mid += i.x;
+                        }
+
+                        mid /= midVec.size();
                     }
 
-                    right /= rightVec.size();
-                    mid /= midVec.size();
+                    int dest = (right + mid) / 2;
 
+                    if(mid == 0) {
+                        dest = right -10;
+                    }
 
+                    angle = std::atan(100/(dest - 200));
+                    cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
+
+                    double control_signal = pid.update(angle, 0.1);
 
                     cv::imshow("Lane Detection", matrix);
                     char key = cv::waitKey(30);
@@ -169,8 +206,8 @@ int main()
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
                         .write<int16_t>(20)
-                        .write<int8_t>(0)
-                        .write<int8_t>(0)
+                        .write<int8_t>(angle * 30) // MAPPING TO INT 8
+                        .write<int8_t>(-angle * 30)
                         .write<uint8_t>(0x8)
                         .write<int32_t>(car_properties.cm_to_steps(1));
                     socket->send_packet(ipc_packet);
