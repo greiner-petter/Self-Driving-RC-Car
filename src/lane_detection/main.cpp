@@ -18,17 +18,6 @@ ocLogger *logger;
 
 static bool running = true;
 
-struct Point {
-    double x, y;
-};
-
-std::vector<Point> topLeftPolygon = {{20,0}, {150,0}, {150, 20}, {20, 20}};
-std::vector<Point> topRightPolygon = {{250,0}, {380,0}, {380, 20}, {250, 20}};
-
-std::vector<Point> leftTopPolygon = {{0,0}, {20,0}, {20, 400}, {0, 400}};
-
-std::vector<Point> rightTopPolygon = {{400,0}, {400,400}, {380, 400}, {380, 0}};
-
 static void signal_handler(int)
 {
     running = false;
@@ -36,64 +25,48 @@ static void signal_handler(int)
 
 double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
     return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
-};
+}
 
-std::pair<float, float> getWindow(float x) {
-    return std::pair<float, float> (x-25, x+25);
-};
+std::pair<std::array<int, 25>, std::vector<cv::Point>> calcHistogram(cv::Mat *matrix) {
+    std::array<int, 25> histogram;
+    std::vector<cv::Point> intersections;
 
+    std::fill(histogram.begin(), histogram.end(), 0);
 
-// Checking if a point is inside a polygon
-bool point_in_polygon(Point point, std::vector<Point> polygon)
-{
-    int num_vertices = polygon.size();
-    double x = point.x, y = point.y;
-    bool inside = false;
- 
-    // Store the first point in the polygon and initialize
-    // the second point
-    Point p1 = polygon[0], p2;
- 
-    // Loop through each edge in the polygon
-    for (int i = 1; i <= num_vertices; i++) {
-        // Get the next point in the polygon
-        p2 = polygon[i % num_vertices];
- 
-        // Check if the point is above the minimum y
-        // coordinate of the edge
-        if (y > std::min(p1.y, p2.y)) {
-            // Check if the point is below the maximum y
-            // coordinate of the edge
-            if (y <= std::max(p1.y, p2.y)) {
-                // Check if the point is to the left of the
-                // maximum x coordinate of the edge
-                if (x <= std::max(p1.x, p2.x)) {
-                    // Calculate the x-intersection of the
-                    // line connecting the point to the edge
-                    double x_intersection
-                        = (y - p1.y) * (p2.x - p1.x)
-                              / (p2.y - p1.y)
-                          + p1.x;
- 
-                    // Check if the point is on the same
-                    // line as the edge or to the left of
-                    // the x-intersection
-                    if (p1.x == p2.x
-                        || x <= x_intersection) {
-                        // Flip the inside flag
-                        inside = !inside;
-                    }
-                }
+    for(int radius = 50; radius <= 200; radius+=25) {
+        for(double pi = 0; pi < M_PI; pi += 0.001) {
+            int x = 200 + round(cos(pi) * radius);
+            int y = 400 - round(sin(pi) * radius);
+
+            if(x >= 400 || x < 0 || y >= 400 || y < 0) {
+                continue;
+            }
+
+            int color = matrix->at<uint8_t>(y, x);
+
+            if(color > 50) {
+                intersections.push_back(cv::Point(x,y));
+                histogram[x/16]++;
             }
         }
- 
-        // Store the current point as the first point for
-        // the next iteration
-        p1 = p2;
     }
- 
-    // Return the value of the inside flag
-    return inside;
+
+    for(int radius = 50; radius <= 200; radius+=25) {
+        cv::circle(*matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
+    }
+
+    for(const auto& i : intersections) {
+        cv::circle(*matrix, i, 5, cv::Scalar(255,255,255,1), 5);
+    }
+
+    std::string histo = "";
+
+    for(int i = 0; i < 25; i++) {
+        histo += std::to_string(histogram[i]);
+        histo += "\t";
+    }
+
+    return std::pair(histogram, intersections);
 }
 
 int main()
@@ -121,9 +94,6 @@ int main()
 
     logger->log("Lane Detection started!");
 
-    int direction = 0;
-    std::vector<int> oldValues;
-
     while(running) {
         int32_t socket_status;
         while (0 < (socket_status = socket->read_packet(ipc_packet, false)))
@@ -134,79 +104,58 @@ int main()
                 {
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[1].img_buffer);
                    
-                    bool isTopLeft = false;
-                    bool isTopRight = false;
-                    bool isLeft = false;
-                    bool isRight = false;
+                    std::array<int, 25> histogram = calcHistogram(&matrix).first;
+                    std::vector<cv::Point> intersections = calcHistogram(&matrix).second;
 
-                    for(double x = 0; x < 400; x++) {
-                        for(double y = 0; y < 200; y++) {
-                            int color = matrix.at<uint8_t>(y, x);
+                    std::vector<std::pair<int, int>> max;
 
-                            if(color >= 200) { // White Point
-                                if(!isTopLeft && point_in_polygon({.x= x, .y= y}, topLeftPolygon)) {
-                                    isTopLeft = true;
-                                } else if(!isTopRight && point_in_polygon({.x= x, .y= y}, topRightPolygon)) {
-                                    isTopRight = true;
-                                } else if(!isLeft && point_in_polygon({.x= x, .y= y}, leftTopPolygon)) {
-                                    isLeft = true;
-                                } else if(!isRight && point_in_polygon({.x= x, .y= y}, rightTopPolygon)) {
-                                    isRight = true;
-                                }else if(isLeft) {
-                                    direction = -2;
-                                } else if( isRight) {
-                                  direction = 2;
-                                }
-                            }
+                    for(int i = 1; i < histogram.size()-1; i++) {
+                        if(histogram[i] > histogram[i+1] && histogram[i] > histogram[i-1] ) {
+                            max.push_back(std::pair<int, int>(i, histogram[i]));
+                        } 
+                    }
+
+                    std::sort(max.begin(), max.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
+                        return a.second > b.second;
+                    });
+
+                    std::vector<std::pair<int, int>> greatest_values(max.begin(), max.begin() + 3);
+
+                    std::sort(greatest_values.begin(), greatest_values.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
+                        return a.first < b.first;
+                    });
+
+                    std::vector<cv::Point> leftVec;
+                    std::vector<cv::Point> midVec;
+                    std::vector<cv::Point> rightVec;
+
+                    for(int i = 0; i < intersections.size(); i++) {
+                        int x = intersections.at(i).x/16;
+
+                        if(greatest_values.at(0).first == x) {
+                            leftVec.push_back(intersections.at(i));
+                        } else if(greatest_values.at(1).first == x) {
+                            midVec.push_back(intersections.at(i));
+                        } else if(greatest_values.at(2).first == x) {
+                            rightVec.push_back(intersections.at(i));
                         }
                     }
 
-                    if(isTopRight) {
-                        direction = 0;
-                    } 
-                    
-                    if(!isTopLeft && !isTopRight && isLeft) {
-                        direction = -2;
-                    } else if(!isTopLeft && !isTopRight && isRight) {
-                        direction = 2;
-                    } else if(!isTopRight && isRight) {
-                        direction = 1;
-                    } else if(!isTopLeft && isLeft) {
-                        direction = -1;
-                    } 
+                    int right = 0;
+                    int mid = 0;
 
-                    oldValues.insert(oldValues.begin(), direction);
-
-                    if(oldValues.size() > 4) {
-                        oldValues.pop_back();
+                    for(const auto& i : rightVec) {
+                        right += i.x;
                     }
 
-                    float newDirection = 0;
-
-                    for(const int& value : oldValues) {
-                        newDirection += value;
+                    for(const auto& i : midVec) {
+                        mid += i.x;
                     }
 
-                    newDirection /= oldValues.size();
+                    right /= rightVec.size();
+                    mid /= midVec.size();
 
-                    double xDest = 200 + 110 * newDirection;
 
-                    double xStart = 200;
-                    double yStart = 400;
-
-                    #ifdef DRAW_LINE_SAMPLES
-                        cv::line(matrix, cv::Point(xStart, yStart), cv::Point(xDest, 100), cv::Scalar(255,255,255,1), 8);
-                    #endif
-
-                    #ifdef DRAW_LINE_SAMPLES
-                        cv::line(matrix, cv::Point(380, 20), cv::Point(380, 380), cv::Scalar(255,255,255,1), 2);
-                        cv::line(matrix, cv::Point(20, 20), cv::Point(20, 380), cv::Scalar(255,255,255,1), 2);
-                        cv::line(matrix, cv::Point(20, 20), cv::Point(380, 20), cv::Scalar(255,255,255,1), 2);
-                        cv::line(matrix, cv::Point(20, 380), cv::Point(380, 380), cv::Scalar(255,255,255,1), 2);
-                    #endif
-
-                    int8_t front_angle = car_properties.front_steering_angle_to_byte(15 * newDirection * M_PI / 180);
-                    int8_t back_angle = car_properties.rear_steering_angle_to_byte(0);
 
                     cv::imshow("Lane Detection", matrix);
                     char key = cv::waitKey(30);
@@ -220,8 +169,8 @@ int main()
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
                         .write<int16_t>(20)
-                        .write<int8_t>(front_angle)
-                        .write<int8_t>(back_angle)
+                        .write<int8_t>(0)
+                        .write<int8_t>(0)
                         .write<uint8_t>(0x8)
                         .write<int32_t>(car_properties.cm_to_steps(1));
                     socket->send_packet(ipc_packet);

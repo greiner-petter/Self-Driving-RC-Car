@@ -13,7 +13,7 @@
 // is normally disabled since it requires an entire Matrix copy
 // and adds other graphical overhead by the drawing itself
 
-#define DRAW_POLYLINES_ON_EMPTY_OUTPUT
+//#define DRAW_POLYLINES_ON_EMPTY_OUTPUT
 
 
 // use cuda acceleration by default
@@ -49,15 +49,15 @@ static void signal_handler(int)
 }
 
 void initializeTransformParams() {
-    /*src_vertices[0] = Point2f(220,250);
-    src_vertices[1] = Point2f(440,250);
-    src_vertices[2] = Point2f(1189, 510);
-    src_vertices[3] = Point2f(-550, 510);*/
+    src_vertices[0] = Point2f(70,210);
+    src_vertices[1] = Point2f(330,210);
+    src_vertices[2] = Point2f(780, 310);
+    src_vertices[3] = Point2f(-380, 310);
 
-    src_vertices[0] = Point2f(120,230);
+    /*src_vertices[0] = Point2f(120,230);
     src_vertices[1] = Point2f(280,230);
     src_vertices[2] = Point2f(420, 370);
-    src_vertices[3] = Point2f(-20, 370);
+    src_vertices[3] = Point2f(-20, 370);*/
 
 
     dst_vertices[0] = Point2f(0, 0);
@@ -149,7 +149,7 @@ int main() {
                         dst.copyTo(dst2);
 
                         GaussianBlur(dst, dst, Size_(BLUR_SIZE, BLUR_SIZE), 0);
-                        Canny(dst, dst, 100, 150, 3, true);
+                        Canny(dst, dst, 10, 50, 3, true);
                         GaussianBlur(dst, dst, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
 
                         dst.copyTo(dst2);
@@ -204,7 +204,7 @@ int main() {
 
 
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-                        //redrewed_image.copyTo(dst2);
+                        redrewed_image.copyTo(dst2);
 #endif
 #endif
                     } break;
