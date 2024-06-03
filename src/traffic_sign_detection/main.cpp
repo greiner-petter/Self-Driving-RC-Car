@@ -4,6 +4,8 @@
 #include "SignDetector.h"
 #include <chrono>
 #include <thread>
+#include <string>
+#include <vector>
 
 int main(int argc,char* argv[])
 {
