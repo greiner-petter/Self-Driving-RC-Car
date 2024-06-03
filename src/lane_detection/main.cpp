@@ -2,7 +2,6 @@
 #include "../common/ocMember.h"
 #include "../common/ocCar.h"
 #include "../common/ocCarConfig.h"
-#include "./own_pid.cpp"
 #include <signal.h>
 #include <vector>
 #include <unistd.h>
@@ -18,10 +17,6 @@
 ocLogger *logger;
 
 static bool running = true;
-
-const double Kp = 1.0;
-const double Ki = 0;
-const double Kd = 0;
 
 static void signal_handler(int)
 {
@@ -80,8 +75,6 @@ int main()
     signal(SIGINT, signal_handler);
     signal(SIGQUIT, signal_handler);
     signal(SIGTERM, signal_handler);
-
-    PIDController pid(Kp, Ki, Kd, 0);
 
     ocMember member(ocMemberId::Lane_Detection, "Lane Detection");
     member.attach();
@@ -189,10 +182,9 @@ int main()
                         dest = right -10;
                     }
 
-                    angle = std::atan(100/(dest - 200));
-                    cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
+                    angle = (dest - 200) * 2.54; // MAPPING TO INT 8
 
-                    double control_signal = pid.update(angle, 0.1);
+                    cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
 
                     cv::imshow("Lane Detection", matrix);
                     char key = cv::waitKey(30);
@@ -202,12 +194,14 @@ int main()
                         return 0;
                     }
 
+                    float speed = 20 * (254 / (std::abs(angle) + 254));
+
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
                     ipc_packet.clear_and_edit()
-                        .write<int16_t>(20)
-                        .write<int8_t>(angle * 30) // MAPPING TO INT 8
-                        .write<int8_t>(-angle * 30)
+                        .write<int16_t>(speed)
+                        .write<int8_t>(angle) 
+                        .write<int8_t>(0)
                         .write<uint8_t>(0x8)
                         .write<int32_t>(car_properties.cm_to_steps(1));
                     socket->send_packet(ipc_packet);
