@@ -47,27 +47,25 @@ struct ClassifierInstance
     cv::CascadeClassifier classifier;
     std::string label;
     TrafficSignType type;
-    std::function<float(float)> convertToDistanceLambda;
+    double signSizeFactor;
 
     ClassifierInstance(const std::string& path, const std::string& signLabel, TrafficSignType signType, double sizeFactor)
     {
         classifier.load(path);
         label = signLabel;
         type = signType;
-        convertToDistanceLambda = [sizeFactor](float rectSize) {
-            return std::max(SignDetector::Remap<float>(rectSize, 0.0f, sizeFactor, 100.0f, 0.0f), 0.0f);
-        }
+        signSizeFactor = sizeFactor;
     }
 };
 
 // Converts into an estimated distance
-// static float ConvertRectSizeToEstimatedDistance(float rectSize)
-// {
-//     return std::max(SignDetector::Remap<float>(rectSize, 0.0f, 0.3f, 100.0f, 0.0f), 0.0f);
-// }
-static uint32_t ConvertRectToDistanceInCM(const cv::Rect& rect, const int cam_width, const int cam_height, const std::function<float(float)>& convertToDistanceLambda)
+static float ConvertRectSizeToEstimatedDistance(float rectSize)
 {
-    return static_cast<uint32_t>(convertToDistanceLambda((static_cast<float>(rect.width) / (float)cam_width + static_cast<float>(rect.height) / (float)cam_height) / 2.0f));
+    return std::max(SignDetector::Remap<float>(rectSize, 0.0f, 0.3f, 100.0f, 0.0f), 0.0f);
+}
+static uint32_t ConvertRectToDistanceInCM(const cv::Rect& rect, const int cam_width, const int cam_height)
+{
+    return static_cast<uint32_t>(ConvertRectSizeToEstimatedDistance((static_cast<float>(rect.width) / (float)cam_width + static_cast<float>(rect.height) / (float)cam_height) / 2.0f));
 }
 
 static std::vector<std::shared_ptr<ClassifierInstance>> s_Instances;
@@ -75,9 +73,9 @@ static std::vector<std::shared_ptr<ClassifierInstance>> s_Instances;
 void SignDetector::Run()
 {
     // Load sign cascade classifiers
-    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetStopSignXML().string(), "Stop", TrafficSignType::Stop, 0.3));
-    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetLeftSignXML().string(), "Left", TrafficSignType::Left, 0.2));
-    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetRightSignXML().string(), "Right", TrafficSignType::Right, 0.2));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetStopSignXML().string(), "Stop", TrafficSignType::Stop, 1.0));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetLeftSignXML().string(), "Left", TrafficSignType::Left, 0.75));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetRightSignXML().string(), "Right", TrafficSignType::Right, 0.75));
 
     while (true)
     {
@@ -105,7 +103,7 @@ void SignDetector::Run()
             for (size_t i = 0; i < sign_scaled.size(); i++)
             {
                 cv::Rect roi = sign_scaled[i];
-                const uint32_t distance = ConvertRectToDistanceInCM(roi, (int)cam_data->width, (int)cam_data->height, signClassifier->convertToDistanceLambda);
+                const uint32_t distance = signClassifier->signSizeFactor * ConvertRectToDistanceInCM(roi, (int)cam_data->width, (int)cam_data->height);
 
                 // Draw rectangle around the sign
                 cv::rectangle(cam_image, cv::Point(roi.x, roi.y),
