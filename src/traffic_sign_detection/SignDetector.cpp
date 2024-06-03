@@ -54,7 +54,7 @@ struct ClassifierInstance
         classifier.load(path);
         label = signLabel;
         type = signType;
-        SignDetector = sizeFactor;
+        signSizeFactor = sizeFactor;
     }
 };
 
