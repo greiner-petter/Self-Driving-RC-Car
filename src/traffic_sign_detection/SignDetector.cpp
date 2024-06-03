@@ -16,13 +16,15 @@
 static ocIpcSocket* s_Socket = nullptr;
 static ocSharedMemory* s_SharedMemory = nullptr;
 static ocLogger* s_Logger = nullptr;
+static bool s_SupportGUI = false;
 
-void SignDetector::Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger)
+void SignDetector::Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger, bool supportGUI)
 {
     logger->log("SignDetector::Init()");
     s_Socket = socket;
     s_SharedMemory = shared_memory;
     s_Logger = logger;
+    s_SupportGUI = supportGUI;
     Run();
 }
 
@@ -115,13 +117,17 @@ void SignDetector::Run()
             }
         }
 
-        cv::imshow("Traffic Sign Detection", cam_image);
-        char key = cv::waitKey(30);
-        if (key == 'q')
+        if (s_SupportGUI) 
         {
-            cv::destroyAllWindows();
-            break;
+            cv::imshow("Traffic Sign Detection", cam_image);
+            char key = cv::waitKey(30);
+            if (key == 'q')
+            {
+                cv::destroyAllWindows();
+                break;
+            }
         }
+        
     }
 
 }
