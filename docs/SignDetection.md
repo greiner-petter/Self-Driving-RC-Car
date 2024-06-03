@@ -37,3 +37,5 @@ In diesem Protokoll sind grob alle Aktivitäten unserer Aufgabengruppe *Verkehrs
 
 ## Woche 12 (aktueller Stand)
 - In der C++ Implementation wurde die Möglichkeit hinzugefügt, mehr als nur ein Schild gleichzeitig zu erkennen
+- Überarbeitung der Distanzerkennung
+- Deployment auf Auto und Testing
