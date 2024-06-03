@@ -56,7 +56,7 @@ struct ClassifierInstance
         type = signType;
         convertToDistanceLambda = [sizeFactor](float rectSize) {
             return std::max(SignDetector::Remap<float>(rectSize, 0.0f, sizeFactor, 100.0f, 0.0f), 0.0f);
-        }
+        };
     }
 };
 
