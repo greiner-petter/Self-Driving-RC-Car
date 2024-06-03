@@ -40,6 +40,10 @@ std::filesystem::path SignDetector::GetRightSignXML()
 {
     return std::filesystem::current_path().parent_path() / "res" / "cascade_right_sign.xml";
 }
+std::filesystem::path SignDetector::GetPrioritySignXML()
+{
+    return std::filesystem::current_path().parent_path() / "res" / "cascade_vorfahrt_sign.xml";
+}
 
 
 struct ClassifierInstance
@@ -76,6 +80,7 @@ void SignDetector::Run()
     s_Instances.push_back(std::make_shared<ClassifierInstance>(GetStopSignXML().string(), "Stop", TrafficSignType::Stop, 0.3));
     s_Instances.push_back(std::make_shared<ClassifierInstance>(GetLeftSignXML().string(), "Left", TrafficSignType::Left, 0.2));
     s_Instances.push_back(std::make_shared<ClassifierInstance>(GetRightSignXML().string(), "Right", TrafficSignType::Right, 0.2));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetPrioritySignXML().string(), "Priority", TrafficSignType::PriorityRoad, 0.25));
 
     while (true)
     {

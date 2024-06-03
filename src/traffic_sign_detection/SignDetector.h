@@ -16,6 +16,7 @@ public:
     static std::filesystem::path GetStopSignXML();
     static std::filesystem::path GetLeftSignXML();
     static std::filesystem::path GetRightSignXML();
+    static std::filesystem::path GetPrioritySignXML();
 
     // This function remaps a given value in space from in1 to in2, into the space from out1 to out2
     template<typename T>
