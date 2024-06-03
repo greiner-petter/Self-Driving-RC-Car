@@ -45,12 +45,14 @@ struct ClassifierInstance
     cv::CascadeClassifier classifier;
     std::string label;
     TrafficSignType type;
+    double signSizeFactor;
 
-    ClassifierInstance(const std::string& path, const std::string& signLabel, TrafficSignType signType)
+    ClassifierInstance(const std::string& path, const std::string& signLabel, TrafficSignType signType, double sizeFactor)
     {
         classifier.load(path);
         label = signLabel;
         type = signType;
+        SignDetector = sizeFactor;
     }
 };
 
@@ -69,9 +71,9 @@ static std::vector<std::shared_ptr<ClassifierInstance>> s_Instances;
 void SignDetector::Run()
 {
     // Load sign cascade classifiers
-    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetStopSignXML().string(), "Stop", TrafficSignType::Stop));
-    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetLeftSignXML().string(), "Left", TrafficSignType::Left));
-    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetRightSignXML().string(), "Right", TrafficSignType::Right));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetStopSignXML().string(), "Stop", TrafficSignType::Stop, 1.0));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetLeftSignXML().string(), "Left", TrafficSignType::Left, 0.666));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetRightSignXML().string(), "Right", TrafficSignType::Right, 0.666));
 
     while (true)
     {
@@ -99,8 +101,7 @@ void SignDetector::Run()
             for (size_t i = 0; i < sign_scaled.size(); i++)
             {
                 cv::Rect roi = sign_scaled[i];
-                const uint32_t distance = ConvertRectToDistanceInCM(roi, (int)cam_data->width, (int)cam_data->height);
-                s_Logger->log("distance: %d", distance);
+                const uint32_t distance = signClassifier->signSizeFactor * ConvertRectToDistanceInCM(roi, (int)cam_data->width, (int)cam_data->height);
 
                 // Draw rectangle around the sign
                 cv::rectangle(cam_image, cv::Point(roi.x, roi.y),
@@ -110,7 +111,7 @@ void SignDetector::Run()
                 cv::putText(cam_image, "Found " + signClassifier->label + " Sign", cv::Point(roi.x, roi.y + roi.height + 30),
                             cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2, cv::LINE_4);
 
-                s_Logger->log("Found %s Sign", signClassifier->label.c_str());
+                s_Logger->log("Found %s Sign in distance: %d", signClassifier->label.c_str(), distance);
             }
         }
 
