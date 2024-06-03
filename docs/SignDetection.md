@@ -14,7 +14,7 @@ In diesem Protokoll sind grob alle Aktivitäten unserer Aufgabengruppe *Verkehrs
 - Vorlesung bei Florian Pramme
 
 ## Woche 3
-- erste Architekturplanung und Mockups Desings
+- erste [Architekturplanung](https://gitlab.cup.ostfalia.de/ostfaliacup/af24/gruppe2/-/blob/master/docs/Architekturplanung.pdf?ref_type=heads) und Mockups Desings
 - Diskussionen über die Schnittstellen von den einzelnen Kompnenten und des Deciders/Planers
 - Generierung von Testdaten und Videomaterial zur Weiterverarbeitung
 
