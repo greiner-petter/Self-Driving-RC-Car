@@ -114,6 +114,7 @@ void SignDetector::Run()
                             cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2, cv::LINE_4);
 
                 s_Logger->log("Found %s Sign in distance: %d", signClassifier->label.c_str(), distance);
+                SendPacket({signClassifier->type, distance});
             }
         }
 
