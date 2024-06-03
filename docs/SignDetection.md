@@ -13,8 +13,13 @@ In diesem Protokoll sind grob alle Aktivitäten unserer Aufgabengruppe *Verkehrs
 ## Woche 2 
 - Vorlesung bei Florian Pramme
 
-## Woche 3 bis 6
-- Wir haben zunächst verucht maschinelles Lernen mit Tensorflow umzusetzen
+## Woche 3
+- erste Architekturplanung und Mockups Desings
+- Diskussionen über die Schnittstellen von den einzelnen Kompnenten und des Deciders/Planers
+- Generierung von Testdaten und Videomaterial zur Weiterverarbeitung
+
+## Woche 4 bis 6
+- ersten Versuche maschinelles Lernen mit Tensorflow umzusetzen
 - Dafür haben wir zuerst ein simples Kerasmodell trainiert und anschließend versucht es zu laufen zu bekommen
 - Um das Modell auszuführen wollten wir Tensorflow Lite verwenden, was jedoch immernoch zu groß war
 - Weswegen wir es auch nocheinmal mit Tensorflow Micro für Mikrocontroller probiert haben
