@@ -13,7 +13,7 @@
 // is normally disabled since it requires an entire Matrix copy
 // and adds other graphical overhead by the drawing itself
 
-// #define DRAW_POLYLINES_ON_EMPTY_OUTPUT
+//#define DRAW_POLYLINES_ON_EMPTY_OUTPUT
 
 
 // use cuda acceleration by default
@@ -49,10 +49,16 @@ static void signal_handler(int)
 }
 
 void initializeTransformParams() {
-    src_vertices[0] = Point2f(130,190);
-    src_vertices[1] = Point2f(270,190);
-    src_vertices[2] = Point2f(1200, 400);
-    src_vertices[3] = Point2f(-800, 400);
+    src_vertices[0] = Point2f(70,210);
+    src_vertices[1] = Point2f(330,210);
+    src_vertices[2] = Point2f(780, 310);
+    src_vertices[3] = Point2f(-380, 310);
+
+    /*src_vertices[0] = Point2f(120,230);
+    src_vertices[1] = Point2f(280,230);
+    src_vertices[2] = Point2f(420, 370);
+    src_vertices[3] = Point2f(-20, 370);*/
+
 
     dst_vertices[0] = Point2f(0, 0);
     dst_vertices[1] = Point2f(400, 0);
@@ -139,19 +145,25 @@ int main() {
 
                         toBirdsEyeView(src, dst);
 
+                        Mat dst2(400, 400, CV_8UC1, shared_memory->bev_data[1].img_buffer);
+                        dst.copyTo(dst2);
+
                         GaussianBlur(dst, dst, Size_(BLUR_SIZE, BLUR_SIZE), 0);
-                        Canny(dst, dst, 50, 200, 3, true);
+                        Canny(dst, dst, 10, 50, 3, true);
                         GaussianBlur(dst, dst, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
+
+                        dst.copyTo(dst2);
 
                         // notify others about available picture
                         ipc_packet.set_sender(ocMemberId::Image_Processing);
                         ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
                         socket->send_packet(ipc_packet);
-
+                        
+#ifndef hideContours
                         vector<vector<Point>> contours;
                         findContours(dst, contours, RETR_LIST, CHAIN_APPROX_NONE);
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-                        Mat redrewed_image = Mat::zeros(dst.size(), CV_8UC1);
+                        Mat redrewed_image = Mat::zeros(dst2.size(), CV_8UC1);
 #endif
 
                         vector<vector<Point>> cleaned_data;
@@ -192,9 +204,9 @@ int main() {
 
 
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-                        redrewed_image.copyTo(dst);
+                        redrewed_image.copyTo(dst2);
 #endif
-
+#endif
                     } break;
                     default:
                     {

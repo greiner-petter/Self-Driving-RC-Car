@@ -63,7 +63,7 @@ int32_t ocIpcSocket::send(
         while (reader.can_read())
         {
             size_t len = reader.available_read_space();
-            ssize_t result = ::send(_socket_fd, reader.peek(len), len, 0);
+            size_t result = ::send(_socket_fd, reader.peek(len), len, 0);
             if (result <= 0)
             {
                 return -1;
