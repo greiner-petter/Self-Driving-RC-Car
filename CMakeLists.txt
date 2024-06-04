@@ -30,6 +30,9 @@ add_subdirectory(src/liboccar)
 add_subdirectory(src/camera)
 add_subdirectory(src/can_gateway)
 add_subdirectory(src/command_line)
+
+add_subdirectory(src/decider)
+
 add_subdirectory(src/eth_gateway)
 add_subdirectory(src/ipc_hub)
 add_subdirectory(src/tachometer)
