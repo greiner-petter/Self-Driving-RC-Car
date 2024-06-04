@@ -35,6 +35,7 @@ enum class ocMemberId: uint16_t
     Apriltag_Detection = 17,
     Driver             = 18,
     Intersection_Detection = 19,
+    Lane_Detection_Values  = 20
 };
 
 const char *to_string(ocMemberId member_id);
@@ -88,6 +89,7 @@ enum class ocMessageId: uint16_t
     Set_Camera_Parameter     = 0xD3,
 
     Traffic_Sign_Detected     = 0xE1,
+    Lane_Detection_Values     = 0xE2,
 };
 
 const char *to_string(ocMessageId message_id);

@@ -14,9 +14,13 @@ int main(){
     //Driver::turn_left();
     //Driver::turn_right();
     //Driver::stop();
-    Driver::park();
-    Driver::wait(2);
-    Driver::park_out();
+    //Driver::park();
+    //Driver::wait(2);
+    //Driver::park_out();
+    while(true){
+        Driver::drive_forward();
+        Driver::wait(0.1);
+    }
 
     
     

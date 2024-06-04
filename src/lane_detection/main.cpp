@@ -207,8 +207,8 @@ int main()
 
                     float speed = 20 * (254 / (std::abs(angle) + 254));
 
-                    ipc_packet.set_sender(ocMemberId::Lane_Detection);
-                    ipc_packet.set_message_id(ocMessageId::Lane_Found);
+                    ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
+                    ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                     ipc_packet.clear_and_edit()
                         .write<int16_t>(speed)
                         .write<int8_t>(angle);

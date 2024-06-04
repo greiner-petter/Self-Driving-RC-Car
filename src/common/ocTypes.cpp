@@ -30,6 +30,7 @@ const char *to_string(ocMemberId member_id)
   case ocMemberId::Apriltag_Detection: return "ocMemberId::Apriltag_Detection";
   case ocMemberId::Driver:             return "ocMemberId::Driver";
   case ocMemberId::Intersection_Detection: return "ocMemberId::Intersection_Detection";
+  case ocMemberId::Lane_Detection_Values:  return "ocMemberId::Lane_Detection_Values";
   }
   return "<unknown>";
 }

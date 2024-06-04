@@ -15,7 +15,7 @@ void Driver::initialize(){
         logger = member.get_logger();
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
         sup.clear_and_edit()
-            .write(ocMessageId::Driving_Task_Finished);
+            .write(ocMessageId::Lane_Detection_Values);
         socket->send_packet(sup);
 
         is_initialized = true;
@@ -63,20 +63,39 @@ void Driver::turn_left(){
  * The speed and steering values are received from the lane-detection using the IPC-Hub.
 */
 void Driver::drive_forward(){
-    int16_t speed = 0;
-    int8_t steering_front = 0;
-    int8_t steering_rear = 0;
+    ocPacket recv_packet;
 
-    struct start_driving_task_t start_driving_task = {
-        .speed          = speed,
-        .steering_front = steering_front,
-        .steering_rear  = steering_rear,
-        .id             = 1,
-        .steps_ab       = 10
-    };
+    int result = socket->read_packet(recv_packet);
 
-    int32_t send_result = socket->send(ocMessageId::Start_Driving_Task, start_driving_task);
-    logger->log("Result of sending driving task: %d", send_result);
+    if (result < 0){
+      logger->error("Error reading the IPC socket: (%i) %s", errno, strerror(errno));
+    } else {
+        switch (recv_packet.get_message_id()){
+            case ocMessageId::Lane_Detection_Values:{
+                auto reader = recv_packet.read_from_start();
+
+                int16_t speed = reader.read<int16_t>();
+                int8_t steering = reader.read<int8_t>();
+
+                struct start_driving_task_t start_driving_task = {
+                    .speed          = speed,
+                    .steering_front = steering,
+                    .steering_rear  = 0,
+                    .id             = 1,
+                    .steps_ab       = 10
+                };
+
+                int32_t send_result = socket->send(ocMessageId::Start_Driving_Task, start_driving_task);
+                logger->log("Result of sending driving task: %d", send_result);
+            } break;
+
+            default:{
+                ocMessageId msg_id = recv_packet.get_message_id();
+                ocMemberId  mbr_id = recv_packet.get_sender();
+                logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+            } break;
+        }
+    }
 }
 
 

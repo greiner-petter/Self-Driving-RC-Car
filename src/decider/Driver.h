@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../common/ocMember.h"
+#include "../common/ocPacket.h"
 #include "../common/ocCar.h"
 #include <cstdint>
 
@@ -19,9 +20,8 @@ struct start_driving_task_t{
 
 
 
-
-
 class ocMember;
+class ocPacket;
 class ocIpcSocket;
 
 
