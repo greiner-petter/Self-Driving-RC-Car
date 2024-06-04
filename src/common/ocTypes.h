@@ -68,6 +68,7 @@ enum class ocMessageId: uint16_t
 
     Lane_Found               = 0x22,
     Lines_Available          = 0x23,
+    Intersection_Detected    = 0x24,
 
     Set_Lights               = 0x48,
     Start_Driving_Task       = 0x49,
