@@ -117,8 +117,7 @@ int main()
                         } 
                     }
 
-                    float angle = 0;
-
+                    // Histogram evaluation
                     std::sort(max.begin(), max.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
                         return a.second > b.second;
                     });
@@ -133,6 +132,7 @@ int main()
                     std::vector<cv::Point> midVec;
                     std::vector<cv::Point> rightVec;
 
+                    // Retrieve lanes by maximas of histogram
                     for(int i = 0; i < intersections.size(); i++) {
                         int x = intersections.at(i).x/16;
 
@@ -146,7 +146,7 @@ int main()
                             } else if(greatest_values.at(1).first == x || greatest_values.at(1).first == x-1) {
                                 rightVec.push_back(intersections.at(i));
                             } 
-                        } else {
+                        } else if(greatest_values.size() >= 3) {
                             if(greatest_values.at(0).first == x || greatest_values.at(0).first == x+1) {
                                 leftVec.push_back(intersections.at(i));
                             } else if(greatest_values.at(1).first == x) {
@@ -160,6 +160,7 @@ int main()
                     int right = 0;
                     int mid = 0;
 
+                    // Retrieve right and mid x coordinates to calculate middle of lane
                     if(rightVec.size() != 0) {
                         for(const auto& i : rightVec) {
                             right += i.x;
@@ -178,11 +179,21 @@ int main()
 
                     int dest = (right + mid) / 2;
 
-                    if(mid == 0) {
+                    if(mid == 0) { // Keep left from right lane with a margin of 10 when no mid line found
                         dest = right -10;
                     }
 
-                    angle = (dest - 200) * 2.54; // MAPPING TO INT 8
+                    if(mid == 0 && right == 0) { // Move straight when nothing seen
+                        dest = 200;
+                    }
+
+                    if(dest > 399) { // Fix destination out of window
+                        dest = 399;
+                    } else if(dest < 0) {
+                        dest = 0;
+                    }
+
+                    float angle = (dest - 200) * 2.54; // MAPPING TO INT 8 -255 to 254 for angle
 
                     cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
 
