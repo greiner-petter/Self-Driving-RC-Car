@@ -209,7 +209,7 @@ int main()
                         return 0;
                     }*/
 
-                    float speed = 80 * (100 / (std::abs(angle) + 100));
+                    float speed = 160 * (100 / (std::abs(angle) + 100));
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
