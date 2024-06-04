@@ -1,5 +1,3 @@
-//#include "../common/ocMember.h"
-//#include "../common/ocHistoryBuffer.h"
 #include "Crossing_3_Way_T.h"
 
 
@@ -23,11 +21,8 @@ void Crossing_3_Way_T::initialize(){
 }
 
 TrafficSign trafficSign;
-//ocHistoryBuffer<ocTime, TrafficSign> read_signs_history(10);
-
 
 void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
-    initialize();
     /*
     Get IPC-hub messages regarding traffic signs;
     Create array of traffic-signs (types and distances);
@@ -40,7 +35,7 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
     };
 
     */
-
+    initialize();
     ocPacket recv_packet;
 
     while (true) {
@@ -55,10 +50,9 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
 
         switch (recv_packet.get_message_id())
         {
-        case ocMessageId::Sign_Detection:
+        case ocMessageId::Traffic_Sign_Detected:
             auto reader = recv_packet.read_from_start();
             trafficSign = reader.read<TrafficSign>();
-            //read_signs_history.push(now, reader.read<TrafficSign>());
             break;
         
         default:
@@ -77,23 +71,22 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
 
 
 void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
-    /*
 
     bool drive_left = false;
     bool drive_right = false;
 
     if (trafficSign.distanceCM < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
         switch(trafficSign.type){
-            case Stop:
+            case TrafficSignType::Stop:
                 drive.stop(2000); //stop for 2s
                 break;
-            case PriorityRoad:
+            case TrafficSignType::PriorityRoad:
                 drive_right = true;
                 break;
-            case Left:
+            case TrafficSignType::Left:
                 drive_left = true;
                 break;
-            case Right:
+            case TrafficSignType::Right:
                 drive_right = true;
                 break;
         }
@@ -114,7 +107,7 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
     }
 
     statemachine->change_state(Normal_Drive::getInstance());
-    */
+    
 }
 
 

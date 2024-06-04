@@ -20,6 +20,7 @@ void Crossing_3_Way_Left::initialize(){
     }
 }
 
+TrafficSign trafficSign;
 
 void Crossing_3_Way_Left::on_entry(Statemachine* statemachine){
     /*
@@ -27,36 +28,60 @@ void Crossing_3_Way_Left::on_entry(Statemachine* statemachine){
     Create array of traffic-signs (types and distances);
     Array an statemachine->run übergeben;
     */
-   initialize();
-   statemachine->run(nullptr);
+    initialize();
+    ocPacket recv_packet;
+
+    while (true) {
+       
+        int result = socket->read_packet(recv_packet);
+        ocTime now = ocTime::now();
+
+        if (result < 0) {
+            logger->error("Error reading the IPC socket: (%i) %s", errno, strerror(errno));
+            break;
+        }
+
+        switch (recv_packet.get_message_id())
+        {
+        case ocMessageId::Traffic_Sign_Detected:
+            auto reader = recv_packet.read_from_start();
+            trafficSign = reader.read<TrafficSign>();
+            break;
+        
+        default:
+            ocMessageId msg_id = recv_packet.get_message_id();
+            ocMemberId mbr_id = recv_packet.get_sender();
+            logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+            break;
+        }
+
+    }
+
+    statemachine->run(Crossing_3_Way_Left::get_instance);
 }
 
 
 void Crossing_3_Way_Left::run(Statemachine* statemachine, void* data){
-    /*
-
-    
 
     bool drive_left = false;
     bool drive_forward = false;
 
-    for sign in array:
-        if (sign.distanceCM < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
-            switch(sign.type){
-                case Stop:
-                    drive.stop(2000); //stop for 2s
-                    break;
-                case RightOfWay:
-                    drive_forward = true;
-                    break;
-                case Left:
-                    drive_left = true;
-                    break;
-                case Right:
-                    drive_left = true;
-                    break;
-            }
+    if (trafficSign.distanceCM < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
+        switch(trafficSign.type){
+            case TrafficSignType::Stop:
+                drive.stop(2000); //stop for 2s
+                break;
+            case TrafficSignType::PriorityRoad:
+                drive_forward = true;
+                break;
+            case TrafficSignType::Left:
+                drive_left = true;
+                break;
+            case TrafficSignType::Right:
+                drive_left = true;
+                break;
         }
+    }
 
     if(drive_left && drive_forward){
         drive_left = false;
@@ -73,7 +98,6 @@ void Crossing_3_Way_Left::run(Statemachine* statemachine, void* data){
     }
 
     statemachine->change_state(Normal_Drive::getInstance());
-    */
 }
 
 

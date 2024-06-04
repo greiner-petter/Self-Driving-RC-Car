@@ -3,6 +3,7 @@
 #include "../../common/ocCar.h"
 #include "State.h"
 #include "../Statemachine.h"
+#include "TrafficSign.h"
 
 class ocMember;
 class ocIpcSocket;
