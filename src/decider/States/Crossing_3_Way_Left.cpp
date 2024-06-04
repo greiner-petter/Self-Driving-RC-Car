@@ -35,12 +35,14 @@ void Crossing_3_Way_Left::on_entry(Statemachine* statemachine){
 void Crossing_3_Way_Left::run(Statemachine* statemachine, void* data){
     /*
 
+    
+
     bool drive_left = false;
     bool drive_forward = false;
 
     for sign in array:
-        if (distance < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
-            switch(sign_type){
+        if (sign.distanceCM < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
+            switch(sign.type){
                 case Stop:
                     drive.stop(2000); //stop for 2s
                     break;
