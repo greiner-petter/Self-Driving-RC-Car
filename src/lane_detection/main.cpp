@@ -208,13 +208,10 @@ int main()
                     float speed = 20 * (254 / (std::abs(angle) + 254));
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
-                    ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
+                    ipc_packet.set_message_id(ocMessageId::Lane_Found);
                     ipc_packet.clear_and_edit()
                         .write<int16_t>(speed)
-                        .write<int8_t>(angle) 
-                        .write<int8_t>(0)
-                        .write<uint8_t>(0x8)
-                        .write<int32_t>(car_properties.cm_to_steps(1));
+                        .write<int8_t>(angle);
                     socket->send_packet(ipc_packet);
                 } break;
                 default:
