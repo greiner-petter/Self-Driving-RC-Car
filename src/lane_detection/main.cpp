@@ -14,6 +14,8 @@
 
 #define DRAW_LINE_SAMPLES
 
+//#define DEBUG_WINDOW
+
 ocLogger *logger;
 
 static bool running = true;
@@ -49,21 +51,6 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calcHistogram(cv::Mat *ma
                 histogram[x/16]++;
             }
         }
-    }
-
-    for(int radius = 50; radius <= 200; radius+=25) {
-        cv::circle(*matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
-    }
-
-    for(const auto& i : intersections) {
-        cv::circle(*matrix, i, 5, cv::Scalar(255,255,255,1), 5);
-    }
-
-    std::string histo = "";
-
-    for(int i = 0; i < 25; i++) {
-        histo += std::to_string(histogram[i]);
-        histo += "\t";
     }
 
     return std::pair(histogram, intersections);
@@ -110,6 +97,14 @@ int main()
 
                     std::array<int, 25> histogram = histoIntersections.first;
                     std::vector<cv::Point> intersections = histoIntersections.second;
+
+                    std::string s;
+
+                    for(const auto& i : histogram) {
+                        s += std::to_string((int) i) + ", ";
+                    }
+
+                    logger->log("%s\n", s.c_str());
 
                     std::vector<std::pair<int, int>> max;
 
@@ -179,6 +174,38 @@ int main()
                         mid /= midVec.size();
                     }
 
+                    int distance_to_horizontal = 0;
+                    int count = 0;
+
+                    for(int radius = 50; radius <= 200; radius+=25) {
+                        int pointCount = 0;
+                        for(double pi = 0; pi < M_PI; pi += 0.001) {
+                            int x = 200 + round(cos(pi) * radius);
+                            int y = 400 - round(sin(pi) * radius);
+
+                            if(x >= 400 || x < 0 || y >= 400 || y < 0) {
+                                continue;
+                            }
+
+                            int color = matrix.at<uint8_t>(y, x);
+
+                            if(color > 50 && x > (mid + 10) && x < (right - 10)) {
+                                pointCount++;
+                            }
+                        }
+
+                        logger->log("%d", pointCount);
+                        if (pointCount > 10) {
+                            distance_to_horizontal += radius;
+                            count ++;
+                        }
+
+                        if (count > 0) {
+                            distance_to_horizontal /= count;
+                        }   
+                    }
+
+                    logger->log("%d", distance_to_horizontal);
                     int dest = (right + mid) / 2;
 
                     if(mid == 0) { // Keep left from right lane with a margin of 10 when no mid line found
@@ -199,17 +226,28 @@ int main()
 
                     angle = std::clamp((int) angle, -200, 200); // Clamp between -200 and 200 so tire doesn't get stuck due to too high angle
 
-                    cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
+                    float speed = 120 * (254 / (std::abs(angle) + 254));
 
-                    /*cv::imshow("Lane Detection", matrix);
+            #ifdef DEBUG_WINDOW
+                    speed = 20 * (254 / (std::abs(angle) + 254));
+
+                    for(int radius = 50; radius <= 200; radius+=25) {
+                        cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
+                    }
+
+                    for(const auto& i : intersections) {
+                        cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
+                    }
+
+                    cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
+                    cv::imshow("Lane Detection", matrix);
                     char key = cv::waitKey(30);
                     if (key == 'q')
                     {
                         cv::destroyAllWindows();
                         return 0;
-                    }*/
-
-                    float speed = 120 * (254 / (std::abs(angle) + 254));
+                    }
+            #endif
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
