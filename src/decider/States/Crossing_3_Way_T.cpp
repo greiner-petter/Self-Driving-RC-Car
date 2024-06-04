@@ -1,5 +1,3 @@
-//#include "../common/ocMember.h"
-//#include "../common/ocHistoryBuffer.h"
 #include "Crossing_3_Way_T.h"
 
 
@@ -8,8 +6,21 @@ State& Crossing_3_Way_T::get_instance(){
     return singleton;
 }
 
-//ocHistoryBuffer<ocTime, TrafficSign> read_signs_history(12);
+void Crossing_3_Way_T::initialize(){
+    if(!is_initialized){
+        member.attach();
+        socket = member.get_socket();
+        logger = member.get_logger();
+        ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        sup.clear_and_edit()
+            .write(ocMessageId::Driving_Task_Finished);
+        socket->send_packet(sup);
 
+        is_initialized = true;
+    }
+}
+
+TrafficSign trafficSign;
 
 void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
     /*
@@ -23,12 +34,8 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
         uint64_t distance;
     };
 
-
-
-    ocMember member(ocMemberId::Sign_Detection, "Sign_Detection");
-    member.attach();
-    ocIpcSocket *socket = member.get_socket();
-    ocLogger *logger = member.get_logger();
+    */
+    initialize();
     ocPacket recv_packet;
 
     while (true) {
@@ -43,9 +50,9 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
 
         switch (recv_packet.get_message_id())
         {
-        case ocMessageId::Sign_Detection:
+        case ocMessageId::Traffic_Sign_Detected:
             auto reader = recv_packet.read_from_start();
-            read_signs_history.push(now, reader.read<TrafficSign>());
+            trafficSign = reader.read<TrafficSign>();
             break;
         
         default:
@@ -59,33 +66,31 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
 
     statemachine->run(Crossing_3_Way_T::get_instance);    
     
-    */
+    
 }
 
 
 void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
-    /*
 
     bool drive_left = false;
     bool drive_right = false;
 
-    for sign in array:
-        if (distance < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
-            switch(sign_type){
-                case Stop:
-                    drive.stop(2000); //stop for 2s
-                    break;
-                case PriorityRoad:
-                    drive_right = true;
-                    break;
-                case Left:
-                    drive_left = true;
-                    break;
-                case Right:
-                    drive_right = true;
-                    break;
-            }
+    if (trafficSign.distanceCM < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
+        switch(trafficSign.type){
+            case TrafficSignType::Stop:
+                drive.stop(2000); //stop for 2s
+                break;
+            case TrafficSignType::PriorityRoad:
+                drive_right = true;
+                break;
+            case TrafficSignType::Left:
+                drive_left = true;
+                break;
+            case TrafficSignType::Right:
+                drive_right = true;
+                break;
         }
+    }
 
     if(drive_left && drive_right){
         drive_left = false;
@@ -102,7 +107,7 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
     }
 
     statemachine->change_state(Normal_Drive::getInstance());
-    */
+    
 }
 
 

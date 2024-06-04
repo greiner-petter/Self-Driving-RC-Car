@@ -33,9 +33,18 @@ enum class ocMemberId: uint16_t
     Virtual_Car        = 15,
     Tachometer         = 16,
     Apriltag_Detection = 17,
+
     Driver             = 18,
-    Intersection_Detection = 19,
-    Lane_Detection_Values  = 20
+    Parking            = 19,
+    Normal_Drive       = 20,
+    Is_At_Crossing     = 21,
+    Approaching_Crossing = 22,
+    Crossing_3_Way_Left = 23,
+    Crossing_3_Way_Right = 24,
+    Crossing_3_Way_T   = 25,
+    Crossing_4_Way     = 26
+    Intersection_Detection = 17,
+    Lane_Detection_Values  = 28
 };
 
 const char *to_string(ocMemberId member_id);
