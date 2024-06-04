@@ -216,7 +216,7 @@ int main()
                     ipc_packet.clear_and_edit()
                         .write<int16_t>(speed)
                         .write<int8_t>(angle) 
-                        .write<int8_t>(0)
+                        .write<int8_t>(-angle)
                         .write<uint8_t>(0x8)
                         .write<int32_t>(car_properties.cm_to_steps(1));
                     socket->send_packet(ipc_packet);
