@@ -199,13 +199,13 @@ int main()
 
                     cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
 
-                    cv::imshow("Lane Detection", matrix);
+                    /*cv::imshow("Lane Detection", matrix);
                     char key = cv::waitKey(30);
                     if (key == 'q')
                     {
                         cv::destroyAllWindows();
                         return 0;
-                    }
+                    }*/
 
                     float speed = 40 * (254 / (std::abs(angle) + 254));
 
