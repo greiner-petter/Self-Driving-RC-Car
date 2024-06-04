@@ -69,7 +69,7 @@ void Crossing_3_Way_Right::run(Statemachine* statemachine, void* data){
     if (trafficSign.distanceCM < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
         switch(trafficSign.type){
             case TrafficSignType::Stop:
-                drive.stop(2000); //stop for 2s
+                Driver::stop(2000); //stop for 2s
                 break;
             case TrafficSignType::PriorityRoad:
                 drive_forward = true;
@@ -90,11 +90,11 @@ void Crossing_3_Way_Right::run(Statemachine* statemachine, void* data){
     //if obstacle, stop
 
     if(drive_right){
-        drive.turn_right();
+        Driver::turn_right();
     } else if (drive_forward){
-        drive.drive_forward();
+        Driver::drive_forward();
     } else{
-        drive.turn_right();
+        Driver::turn_right();
     }
 
     statemachine->change_state(Normal_Drive::getInstance());
