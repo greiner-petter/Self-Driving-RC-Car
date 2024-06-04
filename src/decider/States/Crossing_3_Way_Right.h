@@ -4,6 +4,7 @@
 #include "State.h"
 #include "../Statemachine.h"
 #include "TrafficSign.h"
+#include "../Driver.h"
 
 class ocMember;
 class ocIpcSocket;
