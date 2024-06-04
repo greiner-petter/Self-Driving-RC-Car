@@ -43,7 +43,7 @@ enum class ocMemberId: uint16_t
     Crossing_3_Way_Right = 24,
     Crossing_3_Way_T   = 25,
     Crossing_4_Way     = 26,
-    Intersection_Detection = 17,
+    Intersection_Detection = 27,
     Lane_Detection_Values  = 28
 };
 
