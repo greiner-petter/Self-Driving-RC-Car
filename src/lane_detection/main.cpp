@@ -194,7 +194,7 @@ int main()
                             }
                         }
 
-                        logger->log("%d", pointCount);
+                        //logger->log("%d", pointCount);
                         if (pointCount > 10) {
                             distance_to_horizontal += radius;
                             count ++;
@@ -205,7 +205,7 @@ int main()
                         }   
                     }
 
-                    logger->log("%d", distance_to_horizontal);
+                    //logger->log("%d", distance_to_horizontal);
                     int dest = (right + mid) / 2;
 
                     if(mid == 0) { // Keep left from right lane with a margin of 10 when no mid line found
@@ -226,7 +226,7 @@ int main()
 
                     angle = std::clamp((int) angle, -200, 200); // Clamp between -200 and 200 so tire doesn't get stuck due to too high angle
 
-                    float speed = 120 * (254 / (std::abs(angle) + 254));
+                    float speed = 90 * (100 / (std::abs(angle) + 100));
 
             #ifdef DEBUG_WINDOW
                     speed = 20 * (254 / (std::abs(angle) + 254));
