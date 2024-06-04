@@ -4,19 +4,11 @@
 #include "../common/ocCar.h"
 #include <cstdint>
 
-const int KP_SPEED = 0;
-const int KD_SPEED = 0;
-const int KI_SPEED = 0;
-
-const int KP_STEER_FRONT = 0;
-const int KD_STEER_FRONT = 0;
-const int KI_STEER_FRONT = 0;
-
-const int KP_STEER_BACK = 0;
-const int KD_STEER_BACK = 0;
-const int KI_STEER_BACK = 0;
 
 
+/**
+ * A sctruct which implements the data-structure for a start-driving-task-message.
+*/
 struct start_driving_task_t{
     int16_t speed;
     int8_t 	steering_front;
