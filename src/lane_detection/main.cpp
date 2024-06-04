@@ -103,6 +103,8 @@ int main()
                 case ocMessageId::Lines_Available:
                 {
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[1].img_buffer);
+
+                    cv::imwrite("bev.jpg", matrix);
                    
                     auto histoIntersections = calcHistogram(&matrix);
 
@@ -205,7 +207,7 @@ int main()
                         return 0;
                     }
 
-                    float speed = 20 * (254 / (std::abs(angle) + 254));
+                    float speed = 40 * (254 / (std::abs(angle) + 254));
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection);
                     ipc_packet.set_message_id(ocMessageId::Start_Driving_Task);
