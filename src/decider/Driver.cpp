@@ -75,12 +75,14 @@ void Driver::drive_forward(){
                 auto reader = recv_packet.read_from_start();
 
                 int16_t speed = reader.read<int16_t>();
-                int8_t steering = reader.read<int8_t>();
+                int8_t steering_front = reader.read<int8_t>();
+                int8_t steering_back = reader.read<int8_t>();
+                
 
                 struct start_driving_task_t start_driving_task = {
                     .speed          = speed,
-                    .steering_front = steering,
-                    .steering_rear  = 0,
+                    .steering_front = steering_front,
+                    .steering_rear  = steering_back,
                     .id             = 1,
                     .steps_ab       = 10
                 };
