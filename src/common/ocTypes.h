@@ -65,6 +65,7 @@ enum class ocMessageId: uint16_t
     Birdseye_Image_Available = 0x13,
 
     Lane_Found               = 0x22,
+    Lines_Available          = 0x23,
 
     Set_Lights               = 0x48,
     Start_Driving_Task       = 0x49,
@@ -93,6 +94,8 @@ enum class ocMessageId: uint16_t
     Rc_State_Changed         = 0xCB,
 
     Set_Camera_Parameter     = 0xD3,
+
+    Traffic_Sign_Detected     = 0xE1,
 };
 
 const char *to_string(ocMessageId message_id);
@@ -324,4 +327,5 @@ struct ocSharedMemory final
 
     uint64_t _canary7;
 };
+
 static_assert(std::is_trivial_v<ocSharedMemory>);
