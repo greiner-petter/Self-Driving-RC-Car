@@ -15,7 +15,7 @@ endif()
 
 # Compiler Options
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -g")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native")
 
 # Linker options
@@ -40,3 +40,7 @@ add_subdirectory(src/video_input)
 add_subdirectory(src/video_recorder)
 add_subdirectory(src/video_viewer)
 add_subdirectory(src/virtual_car)
+add_subdirectory(src/image_processing_bev)
+add_subdirectory(src/lane_detection)
+add_subdirectory(src/intersection_detection)
+add_subdirectory(src/traffic_sign_detection)
