@@ -1,22 +1,15 @@
 #pragma once
 
 #include "../common/ocMember.h"
+#include "../common/ocPacket.h"
 #include "../common/ocCar.h"
 #include <cstdint>
 
-const int KP_SPEED = 0;
-const int KD_SPEED = 0;
-const int KI_SPEED = 0;
-
-const int KP_STEER_FRONT = 0;
-const int KD_STEER_FRONT = 0;
-const int KI_STEER_FRONT = 0;
-
-const int KP_STEER_BACK = 0;
-const int KD_STEER_BACK = 0;
-const int KI_STEER_BACK = 0;
 
 
+/**
+ * A sctruct which implements the data-structure for a start-driving-task-message.
+*/
 struct start_driving_task_t{
     int16_t speed;
     int8_t 	steering_front;
@@ -27,9 +20,8 @@ struct start_driving_task_t{
 
 
 
-
-
 class ocMember;
+class ocPacket;
 class ocIpcSocket;
 
 
@@ -52,6 +44,7 @@ class Driver {
         static void drive(int16_t speed, int8_t steering=0);
         static void stop(float duration=0);
         static void park();
+        static void park_out();
         static void wait(float duration=0);
 };
 
