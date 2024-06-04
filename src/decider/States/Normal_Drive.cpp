@@ -35,15 +35,11 @@ void Normal_Drive::on_entry(Statemachine* statemachine){
 
 void Normal_Drive::run(Statemachine* statemachine, void* data){
     /*
+    uint32_t message = socket->read_packet(ocMessageId::Intersection_Detected);
     while(true){
-        bool crossing_dtected = IPC-HUB has crossing been detected
-        bool parking_detected = IPC-HUB sign detection: parking
+        bool crossing_dtected = (message == null ? false : true);
         if (crossing_detected){
             statemachine->change_state(Approaching_Crossing::getInstance());
-            break;
-        }
-        if (parking_detected) {
-            statemachine->change_state(Parking::getInstance());
             break;
         }
         drive.drive_forward();

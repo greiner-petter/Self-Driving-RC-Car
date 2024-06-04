@@ -42,7 +42,9 @@ enum class ocMemberId: uint16_t
     Crossing_3_Way_Left = 23,
     Crossing_3_Way_Right = 24,
     Crossing_3_Way_T   = 25,
-    Crossing_4_Way     = 26
+    Crossing_4_Way     = 26,
+
+    Intersection_Detected = 27
 };
 
 const char *to_string(ocMemberId member_id);

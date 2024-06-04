@@ -35,7 +35,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     bool is_at_crossing = false;
 
     while(!is_at_crossing){
-        distance = IPC Hub get distance;
+        uint32_t distance = socket->read_packet(ocMessageId::Intersection_Detected);
 
         //algorithm for slowing down towards 2cm/s
         double* arr = smooth_speed(curr_speed);
