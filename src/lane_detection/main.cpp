@@ -197,7 +197,7 @@ int main()
 
                     float angle = (dest - 200) * 2.54; // MAPPING TO INT 8 -255 to 254 for angle
 
-                    angle = std::clamp(dest, -200, 200); // Clamp between -200 and 200 so tire doesn't get stuck due to too high angle
+                    angle = std::clamp(angle, -200, 200); // Clamp between -200 and 200 so tire doesn't get stuck due to too high angle
 
                     cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
 
