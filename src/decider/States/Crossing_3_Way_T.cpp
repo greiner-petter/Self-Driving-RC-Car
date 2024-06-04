@@ -20,7 +20,10 @@ void Crossing_3_Way_T::initialize(){
     }
 }
 
+// FIXME: Linker Error
+#if 0
 TrafficSign trafficSign;
+#endif
 
 void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
     /*
@@ -52,20 +55,29 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
         {
         case ocMessageId::Traffic_Sign_Detected:
             auto reader = recv_packet.read_from_start();
+            // FIXME: Compiler Error
+#if 0
             trafficSign = reader.read<TrafficSign>();
+#endif
             break;
         
+        // FIXME: Compiler Error
+#if 0
         default:
             ocMessageId msg_id = recv_packet.get_message_id();
             ocMemberId mbr_id = recv_packet.get_sender();
             logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
             break;
+#endif
         }
 
     }
 
-    statemachine->run(Crossing_3_Way_T::get_instance);    
-    
+        // FIXME: Compiler Error
+#if 0
+    statemachine->run(Crossing_3_Way_T::get_instance);     
+#endif
+
     
 }
 
@@ -74,6 +86,8 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
 
     bool drive_left = false;
     bool drive_right = false;
+    // FIXME: Compiler/Linker Error
+#if 0
 
     if (trafficSign.distanceCM < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
         switch(trafficSign.type){
@@ -91,6 +105,7 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
                 break;
         }
     }
+#endif
 
     if(drive_left && drive_right){
         drive_left = false;
@@ -98,6 +113,8 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
 
     //if obstacle, stop
 
+    // FIXME: Compiler Error
+#if 0
     if(drive_left){
         drive.turn_left();
     } else if (drive_right){
@@ -107,6 +124,7 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
     }
 
     statemachine->change_state(Normal_Drive::getInstance());
+#endif
     
 }
 
