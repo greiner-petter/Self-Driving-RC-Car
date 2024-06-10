@@ -150,11 +150,24 @@ int main() {
                         toBirdsEyeView(src, dst);
 
                         Mat dst2(400, 400, CV_8UC1, shared_memory->bev_data[1].img_buffer);
-                        dst.copyTo(dst2);
 
                         GaussianBlur(dst, dst, Size_(BLUR_SIZE, BLUR_SIZE), 0);
-                        Canny(dst, dst, 10, 50, 3, true);
+
+                        if(std::getenv("CAR_ENV") != NULL) {
+                            cv::imwrite("cam_image_gaussian.jpg", dst);
+                        } 
+
+                        Canny(dst, dst, 30, 50, 3, true);
+
+                        if(std::getenv("CAR_ENV") != NULL) {
+                            cv::imwrite("cam_image_canny.jpg", dst);
+                        } 
+
                         GaussianBlur(dst, dst, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
+
+                        if(std::getenv("CAR_ENV") != NULL) {
+                            cv::imwrite("cam_image_gaussian2.jpg", dst);
+                        } 
 
                         dst.copyTo(dst2);
 
