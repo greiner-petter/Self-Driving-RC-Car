@@ -63,7 +63,7 @@ int main()
     signal(SIGQUIT, signal_handler);
     signal(SIGTERM, signal_handler);
 
-    ocMember member(ocMemberId::Lane_Detection, "Lane Detection");
+    ocMember member(ocMemberId::Lane_Detection_Values, "Lane Detection");
     member.attach();
 
     ocIpcSocket *socket = member.get_socket();
