@@ -214,11 +214,11 @@ int main()
                         dest = 0;
                     }
 
-                    float angle = (dest - 200) * 2.54; // MAPPING TO INT 8 -255 to 254 for angle
+                    float angle = (dest - 200) * 0.8; // MAPPING TO INT 8 -80 to 80 for angle
 
-                    angle = std::clamp((int) angle, -170, 170); // Clamp between -200 and 200 so tire doesn't get stuck due to too high angle
+                    angle = std::clamp((int) angle, -80, 80); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle
 
-                    float speed = 90 * (100 / (std::abs(angle) + 100));
+                    float speed = 50 * (100 / (std::abs(angle) + 100));
 
             #ifdef DEBUG_WINDOW
                     speed = 20 * (254 / (std::abs(angle) + 254));
