@@ -91,7 +91,9 @@ int main()
                 {
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[1].img_buffer);
 
-                    cv::imwrite("bev.jpg", matrix);
+                    if(std::getenv("CAR_ENV") != NULL) {
+                        cv::imwrite("bev.jpg", matrix);
+                    } 
                    
                     auto histoIntersections = calcHistogram(&matrix);
 
@@ -238,6 +240,20 @@ int main()
                     {
                         cv::destroyAllWindows();
                         return 0;
+                    }
+            #else
+                for(int radius = 50; radius <= 200; radius+=25) {
+                        cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
+                    }
+
+                    for(const auto& i : intersections) {
+                        cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
+                    }
+
+                    cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
+
+                    if(std::getenv("CAR_ENV") != NULL) {
+                        cv::imwrite("bev_lines.jpg", matrix);
                     }
             #endif
 

@@ -143,6 +143,10 @@ int main() {
                         Mat src(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
                         Mat dst(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
 
+                        if(std::getenv("CAR_ENV") != NULL) {
+                            cv::imwrite("cam_image.jpg", src);
+                        } 
+
                         toBirdsEyeView(src, dst);
 
                         Mat dst2(400, 400, CV_8UC1, shared_memory->bev_data[1].img_buffer);
