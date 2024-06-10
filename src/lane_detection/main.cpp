@@ -214,7 +214,7 @@ int main()
                         dest = 0;
                     }
 
-                    float angle = (dest - 200) * 0.8; // MAPPING TO INT 8 -80 to 80 for angle
+                    float angle = (dest - 200) * 2.54; // MAPPING TO INT 8 -80 to 80 for angle
 
                     angle = std::clamp((int) angle, -80, 80); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle
 
