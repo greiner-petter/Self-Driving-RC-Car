@@ -272,16 +272,16 @@ int main()
                 }
 
                 for(const auto& p : rightVec) {
-                    cv::circle(matrix, p, 5, cv::Scalar(255,0,0,1), 5);    
+                    cv::circle(matrix, p, 5, (255,0,0), 5);    
                     logger->log("%d %d", p.x, p.y);
                 }
 
                 for(const auto& p : midVec) {
-                    cv::circle(matrix, p, 5, cv::Scalar(255,0,0,1), 5);    
+                    cv::circle(matrix, p, 5, (255,0,0), 5);    
                 }
 
                 for(const auto& p : leftVec) {
-                    cv::circle(matrix, p, 5, cv::Scalar(255,0,0,1), 5);    
+                    cv::circle(matrix, p, 5, (255,0,0), 5);    
                 }
 
                 cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
