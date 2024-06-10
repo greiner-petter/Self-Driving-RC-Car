@@ -264,18 +264,30 @@ int main()
                     }
             #else
                 for(int radius = 50; radius <= 200; radius+=25) {
-                        cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
-                    }
+                    cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
+                }
 
-                    for(const auto& i : intersections) {
-                        cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
-                    }
+                for(const auto& i : intersections) {
+                    cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
+                }
 
-                    cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
+                for(const auto& p : rightVec) {
+                    cv::circle(matrix, p, 5, cv::Scalar(255,0,0,1), 5);    
+                }
 
-                    if(std::getenv("CAR_ENV") != NULL) {
-                        cv::imwrite("bev_lines.jpg", matrix);
-                    }
+                for(const auto& p : midVec) {
+                    cv::circle(matrix, p, 5, cv::Scalar(255,0,0,1), 5);    
+                }
+
+                for(const auto& p : leftVec) {
+                    cv::circle(matrix, p, 5, cv::Scalar(255,0,0,1), 5);    
+                }
+
+                cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
+
+                if(std::getenv("CAR_ENV") != NULL) {
+                    cv::imwrite("bev_lines.jpg", matrix);
+                }
             #endif
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
