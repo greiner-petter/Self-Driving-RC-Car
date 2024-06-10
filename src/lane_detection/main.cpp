@@ -109,13 +109,34 @@ int main()
                     }
 
                     // Histogram evaluation
-                    std::sort(max.begin(), max.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
+                    /*std::sort(max.begin(), max.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
                         return a.second > b.second;
                     });
 
                     std::vector<std::pair<int, int>> greatest_values(max.begin(), max.begin() + (max.size() >= 3 ? 3 : max.size()));
 
                     std::sort(greatest_values.begin(), greatest_values.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
+                        return a.first < b.first;
+                    });*/
+
+                    std::vector<std::pair<int, int>> nearest_mid_values;
+                    int leftCounter = 0;
+                    int rightCounter = 0;
+
+                    for(int i = 0; i < 12; i++) {
+                        int left = 12-i;
+                        int right = 12+i;
+
+                        for(const std::pair<int, int> peak : max) {
+                            if(peak.first == right && rightCounter != 1) {
+                                nearest_mid_values.push_back(peak);
+                            } else if(peak.first == right && leftCounter != 2) {
+                                nearest_mid_values.push_back(peak);
+                            }
+                        }
+                    }
+
+                    std::sort(nearest_mid_values.begin(), nearest_mid_values.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
                         return a.first < b.first;
                     });
 
@@ -127,22 +148,22 @@ int main()
                     for(int i = 0; i < intersections.size(); i++) {
                         int x = intersections.at(i).x/16;
 
-                        if(greatest_values.size() == 1) {
-                            if(greatest_values.at(0).first == x || greatest_values.at(0).first == x-1) {
+                        if(nearest_mid_values.size() == 1) {
+                            if(nearest_mid_values.at(0).first == x || nearest_mid_values.at(0).first == x-1) {
                                 rightVec.push_back(intersections.at(i));
                             } 
-                        } else if(greatest_values.size() == 2) {
-                            if(greatest_values.at(0).first == x) {
+                        } else if(nearest_mid_values.size() == 2) {
+                            if(nearest_mid_values.at(0).first == x) {
                                 midVec.push_back(intersections.at(i));
-                            } else if(greatest_values.at(1).first == x || greatest_values.at(1).first == x-1) {
+                            } else if(nearest_mid_values.at(1).first == x || nearest_mid_values.at(1).first == x-1) {
                                 rightVec.push_back(intersections.at(i));
                             } 
-                        } else if(greatest_values.size() >= 3) {
-                            if(greatest_values.at(0).first == x || greatest_values.at(0).first == x+1) {
+                        } else if(nearest_mid_values.size() >= 3) {
+                            if(nearest_mid_values.at(0).first == x || nearest_mid_values.at(0).first == x+1) {
                                 leftVec.push_back(intersections.at(i));
-                            } else if(greatest_values.at(1).first == x) {
+                            } else if(nearest_mid_values.at(1).first == x) {
                                 midVec.push_back(intersections.at(i));
-                            } else if(greatest_values.at(2).first == x || greatest_values.at(2).first == x-1) {
+                            } else if(nearest_mid_values.at(2).first == x || nearest_mid_values.at(2).first == x-1) {
                                 rightVec.push_back(intersections.at(i));
                             } 
                         }
