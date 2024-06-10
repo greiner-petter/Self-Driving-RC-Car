@@ -263,6 +263,7 @@ int main()
                         return 0;
                     }
             #else
+                logger->log("%d, %d, %d", leftVec.size(), midVec.size(), rightVec.size());
                 for(int radius = 50; radius <= 200; radius+=25) {
                     cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
                 }
