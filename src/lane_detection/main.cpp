@@ -98,14 +98,6 @@ int main()
                     std::array<int, 25> histogram = histoIntersections.first;
                     std::vector<cv::Point> intersections = histoIntersections.second;
 
-                    std::string s;
-
-                    for(const auto& i : histogram) {
-                        s += std::to_string((int) i) + ", ";
-                    }
-
-                    logger->log("%s\n", s.c_str());
-
                     std::vector<std::pair<int, int>> max;
 
                     for(int i = 1; i < histogram.size()-1; i++) {
