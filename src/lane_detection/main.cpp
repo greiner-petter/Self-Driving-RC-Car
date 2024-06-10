@@ -272,8 +272,7 @@ int main()
                 }
 
                 for(const auto& p : rightVec) {
-                    cv::circle(matrix, p, 5, (255,0,0), 5);    
-                    logger->log("%d %d", p.x, p.y);
+                    cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5);
                 }
 
                 for(const auto& p : midVec) {
