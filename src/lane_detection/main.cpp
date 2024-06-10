@@ -128,10 +128,16 @@ int main()
                         int right = 12+i;
 
                         for(const std::pair<int, int> peak : max) {
+                            if(rightCounter == 1 && leftCounter == 2) {
+                                break;
+                            }
+
                             if(peak.first == right && rightCounter != 1) {
                                 nearest_mid_values.push_back(peak);
+                                rightCounter++;
                             } else if(peak.first == right && leftCounter != 2) {
                                 nearest_mid_values.push_back(peak);
+                                leftCounter++;
                             }
                         }
                     }
