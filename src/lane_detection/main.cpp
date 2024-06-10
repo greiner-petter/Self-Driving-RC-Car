@@ -273,6 +273,7 @@ int main()
 
                 for(const auto& p : rightVec) {
                     cv::circle(matrix, p, 5, cv::Scalar(255,0,0,1), 5);    
+                    logger->log("%d %d", p.x, p.y);
                 }
 
                 for(const auto& p : midVec) {
