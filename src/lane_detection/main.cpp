@@ -135,7 +135,7 @@ int main()
                             if(peak.first == right && rightCounter != 1) {
                                 nearest_mid_values.push_back(peak);
                                 rightCounter++;
-                            } else if(peak.first == right && leftCounter != 2) {
+                            } else if(peak.first == left && leftCounter != 2) {
                                 nearest_mid_values.push_back(peak);
                                 leftCounter++;
                             }
