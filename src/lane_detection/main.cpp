@@ -79,19 +79,40 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calcHistogram(cv::Mat *ma
     std::fill(histogram.begin(), histogram.end(), 0);
 
     for(int radius = 50; radius <= 200; radius+=25) {
+        std::pair<int, int> point[2];
+
         for(double pi = 0; pi < M_PI; pi += 0.001) {
             int x = 200 + round(cos(pi) * radius);
             int y = 400 - round(sin(pi) * radius);
 
-            if(x >= 400 || x < 0 || y >= 400 || y < 0) {
+            int x2 = 200 + round(cos(pi+0.01) * radius);
+            int y2 = 400 - round(sin(pi+0.01) * radius);
+
+            if(x+1 >= 400 || x-1 < 0 || y+1 >= 400 || y-1 < 0) {
+                continue;
+            }
+
+            if(x2+1 >= 400 || x2-1 < 0 || y2+1 >= 400 || y2-1 < 0) {
                 continue;
             }
 
             int color = matrix->at<uint8_t>(y, x);
+            int color2 = matrix->at<uint8_t>(y2, x2);
 
-            if(color > 50) {
-                intersections.push_back(cv::Point(x,y));
-                histogram[x/16]++;
+            if(color2 - color > 15 && point[0].x != 0) {
+                point[0] = std::pair(x,y);
+            }
+
+            if(color - color2 > 15) {
+                point[1] = std::pair(x,y);
+
+                //double dist = calcDist(point[0], point[1]);
+
+                intersections.push_back(cv::Point(point[0].first,point[0].second));
+                intersections.push_back(cv::Point(point[1].first,point[1].second));
+
+                point[0] = std::pair(0,0);
+                point[1] = std::pair(0,0);
             }
         }
     }
