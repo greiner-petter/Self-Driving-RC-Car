@@ -65,8 +65,8 @@ void return_to_street(int angle, std::array<int, 25> histogram) {
             ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
             ipc_packet.clear_and_edit()
                 .write<int16_t>(-30)
-                .write<int8_t>(angle); 
-                        //.write<int8_t>(-angle/2);
+                .write<int8_t>(angle/2)
+                .write<int8_t>(-angle/2);
                 socket->send_packet(ipc_packet);    
     }//while no lane is detected
     // do drive backward negative average angle
