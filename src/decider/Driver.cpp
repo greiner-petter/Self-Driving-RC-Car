@@ -31,7 +31,7 @@ void Driver::turn_right(){
     //drive(25, 0);
     //wait(0.2);
 
-    drive(25, 100);
+    drive_both_steering_values(25, 100, -50);
     wait(3.2);
 
     //drive(20, 0);
@@ -114,6 +114,28 @@ void Driver::drive(int16_t speed, int8_t steering){
         .speed          = speed,
         .steering_front = steering,
         .steering_rear  = 0,
+        .id             = 1,
+        .steps_ab       = 0
+    };
+
+    int32_t send_result = socket->send(ocMessageId::Start_Driving_Task, start_driving_task);
+    logger->log("Result of sending driving task: %d", send_result);
+}
+
+
+
+/**
+ * This method is used to drive using the given speed and steering values.
+ * @param speed int16_t: The speed with which to drive
+ * @param steering int8_t: The steering value with which to drive
+*/
+void Driver::drive_both_steering_values(int16_t speed, int8_t steering_front, int8_t steering_back){
+    ocCarProperties ocCarProperties;
+
+    struct start_driving_task_t start_driving_task = {
+        .speed          = speed,
+        .steering_front = steering_front,
+        .steering_rear  = steering_back,
         .id             = 1,
         .steps_ab       = 0
     };
