@@ -3,7 +3,7 @@
 #include "../../common/ocCar.h"
 #include "State.h"
 #include "../Statemachine.h"
-#include "TrafficSign.h"
+#include "../../traffic_sign_detection/TrafficSign.h"
 #include "../Driver.h"
 
 class ocMember;

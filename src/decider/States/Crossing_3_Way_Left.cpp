@@ -1,4 +1,6 @@
 #include "Crossing_3_Way_Left.h"
+#include "Normal_Drive.h"
+#include "../../traffic_sign_detection/TrafficSign.h"
 
 
 State& Crossing_3_Way_Left::get_instance(){
@@ -43,21 +45,21 @@ void Crossing_3_Way_Left::on_entry(Statemachine* statemachine){
 
         switch (recv_packet.get_message_id())
         {
-        case ocMessageId::Traffic_Sign_Detected:
+        case ocMessageId::Traffic_Sign_Detected:{
             auto reader = recv_packet.read_from_start();
             trafficSign = reader.read<TrafficSign>();
-            break;
+            } break;
         
-        default:
+        default:{
             ocMessageId msg_id = recv_packet.get_message_id();
             ocMemberId mbr_id = recv_packet.get_sender();
             logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
-            break;
+            }break;
         }
 
     }
 
-    statemachine->run(Crossing_3_Way_Left::get_instance);
+    statemachine->run(nullptr);
 }
 
 
@@ -97,7 +99,7 @@ void Crossing_3_Way_Left::run(Statemachine* statemachine, void* data){
         Driver::drive_forward();
     }
 
-    statemachine->change_state(Normal_Drive::getInstance());
+    statemachine->change_state(Normal_Drive::get_instance());
 }
 
 
