@@ -8,7 +8,7 @@ int main(){
     Driver::initialize();
 
     Statemachine statemachine;
-    //statemachine.run(nullptr);
+    statemachine.run(nullptr);
 
     //Driver::drive(20, 0, 0);
     //Driver::turn_left();
@@ -17,10 +17,10 @@ int main(){
     //Driver::park();
     //Driver::wait(2);
     //Driver::park_out();
-    while(true){
-        Driver::drive_forward();
-        Driver::wait(0.1);
-    }
+    //while(true){
+    //    Driver::drive_forward();
+    //    Driver::wait(0.1);
+    //}
 
     
     
