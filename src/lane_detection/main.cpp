@@ -39,8 +39,15 @@ double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
 
 bool check_if_on_street(std::array<int, 25> histogram) {
     logger->log("new");
+    
+
+    if(std::getenv("CAR_ENV") != NULL) {
+        for(auto& bin : histogram) {
+            logger->log("%d", bin);
+        }
+    } 
+
     for(auto& bin : histogram) {
-        logger->log("%d", bin);
         if(bin > 100) {
             return true;
         }
@@ -67,10 +74,6 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calcHistogram(cv::Mat *ma
     std::vector<cv::Point> intersections;
 
     std::fill(histogram.begin(), histogram.end(), 0);
-
-    for(int i = 0; i < 25; i++) {
-        histogram[i] = 0;
-    }
 
     for(int radius = 50; radius <= 200; radius+=25) {
         for(double pi = 0; pi < M_PI; pi += 0.001) {
