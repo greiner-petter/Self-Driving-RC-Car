@@ -99,7 +99,7 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calcHistogram(cv::Mat *ma
             int color = matrix->at<uint8_t>(y, x);
             int color2 = matrix->at<uint8_t>(y2, x2);
 
-            if(color2 - color > 15 && point[0].x != 0) {
+            if(color2 - color > 15 && point[0].first != 0) {
                 point[0] = std::pair(x,y);
             }
 
