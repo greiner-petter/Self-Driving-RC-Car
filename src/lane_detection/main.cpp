@@ -281,7 +281,7 @@ int main()
                     }
 
                     float angle = ((dest - 200)/4) * ((dest - 200)/4) * 2.54; // MAPPING TO INT 8 -80 to 80 for angle
-                    if(dest < 0) {
+                    if(dest-200 < 0) {
                         angle *= -1;
                     }
 
