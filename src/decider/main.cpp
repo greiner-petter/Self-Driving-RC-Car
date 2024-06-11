@@ -7,7 +7,7 @@ int main(){
 
     Driver::initialize();
 
-    Statemachine statemachine;
+    //Statemachine statemachine;
     //statemachine.run(nullptr);
 
     //Driver::drive(20, 0, 0);
