@@ -290,16 +290,16 @@ int main()
                     int average_angle = 0;
 
                     last_angles.push_back(angle);
-                    if(last_angles.size() > 5) {
+                    if(last_angles.size() > 3) {
                         last_angles.pop_front();
 
                         for(auto& i : last_angles) {
                             average_angle += i;
                         }
-                        average_angle /= 5;
+                        average_angle /= 3;
                     }
                     
-                    int speed = int(100 * float(100.0f / float(std::abs(float(average_angle/2)) + 100.0f)));
+                    int speed = int(50 * float(100.0f / float(std::abs(float(average_angle/2)) + 100.0f)));
 
                     #ifdef DEBUG_WINDOW
                         speed = 20 * (254 / (std::abs(angle) + 254));
