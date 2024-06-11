@@ -88,7 +88,7 @@ void Driver::drive_forward(){
                 };
 
                 int32_t send_result = socket->send(ocMessageId::Start_Driving_Task, start_driving_task);
-                logger->log("Result of sending driving task: %d", send_result);
+                //logger->log("Result of sending driving task: %d", send_result);
             } break;
 
             default:{
@@ -119,7 +119,7 @@ void Driver::drive(int16_t speed, int8_t steering){
     };
 
     int32_t send_result = socket->send(ocMessageId::Start_Driving_Task, start_driving_task);
-    logger->log("Result of sending driving task: %d", send_result);
+    //logger->log("Result of sending driving task: %d", send_result);
 }
 
 
@@ -140,7 +140,7 @@ void Driver::stop(float duration){
     };
 
     int32_t send_result = socket->send(ocMessageId::Start_Driving_Task, start_driving_task);
-    logger->log("Result of sending stop task: %d", send_result);
+    //logger->log("Result of sending stop task: %d", send_result);
 
     wait(duration);
 }
