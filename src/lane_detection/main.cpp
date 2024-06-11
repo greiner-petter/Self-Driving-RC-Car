@@ -217,6 +217,16 @@ int main()
                         }
                     }
 
+                    int average_angle = 0;
+                    if(last_angles.size() > 3) {
+                        last_angles.pop_front();
+
+                        for(auto& i : last_angles) {
+                            average_angle += i;
+                        }
+                        average_angle /= 3;
+                    }
+
                     int right = 0;
                     int mid = 0;
                     int left = 0;
@@ -247,7 +257,7 @@ int main()
                         left /= leftVec.size();
                     }
 
-                    if(!is_lane_dist(right, mid)) {
+                    if(!is_lane_dist(right, mid) && average_angle < 25) {
                         right = mid;
                         mid = left;
                     }
@@ -307,17 +317,9 @@ int main()
 
                     angle = std::clamp((int) angle, -160, 160); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle (160 and -160 if back steering is enabled)
 
-                    int average_angle = 0;
 
                     last_angles.push_back(angle);
-                    if(last_angles.size() > 3) {
-                        last_angles.pop_front();
 
-                        for(auto& i : last_angles) {
-                            average_angle += i;
-                        }
-                        average_angle /= 3;
-                    }
                     
                     int speed = int(50 * float(100.0f / float(std::abs(float(average_angle)) + 100.0f)));
 
