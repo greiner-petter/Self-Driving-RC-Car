@@ -41,11 +41,11 @@ void Driver::turn_right(){
 void Driver::turn_left(){
     //dirve forward a little bit
     drive(25, 0);
-    wait(0.5);
+    wait(0.7);
 
     //turn left
-    drive(25, -100);
-    wait(3.25);
+    drive(25, -70);
+    wait(3.825);
     stop();
 }
 

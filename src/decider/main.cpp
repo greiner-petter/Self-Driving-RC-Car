@@ -11,7 +11,7 @@ int main(){
     //statemachine.run(nullptr);
 
     Driver::stop(1);
-    Driver::turn_right();
+    Driver::turn_left();
     Driver::stop(1);
     //Driver::turn_right();
     //Driver::stop();
