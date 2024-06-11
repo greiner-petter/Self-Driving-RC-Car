@@ -54,7 +54,8 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
         {
         case ocMessageId::Traffic_Sign_Detected:{
             auto reader = recv_packet.read_from_start();
-            trafficSign = reader.read<TrafficSign>();
+            uint16_t rawValue = reader.read<uint16_t>();
+            TrafficSignType trafficSign = static_cast<TrafficSignType>(rawValue);
             }break;
         
         default:{
