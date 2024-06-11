@@ -22,7 +22,7 @@ void Crossing_3_Way_Right::initialize(){
     }
 }
 
-TrafficSignType trafficSign;
+
 
 void Crossing_3_Way_Right::on_entry(Statemachine* statemachine){
     /*
@@ -69,6 +69,7 @@ void Crossing_3_Way_Right::run(Statemachine* statemachine, void* data){
     bool drive_right = false;
     bool drive_forward = false;
 
+    /*
     if (trafficSign.distanceCM < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
         switch(trafficSign.type){
             case TrafficSignType::Stop:
@@ -85,6 +86,7 @@ void Crossing_3_Way_Right::run(Statemachine* statemachine, void* data){
                 break;
         }
     }
+    */
 
     if(drive_right && drive_forward){
         drive_forward = false;
