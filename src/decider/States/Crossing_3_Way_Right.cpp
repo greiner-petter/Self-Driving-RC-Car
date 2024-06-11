@@ -22,7 +22,7 @@ void Crossing_3_Way_Right::initialize(){
     }
 }
 
-TrafficSign trafficSign;
+TrafficSignType trafficSign;
 
 void Crossing_3_Way_Right::on_entry(Statemachine* statemachine){
     /*
@@ -48,7 +48,7 @@ void Crossing_3_Way_Right::on_entry(Statemachine* statemachine){
         case ocMessageId::Traffic_Sign_Detected:{
             auto reader = recv_packet.read_from_start();
             uint16_t rawValue = reader.read<uint16_t>();
-            TrafficSignType trafficSign = static_cast<TrafficSignType>(rawValue);
+            trafficSign = static_cast<TrafficSignType>(rawValue);
             }break;
         
         default:{
