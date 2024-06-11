@@ -46,7 +46,7 @@ void Driver::turn_right(){
 */
 void Driver::turn_left(){
     drive(25, 0);
-    wait(2);
+    wait(1.5);
 
     drive(25, -100);
     wait(3.25);
