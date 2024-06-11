@@ -49,7 +49,7 @@ bool check_if_on_street(std::array<int, 25> histogram) {
     // } 
 
     for(auto& bin : histogram) {
-        if(bin > 50) {
+        if(bin > 20) {
             return true;
         }
     }
