@@ -28,14 +28,14 @@ void Driver::initialize(){
  * This method is used to perform a right-turn.
 */
 void Driver::turn_right(){
-    drive(25, 0);
-    wait(0.2);
+    //drive(25, 0);
+    //wait(0.2);
 
     drive(25, 100);
     wait(3.2);
 
-    drive(20, 0);
-    wait(1);
+    //drive(20, 0);
+    //wait(1);
     stop();
 }
 
@@ -46,13 +46,13 @@ void Driver::turn_right(){
 */
 void Driver::turn_left(){
     drive(25, 0);
-    wait(1.7);
+    wait(0.5);
 
     drive(25, -100);
     wait(3.25);
 
-    drive(20, 0);
-    wait(1);
+    //drive(20, 0);
+    //wait(1);
     stop();
 }
 

@@ -10,8 +10,8 @@ int main(){
     //Statemachine statemachine;
     //statemachine.run(nullptr);
 
-    //Driver::drive(20, 0, 0);
-    Driver::turn_left();
+    Driver::stop(1);
+    Driver::turn_right();
     Driver::stop();
     //Driver::turn_right();
     //Driver::stop();
