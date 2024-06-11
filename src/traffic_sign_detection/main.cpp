@@ -4,9 +4,23 @@
 #include "SignDetector.h"
 #include <chrono>
 #include <thread>
+#include <string>
+#include <vector>
 
-int main()
+int main(int argc,char* argv[])
 {
+    // Parsing Params
+    bool supportGUI = true;
+    std::vector<std::string> params{argv, argv+argc};
+    for (auto i : params)
+    {
+        if (i == "--nogui")
+        {
+            supportGUI = false;
+        }
+    }
+        
+
     std::this_thread::sleep_for(std::chrono::milliseconds(8000));
     // ocMember represents the interface to the IPC system
     ocMember member = ocMember(ocMemberId::Sign_Detection, "Traffic-Sign-Detection Process");
@@ -21,7 +35,7 @@ int main()
     ocSharedMemory* shared_memory = member.get_shared_memory();
     ocLogger*    logger = member.get_logger();
 
-    SignDetector::Init(socket, shared_memory, logger);
+    SignDetector::Init(socket, shared_memory, logger, supportGUI);
 
     logger->warn("Traffic-Sign-Detection: Process Shutdown.");
 

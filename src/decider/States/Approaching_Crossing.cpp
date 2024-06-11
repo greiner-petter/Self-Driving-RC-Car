@@ -7,14 +7,26 @@ State& Approaching_Crossing::get_instance(){
     return singleton;
 }
 
+void Approaching_Crossing::initialize(){
+    if(!is_initialized){
+        member.attach();
+        socket = member.get_socket();
+        logger = member.get_logger();
+        ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        sup.clear_and_edit()
+            .write(ocMessageId::Driving_Task_Finished);
+        socket->send_packet(sup);
+
+        is_initialized = true;
+    }
+}
+
 
 
 void Approaching_Crossing::on_entry(Statemachine* statemachine){
-    /*
-    Code
-    */
+    initialize();
 
-   statemachine->run(nullptr);
+    statemachine->run(nullptr);
 }
 
 
@@ -23,7 +35,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     bool is_at_crossing = false;
 
     while(!is_at_crossing){
-        distance = IPC Hub get distance;
+        uint32_t distance = socket->read_packet(ocMessageId::Intersection_Detected);
 
         //algorithm for slowing down towards 2cm/s
         double* arr = smooth_speed(curr_speed);

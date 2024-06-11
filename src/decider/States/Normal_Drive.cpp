@@ -7,13 +7,27 @@ State& Normal_Drive::get_instance(){
     return singleton;
 }
 
+void Normal_Drive::initialize(){
+    if(!is_initialized){
+        member.attach();
+        socket = member.get_socket();
+        logger = member.get_logger();
+        ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        sup.clear_and_edit()
+            .write(ocMessageId::Driving_Task_Finished);
+        socket->send_packet(sup);
+
+        is_initialized = true;
+    }
+}
+
 
 
 void Normal_Drive::on_entry(Statemachine* statemachine){
     /*
     Code
     */
-   
+   initialize();
 
    statemachine->run(nullptr);
 }
@@ -21,15 +35,11 @@ void Normal_Drive::on_entry(Statemachine* statemachine){
 
 void Normal_Drive::run(Statemachine* statemachine, void* data){
     /*
+    uint32_t message = socket->read_packet(ocMessageId::Intersection_Detected);
     while(true){
-        bool crossing_dtected = IPC-HUB has crossing been detected
-        bool parking_detected = IPC-HUB sign detection: parking
+        bool crossing_dtected = (message == null ? false : true);
         if (crossing_detected){
             statemachine->change_state(Approaching_Crossing::getInstance());
-            break;
-        }
-        if (parking_detected) {
-            statemachine->change_state(Parking::getInstance());
             break;
         }
         drive.drive_forward();
