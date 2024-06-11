@@ -291,7 +291,7 @@ int main()
                         average_angle /= 5;
                     }
                     
-                    float speed = 50 * (100 / (std::abs(average_angle) + 100));
+                    int speed = int(50 * (100 / (std::abs(average_angle) + 100)));
 
                     #ifdef DEBUG_WINDOW
                         speed = 20 * (254 / (std::abs(angle) + 254));
