@@ -68,6 +68,10 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calcHistogram(cv::Mat *ma
 
     std::fill(histogram.begin(), histogram.end(), 0);
 
+    for(int i = 0; i < 25; i++) {
+        histogram[i] = 0;
+    }
+
     for(int radius = 50; radius <= 200; radius+=25) {
         for(double pi = 0; pi < M_PI; pi += 0.001) {
             int x = 200 + round(cos(pi) * radius);
@@ -284,7 +288,6 @@ int main()
                             return 0;
                         }
                     #else
-                        logger->log("%d, %d, %d", leftVec.size(), midVec.size(), rightVec.size());
                         for(int radius = 50; radius <= 200; radius+=25) {
                             cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
                         }
