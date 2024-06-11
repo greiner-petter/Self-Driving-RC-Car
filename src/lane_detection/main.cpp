@@ -257,7 +257,7 @@ int main()
                         left /= leftVec.size();
                     }
 
-                    if(!is_lane_dist(right, mid) && average_angle < 25) {
+                    if(!is_lane_dist(right, mid) && average_angle < 10) {
                         right = mid;
                         mid = left;
                     }
