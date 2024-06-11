@@ -11,16 +11,16 @@ int main(){
     //statemachine.run(nullptr);
 
     Driver::stop(1);
-    //Driver::turn_right();
-    //Driver::stop(1);
+    Driver::turn_right();
+    Driver::stop(1);
     //Driver::turn_right();
     //Driver::stop();
     
-    Driver::park();
-    Driver::wait(2);
-    Driver::park_out();
-    Driver::stop();
-/*
+    //Driver::park();
+    //Driver::wait(2);
+    //Driver::park_out();
+    //Driver::stop();
+    /*
     while(true){
         Driver::drive_forward();
         Driver::wait(0.1);

@@ -28,14 +28,8 @@ void Driver::initialize(){
  * This method is used to perform a right-turn.
 */
 void Driver::turn_right(){
-    //drive(25, 0);
-    //wait(0.2);
-
     drive_both_steering_values(25, 100, -50);
-    wait(1.85);
-
-    //drive(20, 0);
-    //wait(1);
+    wait(1.8);
     stop();
 }
 
@@ -45,14 +39,13 @@ void Driver::turn_right(){
  * This method is used to perform a left-turn.
 */
 void Driver::turn_left(){
+    //dirve forward a little bit
     drive(25, 0);
     wait(0.5);
 
+    //turn left
     drive(25, -100);
     wait(3.25);
-
-    //drive(20, 0);
-    //wait(1);
     stop();
 }
 
@@ -127,7 +120,8 @@ void Driver::drive(int16_t speed, int8_t steering){
 /**
  * This method is used to drive using the given speed and steering values.
  * @param speed int16_t: The speed with which to drive
- * @param steering int8_t: The steering value with which to drive
+ * @param steering_front int8_t: The front-steering value with which to drive
+ * @param steering_back int8_t: The back-steering value with which to drive
 */
 void Driver::drive_both_steering_values(int16_t speed, int8_t steering_front, int8_t steering_back){
     ocCarProperties ocCarProperties;
