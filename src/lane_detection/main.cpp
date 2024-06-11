@@ -41,7 +41,7 @@ double calc_dist(std::pair<double, double> p1, std::pair<double, double> p2) {
 
 bool is_lane_dist(int x1, int x2) {
     logger->log("%d",abs(x1-x2));
-    return std::abs(x1 - x2) > 50; //&& std::abs(x1 - x2) < 70; 
+    return std::abs(x1 - x2) > 45; //&& std::abs(x1 - x2) < 70; 
 }
 
 bool check_if_on_street(std::array<int, 25> histogram) {
@@ -310,12 +310,12 @@ int main()
                         dest = 0;
                     }
 
-                    float angle = ((dest - 200)/4) * ((dest - 200)/4) * 2.54; // MAPPING TO INT 8 -80 to 80 for angle
+                    float angle = ((dest - 200)/4) * ((dest - 200)/4) * 1.5; // MAPPING TO INT 8 -80 to 80 for angle
                     if(dest-200 < 0) {
                         angle *= -1;
                     }
 
-                    angle = std::clamp((int) angle, -160, 160); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle (160 and -160 if back steering is enabled)
+                    angle = std::clamp((int) angle, -150, 150); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle (150 and -150 if back steering is enabled)
 
 
                     last_angles.push_back(angle);
