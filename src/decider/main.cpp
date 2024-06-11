@@ -7,8 +7,8 @@ int main(){
 
     Driver::initialize();
 
-    Statemachine statemachine;
-    statemachine.run(nullptr);
+    //Statemachine statemachine;
+    //statemachine.run(nullptr);
 
     Driver::stop(1);
     Driver::turn_right();
