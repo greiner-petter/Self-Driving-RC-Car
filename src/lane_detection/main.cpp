@@ -110,6 +110,7 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calcHistogram(cv::Mat *ma
 
                 point[0] = std::pair(0,0);
                 point[1] = std::pair(0,0);
+                histogram[x/16]++;
             }
         }
     }
