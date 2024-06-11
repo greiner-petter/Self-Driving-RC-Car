@@ -41,11 +41,11 @@ bool check_if_on_street(std::array<int, 25> histogram) {
     logger->log("new");
     
 
-    if(std::getenv("CAR_ENV") != NULL) {
-        for(auto& bin : histogram) {
-            logger->log("%d", bin);
-        }
-    } 
+    // if(std::getenv("CAR_ENV") != NULL) {
+    //     for(auto& bin : histogram) {
+    //         logger->log("%d", bin);
+    //     }
+    // } 
 
     for(auto& bin : histogram) {
         if(bin > 50) {
@@ -292,6 +292,8 @@ int main()
                     }
                     
                     int speed = int(50 * (100 / (std::abs(average_angle) + 100)));
+
+                    logger->log("%d, %d", speed, average_angle);
 
                     #ifdef DEBUG_WINDOW
                         speed = 20 * (254 / (std::abs(angle) + 254));
