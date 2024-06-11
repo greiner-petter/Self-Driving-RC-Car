@@ -299,9 +299,7 @@ int main()
                         average_angle /= 5;
                     }
                     
-                    int speed = int(50 * float(100.0f / float(std::abs(float(average_angle)) + 100.0f)));
-
-                    logger->log("%d, %d", speed, average_angle);
+                    int speed = int(100 * float(100.0f / float(std::abs(float(average_angle/2)) + 100.0f)));
 
                     #ifdef DEBUG_WINDOW
                         speed = 20 * (254 / (std::abs(angle) + 254));
