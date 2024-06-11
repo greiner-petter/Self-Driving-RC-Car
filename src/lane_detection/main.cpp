@@ -39,7 +39,7 @@ double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
 
 bool check_if_on_street(std::array<int, 25> histogram) {
     for(auto& bin : histogram) {
-        if(bin > 100) {
+        if(bin > 50) {
             return true;
         }
     }
