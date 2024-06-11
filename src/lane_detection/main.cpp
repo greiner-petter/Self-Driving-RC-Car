@@ -28,6 +28,7 @@ std::list<int> last_angles;
 
 static bool running = true;
 bool onStreet = true;
+int onStreetCount = 0;
 
 static void signal_handler(int)
 {
@@ -361,8 +362,14 @@ int main()
                             .write<int16_t>(-20)
                             .write<int8_t>(0); 
                         socket->send_packet(ipc_packet);
-
-                        onStreet = true;
+                        
+                        if(onStreetCount > 100) {
+                            onStreet = true;
+                            onStreetCount = 0;
+                        } else {
+                            onStreetCount++;
+                        }
+                        
                     } else if (!onStreet){
                         return_to_street(average_angle, histogram);
                     }
