@@ -16,7 +16,13 @@
 
 //#define DEBUG_WINDOW
 
+ocMember member(ocMemberId::Lane_Detection_Values, "Lane Detection");
+
 ocLogger *logger;
+ocPacket ipc_packet;
+ocIpcSocket *socket;
+ocSharedMemory *shared_memory;
+ocCarProperties car_properties;
 
 static bool running = true;
 
@@ -27,6 +33,29 @@ static void signal_handler(int)
 
 double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
     return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
+}
+
+bool check_if_on_street(std::array<int, 25> histogram) {
+    for(auto& bin : histogram) {
+        if(bin > 100) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void return_to_street(int angle, std::array<int, 25> histogram) {
+    while(!check_if_on_street(histogram)) {
+        ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
+            ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
+            ipc_packet.clear_and_edit()
+                .write<int16_t>(-10)
+                .write<int8_t>(angle); 
+                        //.write<int8_t>(-angle/2);
+                socket->send_packet(ipc_packet);    
+    }//while no lane is detected
+    // do drive backward negative average angle
 }
 
 std::pair<std::array<int, 25>, std::vector<cv::Point>> calcHistogram(cv::Mat *matrix) {
@@ -63,23 +92,22 @@ int main()
     signal(SIGQUIT, signal_handler);
     signal(SIGTERM, signal_handler);
 
-    ocMember member(ocMemberId::Lane_Detection_Values, "Lane Detection");
     member.attach();
 
-    ocIpcSocket *socket = member.get_socket();
-    ocSharedMemory *shared_memory = member.get_shared_memory();
+    socket = member.get_socket();
+    shared_memory = member.get_shared_memory();
     logger = member.get_logger();
 
-    ocCarProperties car_properties;
     read_config_file(CAR_CONFIG_FILE, car_properties, *logger);
 
-    ocPacket ipc_packet;
     ipc_packet.set_message_id(ocMessageId::Subscribe_To_Messages);
     ipc_packet.clear_and_edit()
         .write(ocMessageId::Lines_Available);
     socket->send_packet(ipc_packet);
 
     logger->log("Lane Detection started!");
+
+    std::list<int> last_angles; 
 
     while(running) {
         int32_t socket_status;
@@ -220,63 +248,79 @@ int main()
 
                     angle = std::clamp((int) angle, -80, 80); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle
 
-                    float speed = 50 * (100 / (std::abs(angle) + 100));
+                    int average_angle;
 
-            #ifdef DEBUG_WINDOW
-                    speed = 20 * (254 / (std::abs(angle) + 254));
+                    last_angles.push_back(angle);
+                    if(last_angles.size() > 5) {
+                        last_angles.pop_front();
 
-                    for(int radius = 50; radius <= 200; radius+=25) {
-                        cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
+                        for(auto& i : last_angles) {
+                            average_angle += i;
+                        }
+                        average_angle /= 5;
                     }
+                    
+                    float speed = 50 * (100 / (std::abs(average_angle) + 100));
 
-                    for(const auto& i : intersections) {
-                        cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
+                    #ifdef DEBUG_WINDOW
+                        speed = 20 * (254 / (std::abs(angle) + 254));
+
+                        for(int radius = 50; radius <= 200; radius+=25) {
+                            cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
+                        }
+
+                        for(const auto& i : intersections) {
+                            cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
+                        }
+
+                        cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
+                        cv::imshow("Lane Detection", matrix);
+                        char key = cv::waitKey(30);
+                        if (key == 'q')
+                        {
+                            cv::destroyAllWindows();
+                            return 0;
+                        }
+                    #else
+                        logger->log("%d, %d, %d", leftVec.size(), midVec.size(), rightVec.size());
+                        for(int radius = 50; radius <= 200; radius+=25) {
+                            cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
+                        }
+
+                        for(const auto& i : intersections) {
+                            cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
+                        }
+
+                        for(const auto& p : rightVec) {
+                            cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5);
+                        }
+
+                        for(const auto& p : midVec) {
+                            cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5); 
+                        }
+
+                        for(const auto& p : leftVec) {
+                        cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5);    
+                        }
+
+                        cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
+
+                        if(std::getenv("CAR_ENV") != NULL) {
+                            cv::imwrite("bev_lines.jpg", matrix);
+                        }
+                    #endif
+
+                    if(check_if_on_street(histogram)) {
+                        ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
+                        ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
+                        ipc_packet.clear_and_edit()
+                            .write<int16_t>(speed)
+                            .write<int8_t>(average_angle); 
+                            //.write<int8_t>(-angle/2);
+                        socket->send_packet(ipc_packet);
+                    } else {
+                        return_to_street(average_angle, histogram);
                     }
-
-                    cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
-                    cv::imshow("Lane Detection", matrix);
-                    char key = cv::waitKey(30);
-                    if (key == 'q')
-                    {
-                        cv::destroyAllWindows();
-                        return 0;
-                    }
-            #else
-                logger->log("%d, %d, %d", leftVec.size(), midVec.size(), rightVec.size());
-                for(int radius = 50; radius <= 200; radius+=25) {
-                    cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
-                }
-
-                for(const auto& i : intersections) {
-                    cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
-                }
-
-                for(const auto& p : rightVec) {
-                    cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5);
-                }
-
-                for(const auto& p : midVec) {
-                    cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5); 
-                }
-
-                for(const auto& p : leftVec) {
-                   cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5);    
-                }
-
-                cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
-
-                if(std::getenv("CAR_ENV") != NULL) {
-                    cv::imwrite("bev_lines.jpg", matrix);
-                }
-            #endif
-
-                    ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
-                    ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
-                    ipc_packet.clear_and_edit()
-                        .write<int16_t>(speed)
-                        .write<int8_t>(angle); 
-                        //.write<int8_t>(-angle/2);
-                    socket->send_packet(ipc_packet);
                 } break;
                 default:
                     {
