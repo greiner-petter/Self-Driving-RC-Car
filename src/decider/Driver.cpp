@@ -32,7 +32,7 @@ void Driver::turn_right(){
     //wait(0.2);
 
     drive_both_steering_values(25, 100, -50);
-    wait(3.2);
+    wait(1.85);
 
     //drive(20, 0);
     //wait(1);
