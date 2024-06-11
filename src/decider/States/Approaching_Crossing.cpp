@@ -32,11 +32,36 @@ void Approaching_Crossing::on_entry(Statemachine* statemachine){
 
 void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     /*
+    
     bool is_at_crossing = false;
+    ocPacket recv_packet;
+    uint32_t threshold = 2;
 
-    while(!is_at_crossing){
-        uint32_t distance = socket->read_packet(ocMessageId::Intersection_Detected);
+    while (!is_at_crossing) {
+       
+        int result = socket->read_packet(recv_packet);
+        ocTime now = ocTime::now();
 
+        if (result < 0) {
+            logger->error("Error reading the IPC socket: (%i) %s", errno, strerror(errno));
+            break;
+        }
+
+        switch (recv_packet.get_message_id())
+        {
+        case ocMessageId::Traffic_Sign_Detected:{
+            auto reader = recv_packet.read_from_start();
+            uint32_t distance = reader.read<uint32_t>();
+            }break;
+        
+        default:{
+            ocMessageId msg_id = recv_packet.get_message_id();
+            ocMemberId mbr_id = recv_packet.get_sender();
+            logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+            }break;
+        }
+
+        }
         //algorithm for slowing down towards 2cm/s
         double* arr = smooth_speed(curr_speed);
         for(int i = 0; i < 100; i++) {
@@ -44,11 +69,12 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
             delay(x)
         }
 
-        if(distance <= threshold){ //threshold == 2cm
+        if(distance <= threshold) {
             is_at_crossing = true;
         }
+
     }
-    
+
     statemachine->change_state(Is_At_Crossing::getInstance());
     */
 }

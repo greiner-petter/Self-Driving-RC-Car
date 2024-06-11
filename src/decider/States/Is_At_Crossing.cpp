@@ -33,12 +33,35 @@ void Is_At_Crossing::on_entry(Statemachine* statemachine){
 
 
 void Is_At_Crossing::run(Statemachine* statemachine, void* data){
-    //
     /*
+    ocPacket recv_packet;
     State& crossing_state = nullptr;
 
-    while(crossing_state==nullptr){
-        uint8_t crossing_type = socket->read_packet(ocMessageId::Intersection_Detected) ;
+    while (true) {
+       
+        int result = socket->read_packet(recv_packet);
+        ocTime now = ocTime::now();
+
+        if (result < 0) {
+            logger->error("Error reading the IPC socket: (%i) %s", errno, strerror(errno));
+            break;
+        }
+
+        switch (recv_packet.get_message_id())
+        {
+        case ocMessageId::Intersection_Detected:{
+            auto reader = recv_packet.read_from_start();
+            uint8_t crossing_type = reader.read<uint8_t>();
+            } break;
+        
+        default:{
+            ocMessageId msg_id = recv_packet.get_message_id();
+            ocMemberId mbr_id = recv_packet.get_sender();
+            logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+            }break;
+        }
+
+        }
 
         if(crossing_type & 1) {
             crossing_state = Crossing_3_Way_Left::getInstance();
@@ -49,10 +72,7 @@ void Is_At_Crossing::run(Statemachine* statemachine, void* data){
         } else {
             drive.stop()
         }
-    
-    }
-
-    statemachine->change_state(crossing_state);
+        statemachine->change_state(crossing_state);
     */
     
 }
