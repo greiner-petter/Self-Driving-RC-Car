@@ -48,7 +48,7 @@ bool check_if_on_street(std::array<int, 25> histogram) {
 }
 
 void return_to_street(int angle, std::array<int, 25> histogram) {
-    while(!check_if_on_street(histogram)) {
+    if(!check_if_on_street(histogram)) {
         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
             ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
             ipc_packet.clear_and_edit()
