@@ -35,8 +35,12 @@ static void signal_handler(int)
     running = false;
 }
 
-double calcDist(std::pair<double, double> p1, std::pair<double, double> p2) {
+double calc_dist(std::pair<double, double> p1, std::pair<double, double> p2) {
     return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
+}
+
+bool is_lane_dist(int x1, int x2) {
+    return std::abs(x1 - x2) > 30 && std::abs(x1 - x2) < 70; 
 }
 
 bool check_if_on_street(std::array<int, 25> histogram) {
@@ -214,6 +218,7 @@ int main()
 
                     int right = 0;
                     int mid = 0;
+                    int left = 0;
 
                     // Retrieve right and mid x coordinates to calculate middle of lane
                     if(rightVec.size() != 0) {
@@ -230,6 +235,20 @@ int main()
                         }
 
                         mid /= midVec.size();
+                    }
+
+
+                    if(leftVec.size() != 0) {
+                        for(const auto& i : leftVec) {
+                            left += i.x;
+                        }
+
+                        left /= leftVec.size();
+                    }
+
+                    if(!is_lane_dist(right, mid)) {
+                        right = mid;
+                        mid = left;
                     }
 
                     int distance_to_horizontal = 0;
