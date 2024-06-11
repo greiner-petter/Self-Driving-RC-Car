@@ -24,6 +24,8 @@ ocIpcSocket *socket;
 ocSharedMemory *shared_memory;
 ocCarProperties car_properties;
 
+std::list<int> last_angles; 
+
 static bool running = true;
 
 static void signal_handler(int)
@@ -50,7 +52,7 @@ void return_to_street(int angle, std::array<int, 25> histogram) {
         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
             ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
             ipc_packet.clear_and_edit()
-                .write<int16_t>(-10)
+                .write<int16_t>(-20)
                 .write<int8_t>(angle); 
                         //.write<int8_t>(-angle/2);
                 socket->send_packet(ipc_packet);    
@@ -106,8 +108,6 @@ int main()
     socket->send_packet(ipc_packet);
 
     logger->log("Lane Detection started!");
-
-    std::list<int> last_angles; 
 
     while(running) {
         int32_t socket_status;
@@ -248,7 +248,7 @@ int main()
 
                     angle = std::clamp((int) angle, -80, 80); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle
 
-                    int average_angle;
+                    int average_angle = 0;
 
                     last_angles.push_back(angle);
                     if(last_angles.size() > 5) {
