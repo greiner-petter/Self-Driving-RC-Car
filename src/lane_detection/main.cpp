@@ -27,6 +27,7 @@ ocCarProperties car_properties;
 std::list<int> last_angles; 
 
 static bool running = true;
+bool onStreet = true;
 
 static void signal_handler(int)
 {
@@ -53,6 +54,8 @@ bool check_if_on_street(std::array<int, 25> histogram) {
         }
     }
 
+    onStreet = false;
+
     return false;
 }
 
@@ -67,6 +70,7 @@ void return_to_street(int angle, std::array<int, 25> histogram) {
                 socket->send_packet(ipc_packet);    
     }//while no lane is detected
     // do drive backward negative average angle
+    
 }
 
 std::pair<std::array<int, 25>, std::vector<cv::Point>> calcHistogram(cv::Mat *matrix) {
@@ -342,15 +346,24 @@ int main()
                         }
                     #endif
 
-                    if(check_if_on_street(histogram)) {
+                    if(check_if_on_street(histogram) && onStreet) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
                             .write<int16_t>(speed)
-                            .write<int8_t>(average_angle); 
-                            //.write<int8_t>(-angle/2);
+                            .write<int8_t>(average_angle/2)
+                            .write<int8_t>(-average_angle/2);
                         socket->send_packet(ipc_packet);
-                    } else {
+                    } else if(check_if_on_street(histogram) && !onStreet) {
+                        ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
+                        ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
+                        ipc_packet.clear_and_edit()
+                            .write<int16_t>(-20)
+                            .write<int8_t>(0); 
+                        socket->send_packet(ipc_packet);
+
+                        onStreet = true;
+                    } else if (!onStreet){
                         return_to_street(average_angle, histogram);
                     }
                 } break;
