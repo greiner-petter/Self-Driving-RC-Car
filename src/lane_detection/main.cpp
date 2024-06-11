@@ -40,6 +40,7 @@ double calc_dist(std::pair<double, double> p1, std::pair<double, double> p2) {
 }
 
 bool is_lane_dist(int x1, int x2) {
+    logger->log("%d",abs(x1-x2));
     return std::abs(x1 - x2) > 30 && std::abs(x1 - x2) < 70; 
 }
 
