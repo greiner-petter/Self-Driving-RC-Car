@@ -157,7 +157,7 @@ int main() {
                             cv::imwrite("cam_image_gaussian.jpg", dst);
                         } 
 
-                        Canny(dst, dst, 30, 50, 3, true);
+                       /* Canny(dst, dst, 30, 50, 3, true);
 
                         if(std::getenv("CAR_ENV") != NULL) {
                             cv::imwrite("cam_image_canny.jpg", dst);
@@ -168,7 +168,7 @@ int main() {
                         if(std::getenv("CAR_ENV") != NULL) {
                             cv::imwrite("cam_image_gaussian2.jpg", dst);
                         } 
-
+                        */
                         dst.copyTo(dst2);
 
                         // notify others about available picture

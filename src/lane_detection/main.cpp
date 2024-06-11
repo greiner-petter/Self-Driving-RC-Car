@@ -43,15 +43,12 @@ bool check_if_on_street(std::array<int, 25> histogram) {
 
     if(std::getenv("CAR_ENV") != NULL) {
         for(auto& bin : histogram) {
-            if(bin > 1000) {
-                exit(0);
-            }
             logger->log("%d", bin);
         }
     } 
 
     for(auto& bin : histogram) {
-        if(bin > 100) {
+        if(bin > 50) {
             return true;
         }
     }
@@ -150,7 +147,7 @@ int main()
             {
                 case ocMessageId::Lines_Available:
                 {
-                    cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[1].img_buffer);
+                    cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[0].img_buffer);
 
                     if(std::getenv("CAR_ENV") != NULL) {
                         cv::imwrite("bev.jpg", matrix);
