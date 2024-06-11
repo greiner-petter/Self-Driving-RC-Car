@@ -280,7 +280,10 @@ int main()
                         dest = 0;
                     }
 
-                    float angle = (dest - 200) * 2.54; // MAPPING TO INT 8 -80 to 80 for angle
+                    float angle = ((dest - 200)/4) * ((dest - 200)/4) * 2.54; // MAPPING TO INT 8 -80 to 80 for angle
+                    if(dest < 0) {
+                        angle *= -1;
+                    }
 
                     angle = std::clamp((int) angle, -160, 160); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle (160 and -160 if back steering is enabled)
 
