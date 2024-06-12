@@ -340,6 +340,8 @@ int main()
 
                     float angle = get_angle(dest);
 
+                    average_angle = 80;
+
                     last_angles.push_back(angle);
                     
                     int speed = int(50 * float(100.0f / float(std::abs(float(average_angle)) + 100.0f)));
