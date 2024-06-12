@@ -260,6 +260,8 @@ int main()
                     if(!is_lane_dist(right, mid) && average_angle < 10) {
                         right = mid;
                         mid = left;
+                        left = NULL;
+                        average_angle = 0;
                     }
 
                     int distance_to_horizontal = 0;
