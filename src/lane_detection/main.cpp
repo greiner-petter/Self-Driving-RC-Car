@@ -44,15 +44,6 @@ bool is_lane_dist(int x1, int x2) {
 }
 
 bool check_if_on_street(std::array<int, 25> histogram) {
-    logger->log("new");
-    
-
-    // if(std::getenv("CAR_ENV") != NULL) {
-    //     for(auto& bin : histogram) {
-    //         logger->log("%d", bin);
-    //     }
-    // } 
-
     for(auto& bin : histogram) {
         if(bin > 20) {
             return true;
