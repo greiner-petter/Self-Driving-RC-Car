@@ -56,12 +56,12 @@ bool check_if_on_street(std::array<int, 25> histogram) {
 }
 
 float get_angle(int dest) {
-    float angle = (dest - 200) * 1.5; // MAPPING TO INT 8 -80 to 80 for angle
+    float angle = (dest - 200) * 1.1; // MAPPING TO INT 8 -80 to 80 for angle
     if(dest-200 < 0) {
         angle *= -1;
     }
 
-    return std::clamp((int) angle, -60, 60); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle (150 and -150 if back steering is enabled)
+    return std::clamp((int) angle, -220, 220); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle (150 and -150 if back steering is enabled)
 
 }
 
