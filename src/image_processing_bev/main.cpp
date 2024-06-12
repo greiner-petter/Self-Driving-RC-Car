@@ -15,6 +15,9 @@
 
 //#define DRAW_POLYLINES_ON_EMPTY_OUTPUT
 
+// 0 for lane BEV and 2 for intersection BEV
+#define VIDEO_OUTPUT 0
+
 
 // use cuda acceleration by default
 #ifndef FORBID_CUDA
@@ -36,9 +39,11 @@ using std::vector;
 static bool running = true;
 ocLogger *logger;
 
-Point2f src_vertices[4];
+Point2f src_vertices_lane_detection[4];
+Point2f src_vertices_intersection_detection[4];
 Point2f dst_vertices[4];
-Mat M;
+Mat M_lane_detection;
+Mat M_intersection_detection;
 
 static constexpr auto BLUR_SIZE = 7;
 static constexpr auto POST_CANNY_BLUE_SIZE = 9;
@@ -49,15 +54,15 @@ static void signal_handler(int)
 }
 
 void initializeTransformParams() {
-    src_vertices[0] = Point2f(70,210);
-    src_vertices[1] = Point2f(330,210);
-    src_vertices[2] = Point2f(780, 310);
-    src_vertices[3] = Point2f(-380, 310);
+    src_vertices_lane_detection[0] = Point2f(70,210);
+    src_vertices_lane_detection[1] = Point2f(330,210);
+    src_vertices_lane_detection[2] = Point2f(780, 310);
+    src_vertices_lane_detection[3] = Point2f(-380, 310);
 
-    /*src_vertices[0] = Point2f(120,230);
-    src_vertices[1] = Point2f(280,230);
-    src_vertices[2] = Point2f(420, 370);
-    src_vertices[3] = Point2f(-20, 370);*/
+    src_vertices_intersection_detection[0] = Point2f(130,190);
+    src_vertices_intersection_detection[1] = Point2f(270,190);
+    src_vertices_intersection_detection[2] = Point2f(1200, 400);
+    src_vertices_intersection_detection[3] = Point2f(-800, 400);
 
 
     dst_vertices[0] = Point2f(0, 0);
@@ -65,11 +70,12 @@ void initializeTransformParams() {
     dst_vertices[2] = Point2f(400, 400);
     dst_vertices[3] = Point2f(0, 400);
 
-    M = getPerspectiveTransform(src_vertices, dst_vertices);
+    M_lane_detection = getPerspectiveTransform(src_vertices_lane_detection, dst_vertices);
+    M_intersection_detection = getPerspectiveTransform(src_vertices_intersection_detection, dst_vertices);
 }
 
-void toBirdsEyeView(Mat &src, Mat &dst) {
-    warpPerspective(src, dst, M, dst.size());
+void toBirdsEyeView(Mat &src, Mat &dst, Mat &transofmation) {
+    warpPerspective(src, dst, transofmation, dst.size());
 }
 
 int main() {
@@ -131,45 +137,44 @@ int main() {
                             {}
                         };
 
+                        shared_memory->bev_data[2] = (ocBevData) {
+                            tempCamData->frame_time,
+                            tempCamData->frame_number,
+                            0,(int32_t) 400,
+                            0,(int32_t) 400,
+                            {}
+                        };
+
                         // TODO: Consider changing the internal implementation to use
                         // OpenCV. Currently it's a single threaded loop! Convert img
                         // Convert img from color to bw
                         convert_to_gray_u8(tempCamData->pixel_format, tempCamData->img_buffer, tempCamData->width, tempCamData->height, shared_memory->bev_data[0].img_buffer, 400, 400);
 
-                        shared_memory->last_written_bev_data_index = 0;
+                        shared_memory->last_written_bev_data_index = VIDEO_OUTPUT;
 
                         // Apply birds eye view
 
                         Mat src(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
-                        Mat dst(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
 
                         if(std::getenv("CAR_ENV") != NULL) {
                             cv::imwrite("cam_image.jpg", src);
                         } 
 
-                        toBirdsEyeView(src, dst);
+                        Mat dst_lane(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
+                        Mat dst_intersection(400, 400, CV_8UC1, shared_memory->bev_data[2].img_buffer);
 
-                        Mat dst2(400, 400, CV_8UC1, shared_memory->bev_data[1].img_buffer);
+                        // intersection needs to be calculated first since lane writes to itself!
+                        toBirdsEyeView(src, dst_intersection, M_intersection_detection);
+                        toBirdsEyeView(src, dst_lane, M_lane_detection);
 
-                        GaussianBlur(dst, dst, Size_(BLUR_SIZE, BLUR_SIZE), 0);
-
+                        GaussianBlur(dst_lane, dst_lane, Size_(BLUR_SIZE, BLUR_SIZE), 0);
                         if(std::getenv("CAR_ENV") != NULL) {
-                            cv::imwrite("cam_image_gaussian.jpg", dst);
+                            cv::imwrite("cam_image_gaussian.jpg", dst_lane);
                         } 
 
-                       /* Canny(dst, dst, 30, 50, 3, true);
-
-                        if(std::getenv("CAR_ENV") != NULL) {
-                            cv::imwrite("cam_image_canny.jpg", dst);
-                        } 
-
-                        GaussianBlur(dst, dst, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
-
-                        if(std::getenv("CAR_ENV") != NULL) {
-                            cv::imwrite("cam_image_gaussian2.jpg", dst);
-                        } 
-                        */
-                        dst.copyTo(dst2);
+                        GaussianBlur(dst_intersection, dst_intersection, Size_(BLUR_SIZE, BLUR_SIZE), 0);
+                        Canny(dst_intersection, dst_intersection, 50, 200, 3, true);
+                        GaussianBlur(dst_intersection, dst_intersection, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
 
                         // notify others about available picture
                         ipc_packet.set_sender(ocMemberId::Image_Processing);
@@ -178,9 +183,9 @@ int main() {
                         
 #ifndef hideContours
                         vector<vector<Point>> contours;
-                        findContours(dst, contours, RETR_LIST, CHAIN_APPROX_NONE);
+                        findContours(dst_intersection, contours, RETR_LIST, CHAIN_APPROX_NONE);
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-                        Mat redrewed_image = Mat::zeros(dst2.size(), CV_8UC1);
+                        Mat redrewed_image = Mat::zeros(dst_lane.size(), CV_8UC1);
 #endif
 
                         vector<vector<Point>> cleaned_data;
@@ -221,7 +226,9 @@ int main() {
 
 
 #ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-                        redrewed_image.copyTo(dst2);
+#if VIDEO_OUTPUT == 2
+                        redrewed_image.copyTo(dst_intersection);
+#endif
 #endif
 #endif
                     } break;
