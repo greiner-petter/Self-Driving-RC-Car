@@ -165,9 +165,9 @@ int main() {
 
                         // intersection needs to be calculated first since lane writes to itself!
                         toBirdsEyeView(src, dst_intersection, M_intersection_detection);
-                        toBirdsEyeView(src, dst_lane, M_lane_detection);
+                        //toBirdsEyeView(src, dst_lane, M_lane_detection);
 
-                        GaussianBlur(dst_lane, dst_lane, Size_(BLUR_SIZE, BLUR_SIZE), 0);
+                        //GaussianBlur(dst_lane, dst_lane, Size_(BLUR_SIZE, BLUR_SIZE), 0);
                         if(std::getenv("CAR_ENV") != NULL) {
                             cv::imwrite("cam_image_gaussian.jpg", dst_lane);
                         } 
