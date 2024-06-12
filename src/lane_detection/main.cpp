@@ -96,13 +96,26 @@ int get_dest(int mid, int right) {
 }
 
 void return_to_street(int angle, std::array<int, 25> histogram) {
+
+
+    float front_angle = angle;
+    float back_angle = 0;
+    if(angle > 75) {
+        front_angle = 75;
+        back_angle = angle - 75;
+    }
+    if(angle < -75) {
+        front_angle = -75;
+        back_angle = angle + 75;
+    } 
+
     if(!check_if_on_street(histogram)) {
         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
         ipc_packet.clear_and_edit()
             .write<int16_t>(-30)
-            .write<int8_t>(angle/2)
-            .write<int8_t>(-angle/2);
+            .write<int8_t>(front_angle)
+            .write<int8_t>(-back_angle);
         socket->send_packet(ipc_packet);    
     }//while no lane is detected
     // do drive backward negative average angle
@@ -392,13 +405,25 @@ int main()
                         }
                     #endif
 
+                    float front_angle = average_angle;
+                    float back_angle = 0;
+                    if(average_angle > 75) {
+                        front_angle = 75;
+                        back_angle = average_angle - 75;
+                    }
+                    if(average_angle < -75) {
+                        front_angle = -75;
+                        back_angle = average_angle + 75;
+                    } 
+
+
                     if(check_if_on_street(histogram) && onStreet) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
                             .write<int16_t>(speed)
-                            .write<int8_t>(average_angle/2)
-                            .write<int8_t>(-average_angle/2);
+                            .write<int8_t>(front_angle)
+                            .write<int8_t>(-back_angle);
                         socket->send_packet(ipc_packet);
                     } else if(check_if_on_street(histogram) && !onStreet) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
