@@ -14,7 +14,7 @@
 
 #define DRAW_LINE_SAMPLES
 
-//#define DEBUG_WINDOW
+#define DEBUG_WINDOW
 
 ocMember member(ocMemberId::Lane_Detection_Values, "Lane Detection");
 
@@ -286,7 +286,7 @@ int main()
                         left /= leftVec.size();
                     }
 
-                    if(!is_lane_dist(right, mid) && std::abs(average_angle) < 10) {
+                    /*if(!is_lane_dist(right, mid) && std::abs(average_angle) < 10) {
                         right = mid;
                         mid = left;
 
@@ -301,7 +301,7 @@ int main()
                             }
                             average_angle /= 3;
                         }
-                    }
+                    }*/
 
                     int distance_to_horizontal = 0;
                     int count = 0;
@@ -344,7 +344,7 @@ int main()
                     int speed = int(50 * float(100.0f / float(std::abs(float(average_angle)) + 100.0f)));
 
                     #ifdef DEBUG_WINDOW
-                        speed = 20 * (254 / (std::abs(angle) + 254));
+                        speed = 10;
 
                         for(int radius = 50; radius <= 200; radius+=25) {
                             cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
