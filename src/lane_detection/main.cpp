@@ -340,7 +340,7 @@ int main()
 
                     float angle = get_angle(dest);
 
-                    average_angle = 80;
+                    average_angle = 70;
 
                     last_angles.push_back(angle);
                     
