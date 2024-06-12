@@ -6,13 +6,15 @@
 #include <opencv2/core/types.hpp>
 
 using cv::Point2f;
-using cv::Mat;
+using cv::Rect;
 using cv::Point;
 
 using std::vector;
 
 static bool running = true;
 ocLogger *logger;
+
+constexpr bool in_curve = true;
 
 static void signal_handler(int)
 {
@@ -56,16 +58,58 @@ int main() {
                             vector<Point> points;
                             size_t num_points;
                             reader.read(&num_points);
+                            double num_in_roi = 0;
                             for (size_t j = 0; j < num_points; ++j) {
                                 Point p;
                                 reader.read(&p.x);
                                 reader.read(&p.y);
                                 points.push_back(p);
+                                // TODO: detect lane and use that as ROI
+                                if (p.inside(Rect(170, 0, 390, 370))) {
+                                    ++num_in_roi;
+                                }
                             }
-                            lines.push_back(points);
+                            // only accept line, if at least a certain percentage is in the ROI
+                            if (num_in_roi > (double) points.size() * 0.66) {
+                                lines.push_back(points);
+                            }
                         }
-                        // TODO: Handle data
-                        // logger->log("Got %zd lines", lines.size());
+
+                        vector<vector<Point>> lines_filtered;
+                        uint32_t distance = 0;
+                        uint8_t directions = 6;
+                        for (auto points : lines) {
+                            // TODO: Put a way better filtering in place here!
+                            vector<Point> points_filtered;
+                            for (size_t i = 0; i < points.size() - 1; ++i) {
+                                Point &p1 = points.at(i);
+                                Point &p2 = points.at(i + 1);
+                                Point pos = p2 - p1;
+                                double rad = atan2(pos.y, pos.x) - 0.5 * CV_PI;
+                                if (rad < 0) {
+                                    rad += 2 * CV_PI;
+                                }
+                                double degree = rad * (180 / CV_PI);
+                                if ((degree > 86 && degree < 94) || 
+                                        (degree > 276 && degree < 274)) {
+                                    auto norm = cv::norm(pos);
+                                    if (norm > 30) {
+                                        distance = 123;
+                                        logger->log("degree = %d | norm = %f", (int) degree, norm);
+
+                                    }
+                                }
+                            }
+                        }
+                        if (distance != 0) {
+                            ipc_packet.clear();
+                            ipc_packet.set_sender(ocMemberId::Intersection_Detection);
+                            ipc_packet.set_message_id(ocMessageId::Intersection_Detected);
+                            ipc_packet.clear_and_edit()
+                                .write(distance)
+                                .write(directions);
+                            socket->send_packet(ipc_packet);
+                        }
 
                     } break;
                     default:
