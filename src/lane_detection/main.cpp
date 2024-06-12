@@ -65,6 +65,36 @@ bool check_if_on_street(std::array<int, 25> histogram) {
     return false;
 }
 
+float get_angle(int dest) {
+    float angle = ((dest - 200)/4) * ((dest - 200)/4) * 1.5; // MAPPING TO INT 8 -80 to 80 for angle
+    if(dest-200 < 0) {
+        angle *= -1;
+    }
+
+    return std::clamp((int) angle, -150, 150); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle (150 and -150 if back steering is enabled)
+
+}
+
+int get_dest(int mid, int right) {
+    int dest = (right + mid) / 2;
+
+    if(mid == 0) { // Keep left from right lane with a margin of 10 when no mid line found
+        dest = right - 20;
+    }
+
+    if(mid == 0 && right == 0) { // Move straight when nothing seen
+        dest = 200;
+    }
+
+    if(dest > 399) { // Fix destination out of window
+        dest = 399;
+    } else if(dest < 0) {
+        dest = 0;
+    }
+
+    return dest;
+}
+
 void return_to_street(int angle, std::array<int, 25> histogram) {
     if(!check_if_on_street(histogram)) {
         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
@@ -257,11 +287,21 @@ int main()
                         left /= leftVec.size();
                     }
 
-                    if(!is_lane_dist(right, mid) && average_angle < 10) {
+                    if(!is_lane_dist(right, mid) && std::abs(average_angle) < 10) {
                         right = mid;
                         mid = left;
-                        left = NULL;
-                        average_angle = 0;
+
+                        for(int i = 0; i < last_angles.size(); i++) {
+                            last_angles.pop_front();
+                            last_angles.push_back(get_dest(mid, right));
+                        }
+
+                        if(last_angles.size() > 3) {
+                            for(auto& i : last_angles) {
+                                average_angle += i;
+                            }
+                            average_angle /= 3;
+                        }
                     }
 
                     int distance_to_horizontal = 0;
@@ -296,29 +336,9 @@ int main()
                     }
 
                     //logger->log("%d", distance_to_horizontal);
-                    int dest = (right + mid) / 2;
+                    int dest = get_dest(mid, right);
 
-                    if(mid == 0) { // Keep left from right lane with a margin of 10 when no mid line found
-                        dest = right -10;
-                    }
-
-                    if(mid == 0 && right == 0) { // Move straight when nothing seen
-                        dest = 200;
-                    }
-
-                    if(dest > 399) { // Fix destination out of window
-                        dest = 399;
-                    } else if(dest < 0) {
-                        dest = 0;
-                    }
-
-                    float angle = ((dest - 200)/4) * ((dest - 200)/4) * 1.5; // MAPPING TO INT 8 -80 to 80 for angle
-                    if(dest-200 < 0) {
-                        angle *= -1;
-                    }
-
-                    angle = std::clamp((int) angle, -150, 150); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle (150 and -150 if back steering is enabled)
-
+                    float angle = get_angle(dest);
 
                     last_angles.push_back(angle);
 
