@@ -40,8 +40,7 @@ double calc_dist(std::pair<double, double> p1, std::pair<double, double> p2) {
 }
 
 bool is_lane_dist(int x1, int x2) {
-    logger->log("%d",abs(x1-x2));
-    return std::abs(x1 - x2) > 45; //&& std::abs(x1 - x2) < 70; 
+    return std::abs(x1 - x2) > 45 && std::abs(x1 - x2) < 70; 
 }
 
 bool check_if_on_street(std::array<int, 25> histogram) {
@@ -66,7 +65,7 @@ bool check_if_on_street(std::array<int, 25> histogram) {
 }
 
 float get_angle(int dest) {
-    float angle = (dest - 200) * 0.6; // MAPPING TO INT 8 -80 to 80 for angle
+    float angle = (dest - 200) * 1.5; // MAPPING TO INT 8 -80 to 80 for angle
     if(dest-200 < 0) {
         angle *= -1;
     }
@@ -404,7 +403,7 @@ int main()
                         }
                     #endif
 
-                    float front_angle = average_angle;
+                   /* float front_angle = average_angle;
                     float back_angle = 0;
                     if(average_angle >= 50) {
                         front_angle = 60;
@@ -413,7 +412,7 @@ int main()
                     if(average_angle <= -50) {
                         front_angle = -60;
                         back_angle = average_angle + 60;
-                    } 
+                    } */
 
 
                     if(check_if_on_street(histogram) && onStreet) {
@@ -421,8 +420,8 @@ int main()
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
                             .write<int16_t>(speed)
-                            .write<int8_t>(front_angle)
-                            .write<int8_t>(-back_angle);
+                            .write<int8_t>(average_angle)
+                            .write<int8_t>(-average_angle);
                         socket->send_packet(ipc_packet);
                     } else if(check_if_on_street(histogram) && !onStreet) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
