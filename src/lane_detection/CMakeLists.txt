@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 3.12)
 project(lane_detection)
 
 find_package(OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
-
 include_directories(
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../tflite/tflite-dist/include/
+  ${OpenCV_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../tensorflow/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../flatbuffers/include/
 )
 
 ADD_LIBRARY(tensorflowlite SHARED IMPORTED)
-set_property(TARGET tensorflowlite PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../tflite/tflite-dist/libs/linux_x64/libtensorflowlite.so)
+set_property(TARGET tensorflowlite PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../tflite/tflite-dist/libs/linux_x64/libtensorflowlite.so)
 
 add_executable(lane_detection
     main.cpp
