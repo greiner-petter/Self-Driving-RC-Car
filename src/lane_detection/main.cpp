@@ -87,34 +87,56 @@ int get_dest(int mid, int right) {
     return dest;
 }
 
-void return_to_street(int angle, std::array<int, 25> histogram) {
-
-
-    float front_angle = angle;
-    float back_angle = 0;
-    if(angle > 75) {
-        front_angle = 75;
-        back_angle = angle - 75;
-    }
-    if(angle < -75) {
-        front_angle = -75;
-        back_angle = angle + 75;
-    } 
-
+void return_to_street(float front_angle, float back_angle, std::array<int, 25> histogram) {
     if(!check_if_on_street(histogram)) {
         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
         ipc_packet.clear_and_edit()
             .write<int16_t>(-30)
             .write<int8_t>(front_angle)
-            .write<int8_t>(-back_angle);
+            .write<int8_t>(back_angle);
         socket->send_packet(ipc_packet);    
-    }//while no lane is detected
-    // do drive backward negative average angle
-    
+    }
 }
 
-std::pair<std::array<int, 25>, std::vector<cv::Point>> calcHistogram(cv::Mat *matrix) {
+std::pair<int, int> get_angles_from_average_angle(float average_angle) {
+    average_angle *= 2;
+
+    float front_angle = average_angle;
+    float back_angle = 0;
+
+    if(average_angle == 0) {
+        front_angle = average_angle;
+        back_angle = average_angle;
+        return std::pair<int, int>(front_angle, back_angle);
+    }
+
+    if(average_angle >= 65) {
+        front_angle = 65;
+        back_angle = -average_angle + 65;
+    } else if(average_angle >= 30) {
+        front_angle = average_angle;
+        back_angle = 65 - average_angle;
+    } else if(average_angle > 0) {
+        front_angle = average_angle;
+        back_angle = average_angle;
+    }
+    
+    if(average_angle <= -65) {
+        front_angle = -65;
+        back_angle = average_angle + 65;
+    } else if(average_angle <= -30) {
+        front_angle = average_angle;
+        back_angle = -65 - average_angle;
+    } else if(average_angle < 0) {
+        front_angle = average_angle;
+        back_angle = average_angle;
+    }
+
+    return std::pair<int, int>(front_angle, back_angle);
+}
+
+std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *matrix) {
     std::array<int, 25> histogram;
     std::vector<cv::Point> intersections;
 
@@ -199,10 +221,10 @@ int main()
                         cv::imwrite("bev.jpg", matrix);
                     } 
                    
-                    auto histoIntersections = calcHistogram(&matrix);
+                    auto histo_intersections = calc_histogram(&matrix);
 
-                    std::array<int, 25> histogram = histoIntersections.first;
-                    std::vector<cv::Point> intersections = histoIntersections.second;
+                    std::array<int, 25> histogram = histo_intersections.first;
+                    std::vector<cv::Point> intersections = histo_intersections.second;
 
                     std::vector<std::pair<int, int>> max;
 
@@ -223,9 +245,9 @@ int main()
                         return a.first < b.first;
                     });
 
-                    std::vector<cv::Point> leftVec;
-                    std::vector<cv::Point> midVec;
-                    std::vector<cv::Point> rightVec;
+                    std::vector<cv::Point> left_vec;
+                    std::vector<cv::Point> mid_vec;
+                    std::vector<cv::Point> right_vec;
 
                     // Retrieve lanes by maximas of histogram
                     for(int i = 0; i < intersections.size(); i++) {
@@ -233,21 +255,21 @@ int main()
 
                         if(greatest_values.size() == 1) {
                             if(greatest_values.at(0).first == x || greatest_values.at(0).first == x-1) {
-                                rightVec.push_back(intersections.at(i));
+                                right_vec.push_back(intersections.at(i));
                             } 
                         } else if(greatest_values.size() == 2) {
                             if(greatest_values.at(0).first == x) {
-                                midVec.push_back(intersections.at(i));
+                                mid_vec.push_back(intersections.at(i));
                             } else if(greatest_values.at(1).first == x || greatest_values.at(1).first == x-1) {
-                                rightVec.push_back(intersections.at(i));
+                                right_vec.push_back(intersections.at(i));
                             } 
                         } else if(greatest_values.size() >= 3) {
                             if(greatest_values.at(0).first == x || greatest_values.at(0).first == x+1) {
-                                leftVec.push_back(intersections.at(i));
+                                left_vec.push_back(intersections.at(i));
                             } else if(greatest_values.at(1).first == x) {
-                                midVec.push_back(intersections.at(i));
+                                mid_vec.push_back(intersections.at(i));
                             } else if(greatest_values.at(2).first == x || greatest_values.at(2).first == x-1) {
-                                rightVec.push_back(intersections.at(i));
+                                right_vec.push_back(intersections.at(i));
                             } 
                         }
                     }
@@ -267,29 +289,29 @@ int main()
                     int left = 0;
 
                     // Retrieve right and mid x coordinates to calculate middle of lane
-                    if(rightVec.size() != 0) {
-                        for(const auto& i : rightVec) {
+                    if(right_vec.size() != 0) {
+                        for(const auto& i : right_vec) {
                             right += i.x;
                         }
 
-                        right /= rightVec.size();
+                        right /= right_vec.size();
                     }
 
-                    if(midVec.size() != 0) {
-                        for(const auto& i : midVec) {
+                    if(mid_vec.size() != 0) {
+                        for(const auto& i : mid_vec) {
                             mid += i.x;
                         }
 
-                        mid /= midVec.size();
+                        mid /= mid_vec.size();
                     }
 
 
-                    if(leftVec.size() != 0) {
-                        for(const auto& i : leftVec) {
+                    if(left_vec.size() != 0) {
+                        for(const auto& i : left_vec) {
                             left += i.x;
                         }
 
-                        left /= leftVec.size();
+                        left /= left_vec.size();
                     }
 
                     /*if(!is_lane_dist(right, mid) && std::abs(average_angle) < 10) {
@@ -313,7 +335,7 @@ int main()
                     int count = 0;
 
                     for(int radius = 50; radius <= 200; radius+=25) {
-                        int pointCount = 0;
+                        int point_count = 0;
                         for(double pi = 0; pi < M_PI; pi += 0.001) {
                             int x = 200 + round(cos(pi) * radius);
                             int y = 400 - round(sin(pi) * radius);
@@ -325,12 +347,12 @@ int main()
                             int color = matrix.at<uint8_t>(y, x);
 
                             if(color > 50 && x > (mid + 10) && x < (right - 10)) {
-                                pointCount++;
+                                point_count++;
                             }
                         }
 
-                        //logger->log("%d", pointCount);
-                        if (pointCount > 5) {
+                        //logger->log("%d", point_count);
+                        if (point_count > 5) {
                             distance_to_horizontal += radius;
                             count ++;
                         }
@@ -377,15 +399,15 @@ int main()
                             cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
                         }
 
-                        for(const auto& p : rightVec) {
+                        for(const auto& p : right_vec) {
                             cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5);
                         }
 
-                        for(const auto& p : midVec) {
+                        for(const auto& p : mid_vec) {
                             cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5); 
                         }
 
-                        for(const auto& p : leftVec) {
+                        for(const auto& p : left_vec) {
                         cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5);    
                         }
 
@@ -396,18 +418,7 @@ int main()
                         }
                     #endif
 
-                    float front_angle = average_angle;
-                    float back_angle = 0;
-
-                    if(average_angle >= 60) {
-                        front_angle = 60;
-                        back_angle = average_angle - 60;
-                    }
-                    if(average_angle <= -60) {
-                        front_angle = -60;
-                        back_angle = average_angle + 60;
-                    }
-
+                    auto [front_angle, back_angle] = get_angles_from_average_angle(average_angle);
 
                     if(check_if_on_street(histogram) && onStreet) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
@@ -415,7 +426,7 @@ int main()
                         ipc_packet.clear_and_edit()
                             .write<int16_t>(speed)
                             .write<int8_t>(front_angle)
-                            .write<int8_t>(-back_angle);
+                            .write<int8_t>(back_angle);
                         socket->send_packet(ipc_packet);
                     } else if(check_if_on_street(histogram) && !onStreet) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
@@ -434,7 +445,7 @@ int main()
                         }
                         
                     } else if (!onStreet){
-                        return_to_street(average_angle, histogram);
+                        return_to_street(front_angle, back_angle, histogram);
                     }
                 } break;
                 default:
