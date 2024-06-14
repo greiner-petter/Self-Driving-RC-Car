@@ -87,16 +87,20 @@ int get_dest(int mid, int right) {
     return dest;
 }
 
-void return_to_street(float front_angle, float back_angle, std::array<int, 25> histogram) {
+void return_to_street(float front_angle, std::array<int, 25> histogram) {
     if(!check_if_on_street(histogram)) {
         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
         ipc_packet.clear_and_edit()
             .write<int16_t>(-30)
             .write<int8_t>(front_angle)
-            .write<int8_t>(back_angle);
+            .write<int8_t>(0);
         socket->send_packet(ipc_packet);    
     }
+}
+
+void continue_if_blinded(float front_angle, float back_angle, std::array<int, 25> histogram) {
+
 }
 
 std::pair<int, int> get_angles_from_average_angle(float average_angle) {
@@ -225,6 +229,14 @@ int main()
 
                     std::array<int, 25> histogram = histo_intersections.first;
                     std::vector<cv::Point> intersections = histo_intersections.second;
+
+                    std::string line = "";
+
+                    for(auto& i : histogram) {
+                        line += std::to_string(i) + " ";
+                    }
+
+                    logger->log("%s", line.c_str());
 
                     std::vector<std::pair<int, int>> max;
 
@@ -445,7 +457,7 @@ int main()
                         }
                         
                     } else if (!onStreet){
-                        return_to_street(front_angle, back_angle, histogram);
+                        return_to_street(front_angle, histogram);
                     }
                 } break;
                 default:
