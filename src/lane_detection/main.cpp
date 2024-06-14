@@ -62,7 +62,7 @@ float get_angle(int dest) {
     } else {
         angle = (dest - 200) * 2;
     }
-    logger->log("%f", angle);
+    logger->log("%f", std::abs((dest - 200)));
 
     return std::clamp((int) angle, -65, 65); // Clamp between -65 and 65 so tire doesn't get stuck due to too high angle
 }
@@ -137,6 +137,7 @@ std::pair<int, int> get_angles_from_average_angle(float average_angle) {
         back_angle = average_angle;
     }
 
+    logger->log("fr: %f  --  ba: %f", front_angle, back_angle);
     return std::pair<int, int>(front_angle, back_angle);
 }
 
