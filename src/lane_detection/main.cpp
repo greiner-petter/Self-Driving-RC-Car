@@ -170,11 +170,13 @@ int main()
 
                         cv::imwrite("bev.jpg", matrix);
 
-                        //matrix = cv::imread("cam_image.jpg");
+                        matrix = cv::imread("cam_image.jpg");
                     
                     
                         cv::Mat result = road_lines(matrix, interpreter.get());
                         cv::imwrite("bev_out.jpg", result);
+
+                        return 0;
                 } break;
                 default:
                     {
