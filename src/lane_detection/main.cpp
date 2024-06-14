@@ -170,7 +170,9 @@ int main()
 
                         cv::imwrite("bev.jpg", matrix);
 
-                        matrix = cv::imread("cam_image.jpg");
+                        cv::cvtColor(matrix, matrix, cv::COLOR_GRAY2BGR);
+
+                        //matrix = cv::imread("cam_image.jpg");
                     
                     
                         cv::Mat result = road_lines(matrix, interpreter.get());
