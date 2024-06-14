@@ -121,7 +121,7 @@ std::pair<int, int> get_angles_from_average_angle(float average_angle) {
     } else if(average_angle >= 5 && average_angle <= 10) {
         front_angle = average_angle;
         back_angle = 10 - average_angle;
-    } else if(average_angle < 5) {
+    } else if(average_angle < 5 && average_angle > 0) {
         front_angle = average_angle;
         back_angle = average_angle;
     }
@@ -132,7 +132,7 @@ std::pair<int, int> get_angles_from_average_angle(float average_angle) {
     } else if(average_angle <= -5 && average_angle >= -10) {
         front_angle = average_angle;
         back_angle = -10 - average_angle;
-    } else if(average_angle > -5) {
+    } else if(average_angle > -5 && average_angle < 0) {
         front_angle = average_angle;
         back_angle = average_angle;
     }
