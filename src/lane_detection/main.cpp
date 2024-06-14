@@ -454,7 +454,7 @@ int main()
                             .write<int8_t>(0); 
                         socket->send_packet(ipc_packet);
                         
-                        if(onStreetCount > 5) {
+                        if(onStreetCount > 15) {
                             onStreet = true;
                             onStreetCount = 0;
                         } else {
