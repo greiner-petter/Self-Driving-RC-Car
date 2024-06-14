@@ -59,7 +59,7 @@ float get_angle(int dest) {
     float angle = 0;
     int val1 = 25;
     int val2 = 2;
-    int val3 = 0.0005;
+    int val3 = 0.0003;
     if((dest - 200) > 36) {
         angle = (dest - 200) + (dest - 200 - val1)*(dest - 200 - val1)*(dest - 200 - val1) * val3 + 36;
     } else if ((dest - 200) < -val1) {
