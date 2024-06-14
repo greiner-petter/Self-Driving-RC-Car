@@ -57,7 +57,7 @@ bool check_if_on_street(std::array<int, 25> histogram) {
 
 float get_angle(int dest) {
     float angle = 0;
-    if(std::abs((dest - 200)) > 30) {
+    if(std::abs((dest - 200)) > 50) {
         angle = (dest - 200)*(dest - 200)*(dest - 200) * 0.32; // MAPPING TO INT 8 -65 and 65 for angle
     } else {
         angle = (dest - 200) * 2;
@@ -450,7 +450,7 @@ int main()
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
                             .write<int16_t>(-30)
-                            .write<int8_t>(0)
+                            .write<int8_t>(-front_angle)
                             .write<int8_t>(0); 
                         socket->send_packet(ipc_packet);
                         
