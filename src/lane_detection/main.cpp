@@ -382,7 +382,7 @@ int main()
 
                     last_angles.push_back(angle);
                     
-                    int speed = int(100 * float(100.0f / float(std::abs(float(average_angle)) + 100.0f)));
+                    int speed = int(50 * float(100.0f / float(std::abs(float(average_angle)) + 100.0f)));
 
                     #ifdef DEBUG_WINDOW
                         speed = 10;
