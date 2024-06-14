@@ -57,10 +57,14 @@ bool check_if_on_street(std::array<int, 25> histogram) {
 
 float get_angle(int dest) {
     float angle = 0;
-    if(std::abs((dest - 200)) > 50) {
-        angle = (dest - 200)*(dest - 200)*(dest - 200) * 0.32; // MAPPING TO INT 8 -65 and 65 for angle
+    int val1 = 50;
+    int val2 = 2;
+    if((dest - 200) > val1) {
+        angle = (dest - 200 - val1)*(dest - 200 - val1)*(dest - 200 - val1) * 0.32 + val1 * val2;
+    } else if ((dest - 200) < -val1) {
+        angle = (dest - 200 + val1)*(dest - 200 + val1)*(dest - 200 + val1) * 0.32 - val1 * val2;
     } else {
-        angle = (dest - 200) * 2;
+        angle = (dest - 200) * val2;
     }
     //logger->log("%d", (dest - 200));
 
