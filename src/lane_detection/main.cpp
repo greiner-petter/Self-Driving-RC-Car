@@ -214,11 +214,11 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *m
                 continue;
             }
 
-            if(color2 - color > 20 && color3 - color > 20) {
+            if(color2 - color > 10 && color3 - color > 10) {
                 point[0] = std::pair(x,y);
             }
 
-            if(color - color2 > 20 && point[0].first != 0 && point[0].second != 0 && color - color3 > 20) {
+            if(color - color2 > 10 && point[0].first != 0 && point[0].second != 0 && color - color3 > 10) {
                 point[1] = std::pair(x,y);
 
                 double dist = calc_dist(point[0], point[1]);
