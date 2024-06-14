@@ -150,11 +150,11 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *m
             int x = 200 + round(cos(pi) * radius);
             int y = 400 - round(sin(pi) * radius);
 
-            int x2 = 200 + round(cos(pi-0.01) * radius);
-            int y2 = 400 - round(sin(pi-0.01) * radius);
+            int x2 = 200 + round(cos(pi+0.01) * radius);
+            int y2 = 400 - round(sin(pi+0.01) * radius);
 
-            int x3 = 200 + round(cos(pi-0.03) * radius);
-            int y3 = 400 - round(sin(pi-0.03) * radius);
+            int x3 = 200 + round(cos(pi+0.03) * radius);
+            int y3 = 400 - round(sin(pi+0.03) * radius);
 
             if(x+1 >= 400 || x-1 < 0 || y+1 >= 400 || y-1 < 0) {
                 continue;
@@ -172,11 +172,15 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *m
             int color2 = matrix->at<uint8_t>(y2, x2);
             int color3 = matrix->at<uint8_t>(y3, x3);
 
-            if(color2 - color > 25 && point[0].first != 0 && color3 - color > 25) {
+            if(color > 235) {
+                continue;
+            }
+
+            if(color2 - color > 20 && color3 - color > 20) {
                 point[0] = std::pair(x,y);
             }
 
-            if(color - color2 > 25 && color - color3 > 25) {
+            if(color - color2 > 20 && point[0].first != 0 && color - color3 > 20) {
                 point[1] = std::pair(x,y);
 
                 //double dist = calcDist(point[0], point[1]);
