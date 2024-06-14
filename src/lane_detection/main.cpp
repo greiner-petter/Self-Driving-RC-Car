@@ -341,7 +341,7 @@ int main()
                     }
 
                     //logger->log("%d", distance_to_horizontal);
-                    int dest = get_dest(mid, right);
+                    int dest = get_dest(mid, right) + 10;
 
                     float angle = get_angle(dest);
 
@@ -398,6 +398,7 @@ int main()
 
                     float front_angle = average_angle;
                     float back_angle = 0;
+
                     if(average_angle >= 60) {
                         front_angle = 60;
                         back_angle = average_angle - 60;
