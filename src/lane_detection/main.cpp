@@ -146,7 +146,7 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *m
     for(int radius = 50; radius <= 200; radius+=25) {
         std::pair<int, int> point[2];
 
-        for(double pi = 0.9; pi < 2.24; pi += 0.01) {
+        for(double pi = 0.9; pi < 2.24; pi += 0.001) {
             int x = 200 + round(cos(pi) * radius);
             int y = 400 - round(sin(pi) * radius);
 
