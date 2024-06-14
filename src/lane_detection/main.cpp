@@ -40,6 +40,7 @@ cv::Mat road_lines(cv::Mat &image, tflite::Interpreter* interpreter) {
     // Resize image
     cv::Mat small_img;
     cv::resize(image, small_img, cv::Size(160, 80));
+    small_img.convertTo(small_img, CV_32FC1);
 
     memcpy(interpreter->typed_input_tensor<float>(0), small_img.data, small_img.total() * small_img.elemSize());
 
@@ -67,7 +68,7 @@ cv::Mat road_lines(cv::Mat &image, tflite::Interpreter* interpreter) {
         lanes.avg_fit += mat;
     }
     lanes.avg_fit /= lanes.recent_fit.size();
-    lanes.avg_fit.convertTo(lanes.avg_fit, CV_8UC1);
+    lanes.avg_fit.convertTo(lanes.avg_fit, CV_8UC3);
 
     // Create lane drawn image
     cv::Mat blanks = cv::Mat::zeros(lanes.avg_fit.size(), CV_8UC3);
@@ -168,9 +169,11 @@ int main()
                     cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[0].img_buffer);
 
                         cv::imwrite("bev.jpg", matrix);
+
+                        matrix = cv::imread("cam_image.jpg");
                     
                     
-                        cv::Mat result = road_lines(cv::imread("test.jpg"), interpreter.get());
+                        cv::Mat result = road_lines(matrix, interpreter.get());
                         cv::imwrite("bev_out.jpg", result);
                     
                     return 0;
