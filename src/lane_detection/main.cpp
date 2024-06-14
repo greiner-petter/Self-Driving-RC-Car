@@ -214,11 +214,11 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *m
                 continue;
             }
 
-            if(color2 - color > 10 && color3 - color > 10) {
+            if(color2 - color > 15 && color3 - color > 15) {
                 point[0] = std::pair(x,y);
             }
 
-            if(color - color2 > 10 && point[0].first != 0 && point[0].second != 0 && color - color3 > 10) {
+            if(color - color2 > 15 && point[0].first != 0 && point[0].second != 0 && color - color3 > 15) {
                 point[1] = std::pair(x,y);
 
                 double dist = calc_dist(point[0], point[1]);
@@ -356,7 +356,7 @@ int main()
                         average_angle /= 3;
                     }
                     
-                    int speed = int(50 * float(100.0f / float(std::abs(float(average_angle)) + 100.0f)));
+                    int speed = int(75 * float(100.0f / float(std::abs(float(average_angle)) + 100.0f)));
 
                     #ifdef DEBUG_WINDOW
                         int distance_to_horizontal = 0;
