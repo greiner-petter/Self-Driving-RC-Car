@@ -40,7 +40,7 @@ double calc_dist(std::pair<double, double> p1, std::pair<double, double> p2) {
 }
 
 bool is_lane_dist(int x1, int x2) {
-    return std::abs(x1 - x2) > 40 && std::abs(x1 - x2) < 75; 
+    return std::abs(x1 - x2) > 45 && std::abs(x1 - x2) < 70; 
 }
 
 bool check_if_on_street(std::array<int, 25> histogram) {
@@ -330,7 +330,7 @@ int main()
                         }
 
                         //logger->log("%d", pointCount);
-                        if (pointCount > 10) {
+                        if (pointCount > 5) {
                             distance_to_horizontal += radius;
                             count ++;
                         }
