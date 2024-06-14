@@ -190,6 +190,10 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *m
             int x3 = 200 + round(cos(pi+0.03) * radius);
             int y3 = 400 - round(sin(pi+0.03) * radius);
 
+            if ((400-y) < (-43/26*x + 215) || (400-y) < (43/26*x - 447)) {
+                continue;
+            }
+
             if(x+1 >= 400 || x-1 < 0 || y+1 >= 400 || y-1 < 0) {
                 continue;
             }
