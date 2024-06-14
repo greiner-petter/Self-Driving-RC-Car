@@ -14,7 +14,7 @@
 
 #define DRAW_LINE_SAMPLES
 
-#define DEBUG_WINDOW
+//#define DEBUG_WINDOW
 
 ocMember member(ocMemberId::Lane_Detection_Values, "Lane Detection");
 
