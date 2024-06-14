@@ -62,7 +62,7 @@ float get_angle(int dest) {
     } else {
         angle = (dest - 200) * 2;
     }
-    logger->log("%f", std::abs((dest - 200)));
+    logger->log("%d", (dest - 200));
 
     return std::clamp((int) angle, -65, 65); // Clamp between -65 and 65 so tire doesn't get stuck due to too high angle
 }
