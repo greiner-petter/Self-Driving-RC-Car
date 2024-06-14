@@ -60,7 +60,7 @@ float get_angle(int dest) {
     if(std::abs((dest - 200)) > 30) {
         angle = (dest - 200)*(dest - 200)*(dest - 200) * 0.32; // MAPPING TO INT 8 -65 and 65 for angle
     } else {
-        angle = (dest - 200) * 0.32;
+        angle = (dest - 200) * 2;
     }
     logger->log("%d", angle);
 
