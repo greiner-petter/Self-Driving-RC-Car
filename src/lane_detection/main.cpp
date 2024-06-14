@@ -175,8 +175,6 @@ int main()
                     
                         cv::Mat result = road_lines(matrix, interpreter.get());
                         cv::imwrite("bev_out.jpg", result);
-                    
-                    return 0;
                 } break;
                 default:
                     {
