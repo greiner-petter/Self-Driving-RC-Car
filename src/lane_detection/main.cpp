@@ -396,16 +396,16 @@ int main()
                         }
                     #endif
 
-                   /* float front_angle = average_angle;
+                    float front_angle = average_angle;
                     float back_angle = 0;
-                    if(average_angle >= 50) {
+                    if(average_angle >= 60) {
                         front_angle = 60;
                         back_angle = average_angle - 60;
                     }
-                    if(average_angle <= -50) {
+                    if(average_angle <= -60) {
                         front_angle = -60;
                         back_angle = average_angle + 60;
-                    } */
+                    }
 
 
                     if(check_if_on_street(histogram) && onStreet) {
@@ -413,8 +413,8 @@ int main()
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
                             .write<int16_t>(speed)
-                            .write<int8_t>(average_angle)
-                            .write<int8_t>(-average_angle);
+                            .write<int8_t>(front_angle)
+                            .write<int8_t>(-back_angle);
                         socket->send_packet(ipc_packet);
                     } else if(check_if_on_street(histogram) && !onStreet) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
