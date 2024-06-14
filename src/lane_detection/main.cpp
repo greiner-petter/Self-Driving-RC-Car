@@ -135,7 +135,7 @@ int main()
         .write(ocMessageId::Birdseye_Image_Available);
     socket->send_packet(ipc_packet);
 
-    const char* model_path = "/home/calvin/Documents/gruppe2/scripts/model.tflite";
+    const char* model_path = "./model.tflite";
     std::unique_ptr<tflite::FlatBufferModel> model = tflite::FlatBufferModel::BuildFromFile(model_path);
     if (!model) {
         std::cerr << "Failed to load model: " << model_path << std::endl;
@@ -170,7 +170,7 @@ int main()
 
                         cv::imwrite("bev.jpg", matrix);
 
-                        matrix = cv::imread("cam_image.jpg");
+                        //matrix = cv::imread("cam_image.jpg");
                     
                     
                         cv::Mat result = road_lines(matrix, interpreter.get());
