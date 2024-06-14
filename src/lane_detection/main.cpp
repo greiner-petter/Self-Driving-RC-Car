@@ -180,17 +180,19 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *m
                 point[0] = std::pair(x,y);
             }
 
-            if(color - color2 > 20 && point[0].first != 0 && color - color3 > 20) {
+            if(color - color2 > 20 && point[0].first != 0 && point[0].second != 0 && color - color3 > 20) {
                 point[1] = std::pair(x,y);
 
-                //double dist = calcDist(point[0], point[1]);
+                double dist = calc_dist(point[0], point[1]);
 
-                intersections.push_back(cv::Point(point[0].first,point[0].second));
-                intersections.push_back(cv::Point(point[1].first,point[1].second));
+                if(dist <= 10) {
+                    intersections.push_back(cv::Point(point[0].first,point[0].second));
+                    intersections.push_back(cv::Point(point[1].first,point[1].second));
 
-                point[0] = std::pair(0,0);
-                point[1] = std::pair(0,0);
-                histogram[x/16]++;
+                    point[0] = std::pair(0,0);
+                    point[1] = std::pair(0,0);
+                    histogram[x/16]++;
+                }
             }
         }
     }
@@ -373,7 +375,7 @@ int main()
                         }
 
                         //logger->log("%d", point_count);
-                        if (point_count > 5) {
+                        if (point_count > 1) {
                             distance_to_horizontal += radius;
                             count ++;
                         }
