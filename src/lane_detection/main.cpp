@@ -45,7 +45,7 @@ bool is_lane_dist(int x1, int x2) {
 
 bool check_if_on_street(std::array<int, 25> histogram) {
     for(auto& bin : histogram) {
-        if(bin > 2) {
+        if(bin > 0) {
             return true;
         }
     }
@@ -135,6 +135,40 @@ std::pair<int, int> get_angles_from_average_angle(float average_angle) {
 
     //logger->log("avg: %f  --  fr: %f  --  ba: %f", average_angle, front_angle, back_angle);
     return std::pair<int, int>(front_angle, back_angle);
+}
+
+std::tuple<int, int, int> vectors_to_coordinates(std::vector<cv::Point> left_vec, std::vector<cv::Point> mid_vec, std::vector<cv::Point> right_vec) {
+    int right = 0;
+    int mid = 0;
+    int left = 0;
+
+    // Retrieve right and mid x coordinates to calculate middle of lane
+    if(right_vec.size() != 0) {
+        for(const auto& i : right_vec) {
+            right += i.x;
+        }
+
+        right /= right_vec.size();
+    }
+
+    if(mid_vec.size() != 0) {
+        for(const auto& i : mid_vec) {
+            mid += i.x;
+        }
+
+        mid /= mid_vec.size();
+    }
+
+
+    if(left_vec.size() != 0) {
+        for(const auto& i : left_vec) {
+            left += i.x;
+        }
+
+        left /= left_vec.size();
+    }
+
+    return std::tuple<int, int, int>{left,mid,right};
 }
 
 std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *matrix) {
@@ -297,7 +331,18 @@ int main()
                         }
                     }
 
+                    int left, mid, right;
+                    
+                    std::tie(left, mid, right) = vectors_to_coordinates(left_vec, mid_vec, right_vec);
+
+                    int dest = get_dest(mid, right) + 10;
+
+                    float angle = get_angle(dest);
+
+                    last_angles.push_back(angle);
+
                     int average_angle = 0;
+
                     if(last_angles.size() > 3) {
                         last_angles.pop_front();
 
@@ -306,95 +351,40 @@ int main()
                         }
                         average_angle /= 3;
                     }
-
-                    int right = 0;
-                    int mid = 0;
-                    int left = 0;
-
-                    // Retrieve right and mid x coordinates to calculate middle of lane
-                    if(right_vec.size() != 0) {
-                        for(const auto& i : right_vec) {
-                            right += i.x;
-                        }
-
-                        right /= right_vec.size();
-                    }
-
-                    if(mid_vec.size() != 0) {
-                        for(const auto& i : mid_vec) {
-                            mid += i.x;
-                        }
-
-                        mid /= mid_vec.size();
-                    }
-
-
-                    if(left_vec.size() != 0) {
-                        for(const auto& i : left_vec) {
-                            left += i.x;
-                        }
-
-                        left /= left_vec.size();
-                    }
-
-                    /*if(!is_lane_dist(right, mid) && std::abs(average_angle) < 10) {
-                        right = mid;
-                        mid = left;
-
-                        for(int i = 0; i < last_angles.size(); i++) {
-                            last_angles.pop_front();
-                            last_angles.push_back(get_dest(mid, right));
-                        }
-
-                        if(last_angles.size() > 3) {
-                            for(auto& i : last_angles) {
-                                average_angle += i;
-                            }
-                            average_angle /= 3;
-                        }
-                    }*/
-
-                    int distance_to_horizontal = 0;
-                    int count = 0;
-
-                    for(int radius = 50; radius <= 200; radius+=25) {
-                        int point_count = 0;
-                        for(double pi = 0; pi < M_PI; pi += 0.001) {
-                            int x = 200 + round(cos(pi) * radius);
-                            int y = 400 - round(sin(pi) * radius);
-
-                            if(x >= 400 || x < 0 || y >= 400 || y < 0) {
-                                continue;
-                            }
-
-                            int color = matrix.at<uint8_t>(y, x);
-
-                            if(color > 50 && x > (mid + 10) && x < (right - 10)) {
-                                point_count++;
-                            }
-                        }
-
-                        //logger->log("%d", point_count);
-                        if (point_count > 1) {
-                            distance_to_horizontal += radius;
-                            count ++;
-                        }
-
-                        if (count > 0) {
-                            distance_to_horizontal /= count;
-                        }   
-                    }
-
-                    //logger->log("%d", distance_to_horizontal);
-                    int dest = get_dest(mid, right) + 10;
-
-                    float angle = get_angle(dest);
-
-                    last_angles.push_back(angle);
                     
                     int speed = int(50 * float(100.0f / float(std::abs(float(average_angle)) + 100.0f)));
 
                     #ifdef DEBUG_WINDOW
+                        int distance_to_horizontal = 0;
+                        int count = 0;
+
+                        for(int radius = 50; radius <= 200; radius+=25) {
+                            int point_count = 0;
+                            for(double pi = 0; pi < M_PI; pi += 0.001) {
+                                int x = 200 + round(cos(pi) * radius);
+                                int y = 400 - round(sin(pi) * radius);
+
+                                if(x >= 400 || x < 0 || y >= 400 || y < 0) {
+                                    continue;
+                                }
+
+                                int color = matrix.at<uint8_t>(y, x);
+
+                                if(color > 50 && x > (mid + 10) && x < (right - 10)) {
+                                    point_count++;
+                                }
+                            }
+
+                            //logger->log("%d", point_count);
+                            if (point_count > 1) {
+                                distance_to_horizontal += radius;
+                                count ++;
+                            }
+
+                            if (count > 0) {
+                                distance_to_horizontal /= count;
+                            }   
+                        }
                         speed = 10;
 
                         for(int radius = 50; radius <= 200; radius+=25) {
