@@ -54,8 +54,8 @@ static void signal_handler(int)
 }
 
 void initializeTransformParams() {
-    src_vertices_lane_detection[0] = Point2f(160,190);  //  70, 210 //160, 210
-    src_vertices_lane_detection[1] = Point2f(240,190);  // 330, 210 //240, 210
+    src_vertices_lane_detection[0] = Point2f(160,192);  //  70, 210 //160, 210
+    src_vertices_lane_detection[1] = Point2f(240,192);  // 330, 210 //240, 210
     src_vertices_lane_detection[2] = Point2f(780, 310); // 780, 310 //345, 310
     src_vertices_lane_detection[3] = Point2f(-380, 310);  //-380, 310 // 55, 310
 
