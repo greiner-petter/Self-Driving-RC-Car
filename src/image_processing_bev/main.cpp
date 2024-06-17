@@ -172,10 +172,10 @@ int main() {
 
                         cv::Mat new_camera_matrix = getOptimalNewCameraMatrix(camera_matrix, dist_coeffs, cv::Size(400, 400), 1, cv::Size(400, 400));
 
-                        cv::undistort(src, dst_intersection, camera_matrix, dist_coeffs, new_camera_matrix);
+                        //cv::undistort(src, dst_intersection, camera_matrix, dist_coeffs, new_camera_matrix);
 
                         // intersection needs to be calculated first since lane writes to itself!
-                        toBirdsEyeView(dst_intersection, dst_intersection, M_intersection_detection);
+                        toBirdsEyeView(src, dst_intersection, M_intersection_detection);
                         toBirdsEyeView(src, dst_lane, M_lane_detection);
 
                         GaussianBlur(dst_lane, dst_lane, Size_(BLUR_SIZE, BLUR_SIZE), 0);
