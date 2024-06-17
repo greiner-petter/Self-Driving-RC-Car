@@ -200,7 +200,7 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
     for(int radius = 50; radius <= 125; radius+=25) {
         std::pair<int, int> point[2];
 
-        for(double pi = 0.9; pi < 2.24; pi += 0.001) {
+        for(double pi = 0; pi < 3.14; pi += 0.001) {
             int x = 200 + round(cos(pi) * radius);
             int y = 400 - round(sin(pi) * radius);
 
@@ -230,9 +230,9 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
             int color2 = matrix->at<uint8_t>(y2, x2);
             int color3 = matrix->at<uint8_t>(y3, x3);
 
-            // if(color > 235) {
-            //     continue;
-            // }
+            if(color > 235) {
+                continue;
+            }
 
             if(color2 - color > 15 && color3 - color > 15) {
                 point[0] = std::pair(x,y);
@@ -258,7 +258,7 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
     for(int radius = 150; radius <= 225; radius+=25) {
         std::pair<int, int> point[2];
 
-        for(double pi = 0.9; pi < 2.24; pi += 0.001) {
+        for(double pi = 0; pi < 3.14; pi += 0.001) {
             int x = 200 + round(cos(pi) * radius);
             int y = 400 - round(sin(pi) * radius);
 
@@ -288,9 +288,9 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
             int color2 = matrix->at<uint8_t>(y2, x2);
             int color3 = matrix->at<uint8_t>(y3, x3);
 
-            // if(color > 235) {
-            //     continue;
-            // }
+            if(color > 235) {
+                continue;
+            }
 
             if(color2 - color > 15 && color3 - color > 15) {
                 point[0] = std::pair(x,y);
