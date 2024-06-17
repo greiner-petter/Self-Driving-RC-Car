@@ -57,6 +57,7 @@ bool check_if_on_street(std::array<int, 25> histogram) {
 
 float get_angle(int dest) {
     float angle = 0;
+
     int val1 = 50;
     int val2 = 2;
     float val3 = 0.001;
@@ -441,7 +442,7 @@ int main()
                         }
                     #endif
 
-                    auto [front_angle, back_angle] = get_angles_from_average_angle(average_angle);
+                    auto [front_angle, back_angle] = get_angles_from_average_angle(120);
 
                     if(check_if_on_street(histogram) && onStreet) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
