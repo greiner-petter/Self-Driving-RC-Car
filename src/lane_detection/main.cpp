@@ -292,7 +292,7 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
                 continue;
             }
 
-            if(color2 - color > 15 && color3 - color > 15) {
+            if(color2 - color > 10 && color3 - color > 10) {
                 point[0] = std::pair(x,y);
             }
 
