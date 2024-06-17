@@ -500,11 +500,15 @@ int main()
                             return 0;
                         }
                     #else
-                        for(int radius = 50; radius <= 200; radius+=25) {
+                        for(int radius = 50; radius <= 225; radius+=25) {
                             cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
                         }
 
                         for(const auto& i : intersections_unten) {
+                            cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
+                        }
+
+                        for(const auto& i : intersections_oben) {
                             cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
                         }
 
