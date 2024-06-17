@@ -247,6 +247,16 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *m
     return std::pair(histogram, intersections);
 }
 
+double radius_to_angle(float radius) {
+    if(radius > 0) {
+        return 3000000.0 * std::pow(radius, -3) + 10;
+    } else if(radius < 0) {
+        return 2700000.0 * std::pow(radius, -3) - 10;
+    } else {
+        return 0;
+    }
+}
+
 int main()
 {
     // Catch some signals to allow us to gracefully shut down the process
@@ -445,7 +455,7 @@ int main()
                         }
                     #endif
 
-                    auto [front_angle, back_angle] = get_angles_from_average_angle(average_angle);
+                    auto [front_angle, back_angle] = get_angles_from_average_angle(25);
 
                     if((check_if_on_street(histogram) && onStreet) || true) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
