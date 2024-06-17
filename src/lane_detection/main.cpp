@@ -16,6 +16,11 @@
 
 //#define DEBUG_WINDOW
 
+
+typedef std::array<int, 25> histogram_t;
+typedef std::vector<cv::Point> hist_points_t;
+typedef std::pair<histogram_t, hist_points_t> complete_histdata_t;
+
 ocMember member(ocMemberId::Lane_Detection_Values, "Lane Detection");
 
 ocLogger *logger;
@@ -45,8 +50,8 @@ bool is_lane_dist(int x1, int x2) {
     return std::abs(x1 - x2) > 45 && std::abs(x1 - x2) < 70; 
 }
 
-bool check_if_on_street(std::array<int, 25> histogram) {
-    for(auto& bin : histogram) {
+bool check_if_on_street(std::array<int, 25> histogram_unten) {
+    for(auto& bin : histogram_unten) {
         if(bin > 0) {
             return true;
         }
@@ -96,8 +101,8 @@ int get_dest(int mid, int right) {
     return dest;
 }
 
-void return_to_street(float front_angle, std::array<int, 25> histogram) {
-    if(!check_if_on_street(histogram)) {
+void return_to_street(float front_angle, std::array<int, 25> histogram_unten) {
+    if(!check_if_on_street(histogram_unten)) {
         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
         ipc_packet.clear_and_edit()
@@ -108,7 +113,7 @@ void return_to_street(float front_angle, std::array<int, 25> histogram) {
     }
 }
 
-void continue_if_blinded(float front_angle, float back_angle, std::array<int, 25> histogram) {
+void continue_if_blinded(float front_angle, float back_angle, std::array<int, 25> histogram_unten) {
 
 }
 
@@ -180,13 +185,14 @@ std::tuple<int, int, int> vectors_to_coordinates(std::vector<cv::Point> left_vec
     return std::tuple<int, int, int>{left,mid,right};
 }
 
-std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *matrix) {
-    std::array<int, 25> histogram;
-    std::vector<cv::Point> intersections;
+std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matrix) {
+    histogram_t histogram_unten;
+    hist_points_t intersections_unten;
 
-    std::fill(histogram.begin(), histogram.end(), 0);
+    histogram_t histogram2;
+    hist_points_t intersections2;
 
-    for(int radius = 50; radius <= 200; radius+=25) {
+    for(int radius = 50; radius <= 125; radius+=25) {
         std::pair<int, int> point[2];
 
         for(double pi = 0.9; pi < 2.24; pi += 0.001) {
@@ -233,18 +239,76 @@ std::pair<std::array<int, 25>, std::vector<cv::Point>> calc_histogram(cv::Mat *m
                 double dist = calc_dist(point[0], point[1]);
 
                 if(dist <= 10) {
-                    intersections.push_back(cv::Point(point[0].first,point[0].second));
-                    intersections.push_back(cv::Point(point[1].first,point[1].second));
+                    intersections_unten.push_back(cv::Point(point[0].first,point[0].second));
+                    intersections_unten.push_back(cv::Point(point[1].first,point[1].second));
 
                     point[0] = std::pair(0,0);
                     point[1] = std::pair(0,0);
-                    histogram[x/16]++;
+                    histogram_unten[x/16]++;
                 }
             }
         }
     }
 
-    return std::pair(histogram, intersections);
+    for(int radius = 150; radius <= 225; radius+=25) {
+        std::pair<int, int> point[2];
+
+        for(double pi = 0.9; pi < 2.24; pi += 0.001) {
+            int x = 200 + round(cos(pi) * radius);
+            int y = 400 - round(sin(pi) * radius);
+
+            int x2 = 200 + round(cos(pi+0.01) * radius);
+            int y2 = 400 - round(sin(pi+0.01) * radius);
+
+            int x3 = 200 + round(cos(pi+0.03) * radius);
+            int y3 = 400 - round(sin(pi+0.03) * radius);
+
+            if ((400-y) < (-43/26*x + 215) || (400-y) < (43/26*x - 447)) {
+                continue;
+            }
+
+            if(x+1 >= 400 || x-1 < 0 || y+1 >= 400 || y-1 < 0) {
+                continue;
+            }
+
+            if(x2+1 >= 400 || x2-1 < 0 || y2+1 >= 400 || y2-1 < 0) {
+                continue;
+            }
+
+            if(x3+1 >= 400 || x3-1 < 0 || y3+1 >= 400 || y3-1 < 0) {
+                continue;
+            }
+
+            int color = matrix->at<uint8_t>(y, x);
+            int color2 = matrix->at<uint8_t>(y2, x2);
+            int color3 = matrix->at<uint8_t>(y3, x3);
+
+            if(color > 235) {
+                continue;
+            }
+
+            if(color2 - color > 15 && color3 - color > 15) {
+                point[0] = std::pair(x,y);
+            }
+
+            if(color - color2 > 15 && point[0].first != 0 && point[0].second != 0 && color - color3 > 15) {
+                point[1] = std::pair(x,y);
+
+                double dist = calc_dist(point[0], point[1]);
+
+                if(dist <= 10) {
+                    intersections2.push_back(cv::Point(point[0].first,point[0].second));
+                    intersections2.push_back(cv::Point(point[1].first,point[1].second));
+
+                    point[0] = std::pair(0,0);
+                    point[1] = std::pair(0,0);
+                    histogram2[x/16]++;
+                }
+            }
+        }
+    }
+
+    return std::pair(std::pair(histogram_unten, intersections_unten), std::pair(histogram2, intersections2));
 }
 
 double radius_to_angle(float radius) {
@@ -295,12 +359,15 @@ int main()
                    
                     auto histo_intersections = calc_histogram(&matrix);
 
-                    std::array<int, 25> histogram = histo_intersections.first;
-                    std::vector<cv::Point> intersections = histo_intersections.second;
+                    std::array<int, 25> histogram_unten = histo_intersections.first.first;
+                    std::vector<cv::Point> intersections_unten = histo_intersections.first.second;
+
+                    std::array<int, 25> histogram_oben = histo_intersections.second.first;
+                    std::vector<cv::Point> intersections_oben = histo_intersections.second.second;
 
                     std::string line = "";
 
-                    for(auto& i : histogram) {
+                    for(auto& i : histogram_unten) {
                         line += std::to_string(i) + " ";
                     }
 
@@ -308,9 +375,9 @@ int main()
 
                     std::vector<std::pair<int, int>> max;
 
-                    for(int i = 1; i < histogram.size()-1; i++) {
-                        if(histogram[i] > histogram[i+1] && histogram[i] > histogram[i-1] ) {
-                            max.push_back(std::pair<int, int>(i, histogram[i]));
+                    for(int i = 1; i < histogram_unten.size()-1; i++) {
+                        if(histogram_unten[i] > histogram_unten[i+1] && histogram_unten[i] > histogram_unten[i-1] ) {
+                            max.push_back(std::pair<int, int>(i, histogram_unten[i]));
                         } 
                     }
 
@@ -329,27 +396,27 @@ int main()
                     std::vector<cv::Point> mid_vec;
                     std::vector<cv::Point> right_vec;
 
-                    // Retrieve lanes by maximas of histogram
-                    for(int i = 0; i < intersections.size(); i++) {
-                        int x = intersections.at(i).x/16;
+                    // Retrieve lanes by maximas of histogram_unten
+                    for(int i = 0; i < intersections_unten.size(); i++) {
+                        int x = intersections_unten.at(i).x/16;
 
                         if(greatest_values.size() == 1) {
                             if(greatest_values.at(0).first == x || greatest_values.at(0).first == x-1) {
-                                right_vec.push_back(intersections.at(i));
+                                right_vec.push_back(intersections_unten.at(i));
                             } 
                         } else if(greatest_values.size() == 2) {
                             if(greatest_values.at(0).first == x) {
-                                mid_vec.push_back(intersections.at(i));
+                                mid_vec.push_back(intersections_unten.at(i));
                             } else if(greatest_values.at(1).first == x || greatest_values.at(1).first == x-1) {
-                                right_vec.push_back(intersections.at(i));
+                                right_vec.push_back(intersections_unten.at(i));
                             } 
                         } else if(greatest_values.size() >= 3) {
                             if(greatest_values.at(0).first == x || greatest_values.at(0).first == x+1) {
-                                left_vec.push_back(intersections.at(i));
+                                left_vec.push_back(intersections_unten.at(i));
                             } else if(greatest_values.at(1).first == x) {
-                                mid_vec.push_back(intersections.at(i));
+                                mid_vec.push_back(intersections_unten.at(i));
                             } else if(greatest_values.at(2).first == x || greatest_values.at(2).first == x-1) {
-                                right_vec.push_back(intersections.at(i));
+                                right_vec.push_back(intersections_unten.at(i));
                             } 
                         }
                     }
@@ -415,7 +482,7 @@ int main()
                             cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
                         }
 
-                        for(const auto& i : intersections) {
+                        for(const auto& i : intersections_unten) {
                             cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
                         }
 
@@ -432,7 +499,7 @@ int main()
                             cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
                         }
 
-                        for(const auto& i : intersections) {
+                        for(const auto& i : intersections_unten) {
                             cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
                         }
 
@@ -457,7 +524,7 @@ int main()
 
                     auto [front_angle, back_angle] = get_angles_from_average_angle(35);
 
-                    if((check_if_on_street(histogram) && onStreet) || true) {
+                    if((check_if_on_street(histogram_unten) && onStreet) || true) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
@@ -465,7 +532,7 @@ int main()
                             .write<int8_t>(front_angle)
                             .write<int8_t>(back_angle);
                         socket->send_packet(ipc_packet);
-                    } else if(check_if_on_street(histogram) && !onStreet) {
+                    } else if(check_if_on_street(histogram_unten) && !onStreet) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
@@ -482,7 +549,7 @@ int main()
                         }
                         
                     } else if (!onStreet){
-                        return_to_street(front_angle, histogram);
+                        return_to_street(front_angle, histogram_unten);
                     }
                 } break;
                 default:

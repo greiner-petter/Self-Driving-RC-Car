@@ -163,8 +163,19 @@ int main() {
                         Mat dst_lane(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
                         Mat dst_intersection(400, 400, CV_8UC1, shared_memory->bev_data[2].img_buffer);
 
+                        cv::Mat camera_matrix = (cv::Mat_<double>(3, 3) << 300, 0, src.cols / 2,
+                                                       0, 300, src.rows / 2,
+                                                       0, 0, 1);
+
+                        // Anpassung der Verzerrungskoeffizienten für mehr zentrale Verzerrung
+                        cv::Mat dist_coeffs = (cv::Mat_<double>(1, 5) << 1.0, -0.5, 0.0, 0.0, 0.0); // Erhöhte Werte für stärkere Verzerrung
+
+                        cv::Mat new_camera_matrix = getOptimalNewCameraMatrix(camera_matrix, dist_coeffs, cv::Size(400, 400), 1, cv::Size(400, 400));
+
+                        cv::undistort(src, dst_intersection, camera_matrix, dist_coeffs, new_camera_matrix);
+
                         // intersection needs to be calculated first since lane writes to itself!
-                        toBirdsEyeView(src, dst_intersection, M_intersection_detection);
+                        toBirdsEyeView(dst_intersection, dst_intersection, M_intersection_detection);
                         toBirdsEyeView(src, dst_lane, M_lane_detection);
 
                         GaussianBlur(dst_lane, dst_lane, Size_(BLUR_SIZE, BLUR_SIZE), 0);
