@@ -189,8 +189,13 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
     histogram_t histogram_unten;
     hist_points_t intersections_unten;
 
-    histogram_t histogram2;
-    hist_points_t intersections2;
+    histogram_t histogram_oben;
+    hist_points_t intersections_oben;
+
+    for(int i = 0; i < 25; i++) {
+        histogram_unten.at(i) = 0;
+        histogram_oben.at(i) = 0;
+    }
 
     for(int radius = 50; radius <= 125; radius+=25) {
         std::pair<int, int> point[2];
@@ -297,18 +302,18 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
                 double dist = calc_dist(point[0], point[1]);
 
                 if(dist <= 10) {
-                    intersections2.push_back(cv::Point(point[0].first,point[0].second));
-                    intersections2.push_back(cv::Point(point[1].first,point[1].second));
+                    intersections_oben.push_back(cv::Point(point[0].first,point[0].second));
+                    intersections_oben.push_back(cv::Point(point[1].first,point[1].second));
 
                     point[0] = std::pair(0,0);
                     point[1] = std::pair(0,0);
-                    histogram2[x/16]++;
+                    histogram_oben[x/16]++;
                 }
             }
         }
     }
 
-    return std::pair(std::pair(histogram_unten, intersections_unten), std::pair(histogram2, intersections2));
+    return std::pair(std::pair(histogram_unten, intersections_unten), std::pair(histogram_oben, intersections_oben));
 }
 
 double radius_to_angle(float radius) {
