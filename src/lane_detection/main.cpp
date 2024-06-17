@@ -296,7 +296,7 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
                 point[0] = std::pair(x,y);
             }
 
-            if(color - color2 > 15 && point[0].first != 0 && point[0].second != 0 && color - color3 > 15) {
+            if(color - color2 > 10 && point[0].first != 0 && point[0].second != 0 && color - color3 > 10) {
                 point[1] = std::pair(x,y);
 
                 double dist = calc_dist(point[0], point[1]);
