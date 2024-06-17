@@ -234,11 +234,11 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
                 continue;
             }
 
-            if(color2 - color > 15 && color3 - color > 15) {
+            if(color2 - color > 5 && color3 - color > 5) {
                 point[0] = std::pair(x,y);
             }
 
-            if(color - color2 > 15 && point[0].first != 0 && point[0].second != 0 && color - color3 > 15) {
+            if(color - color2 > 5 && point[0].first != 0 && point[0].second != 0 && color - color3 > 5) {
                 point[1] = std::pair(x,y);
 
                 double dist = calc_dist(point[0], point[1]);
@@ -292,11 +292,11 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
                 continue;
             }
 
-            if(color2 - color > 15 && color3 - color > 15) {
+            if(color2 - color > 5 && color3 - color > 5) {
                 point[0] = std::pair(x,y);
             }
 
-            if(color - color2 > 15 && point[0].first != 0 && point[0].second != 0 && color - color3 > 15) {
+            if(color - color2 > 5 && point[0].first != 0 && point[0].second != 0 && color - color3 > 5) {
                 point[1] = std::pair(x,y);
 
                 double dist = calc_dist(point[0], point[1]);
