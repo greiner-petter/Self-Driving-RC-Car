@@ -230,9 +230,9 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
             int color2 = matrix->at<uint8_t>(y2, x2);
             int color3 = matrix->at<uint8_t>(y3, x3);
 
-            if(color > 235) {
-                continue;
-            }
+            // if(color > 235) {
+            //     continue;
+            // }
 
             if(color2 - color > 15 && color3 - color > 15) {
                 point[0] = std::pair(x,y);
@@ -288,9 +288,9 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
             int color2 = matrix->at<uint8_t>(y2, x2);
             int color3 = matrix->at<uint8_t>(y3, x3);
 
-            if(color > 235) {
-                continue;
-            }
+            // if(color > 235) {
+            //     continue;
+            // }
 
             if(color2 - color > 15 && color3 - color > 15) {
                 point[0] = std::pair(x,y);
