@@ -30,6 +30,8 @@ static bool running = true;
 bool onStreet = true;
 int onStreetCount = 0;
 
+int ANGLE_OFFSET_FRONT = 5; // Positive to right, negative to left
+
 static void signal_handler(int)
 {
     running = false;
@@ -119,7 +121,7 @@ std::pair<int, int> get_angles_from_average_angle(float average_angle) {
     if(average_angle == 0) {
         front_angle = average_angle;
         back_angle = average_angle;
-        return std::pair<int, int>(front_angle, back_angle);
+        return std::pair<int, int>(front_angle+ANGLE_OFFSET_FRONT, back_angle);
     }
 
     if(average_angle >= 65) {
@@ -141,7 +143,7 @@ std::pair<int, int> get_angles_from_average_angle(float average_angle) {
     }
 
     //logger->log("avg: %f  --  fr: %f  --  ba: %f", average_angle, front_angle, back_angle);
-    return std::pair<int, int>(front_angle, back_angle);
+    return std::pair<int, int>(front_angle+ANGLE_OFFSET_FRONT, back_angle);
 }
 
 std::tuple<int, int, int> vectors_to_coordinates(std::vector<cv::Point> left_vec, std::vector<cv::Point> mid_vec, std::vector<cv::Point> right_vec) {
