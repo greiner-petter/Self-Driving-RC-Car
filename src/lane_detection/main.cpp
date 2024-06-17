@@ -30,7 +30,7 @@ static bool running = true;
 bool onStreet = true;
 int onStreetCount = 0;
 
-int ANGLE_OFFSET_FRONT = 16; // Positive to right, negative to left
+int ANGLE_OFFSET_FRONT = 17; // Positive to right, negative to left
 
 static void signal_handler(int)
 {
