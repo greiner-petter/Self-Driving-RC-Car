@@ -55,23 +55,23 @@ bool check_if_on_street(std::array<int, 25> histogram) {
     return false;
 }
 
-float get_angle(int dest) {
+int get_angle(int dest) {
     float angle = 0;
 
-    float val1 = 50;
-    float val2 = 2;
+    int val1 = 50;
+    int val2 = 2;
     double val3 = 0.001;
 
     if((dest - 200) > val1) {
-        angle = (dest - 200 - val1)*(dest - 200 - val1)*(dest - 200 - val1) * val3 + val1;
+        angle = (float) (dest - 200 - val1)*(float) (dest - 200 - val1)*(float) ((dest - 200 - val1) * val3) + (float) val1;
     } else if ((dest - 200) < -val1) {
-        angle = (dest - 200 + val1)*(dest - 200 + val1)*(dest - 200 + val1) * val3 - val1;
+        angle = (float) (dest - 200 + val1)*(float) (dest - 200 + val1)*(float) ((dest - 200 + val1) * val3) - (float) val1;
     } else {
-        angle = (dest - 200) * val2;
+        angle = (float) ((dest - 200) * val2);
     }
     //logger->log("%d", (dest - 200));
 
-    return std::clamp((int) angle, -65, 65); // Clamp between -65 and 65 so tire doesn't get stuck due to too high angle
+    return std::clamp((const int) angle, -65, 65); // Clamp between -65 and 65 so tire doesn't get stuck due to too high angle
 }
 
 int get_dest(int mid, int right) {
@@ -348,7 +348,7 @@ int main()
 
                     int dest = get_dest(mid, right) + 10;
 
-                    float angle = get_angle(dest);
+                    int angle = get_angle(dest);
 
                     last_angles.push_back(angle);
 
@@ -358,6 +358,7 @@ int main()
                         last_angles.pop_front();
 
                         for(auto& i : last_angles) {
+                            average_angle += i;
                             average_angle += i;
                         }
                         average_angle /= 3;
@@ -442,7 +443,7 @@ int main()
                         }
                     #endif
 
-                    auto [front_angle, back_angle] = get_angles_from_average_angle(65);
+                    auto [front_angle, back_angle] = get_angles_from_average_angle(50);
 
                     if((check_if_on_street(histogram) && onStreet) || true) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
