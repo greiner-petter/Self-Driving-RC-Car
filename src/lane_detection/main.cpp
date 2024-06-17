@@ -527,7 +527,7 @@ int main()
                         }
                     #endif
 
-                    auto [front_angle, back_angle] = get_angles_from_average_angle(35);
+                    auto [front_angle, back_angle] = get_angles_from_average_angle(average_angle);
 
                     if((check_if_on_street(histogram_unten) && onStreet) || true) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
