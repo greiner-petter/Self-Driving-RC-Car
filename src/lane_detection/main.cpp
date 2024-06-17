@@ -30,7 +30,7 @@ static bool running = true;
 bool onStreet = true;
 int onStreetCount = 0;
 
-int ANGLE_OFFSET_FRONT = 5; // Positive to right, negative to left
+int ANGLE_OFFSET_FRONT = 15; // Positive to right, negative to left
 
 static void signal_handler(int)
 {
@@ -445,7 +445,7 @@ int main()
                         }
                     #endif
 
-                    auto [front_angle, back_angle] = get_angles_from_average_angle(8);
+                    auto [front_angle, back_angle] = get_angles_from_average_angle(0);
 
                     if((check_if_on_street(histogram) && onStreet) || true) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
