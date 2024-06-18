@@ -5,7 +5,10 @@
 #include <filesystem>
 #include <memory>
 
-namespace cv { }
+namespace cv
+{
+    class Rect;
+}
 
 class SignDetector
 {
@@ -14,7 +17,7 @@ public:
     virtual void Run() = 0;
 
     static float ConvertRectSizeToEstimatedDistance(float rectSize, double sizeFactor);
-    static uint32_t ConvertRectToDistanceInCM(const class cv::Rect& rect, const int cam_width, const int cam_height, double sizeFactor);
+    static uint32_t ConvertRectToDistanceInCM(const cv::Rect& rect, const int cam_width, const int cam_height, double sizeFactor);
 
     static void SendPacket(TrafficSign sign);
     // This function remaps a given value in space from in1 to in2, into the space from out1 to out2
