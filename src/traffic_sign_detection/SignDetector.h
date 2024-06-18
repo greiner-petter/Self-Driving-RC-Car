@@ -8,17 +8,13 @@
 class SignDetector
 {
 public:
-    static void Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger, bool supportGUI);
-    static void Run();
+    virtual void Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger, bool supportGUI) = 0;
+    virtual void Run() = 0;
+
+    static float ConvertRectSizeToEstimatedDistance(float rectSize, double sizeFactor);
+    static uint32_t ConvertRectToDistanceInCM(const class cv::Rect& rect, const int cam_width, const int cam_height, double sizeFactor);
+
     static void SendPacket(TrafficSign sign);
-
-
-    static std::filesystem::path GetStopSignXML();
-    static std::filesystem::path GetLeftSignXML();
-    static std::filesystem::path GetRightSignXML();
-    static std::filesystem::path GetPrioritySignXML();
-    static std::filesystem::path GetParkSignXML();
-
     // This function remaps a given value in space from in1 to in2, into the space from out1 to out2
     template<typename T>
     static T Remap(T value, const T in1, const T in2, const T out1, const T out2)
