@@ -1,4 +1,6 @@
 #include "Crossing_3_Way_Right.h"
+#include "Normal_Drive.h"
+#include "../../traffic_sign_detection/TrafficSign.h"
 
 
 State& Crossing_3_Way_Right::get_instance(){
@@ -20,8 +22,7 @@ void Crossing_3_Way_Right::initialize(){
     }
 }
 
-// FIXME: Linker Error
-TrafficSign trafficSign;
+
 
 void Crossing_3_Way_Right::on_entry(Statemachine* statemachine){
     /*
@@ -44,30 +45,22 @@ void Crossing_3_Way_Right::on_entry(Statemachine* statemachine){
 
         switch (recv_packet.get_message_id())
         {
-        case ocMessageId::Traffic_Sign_Detected:
+        case ocMessageId::Traffic_Sign_Detected:{
             auto reader = recv_packet.read_from_start();
-        // FIXME: Compiler Error
-#if 0
-            trafficSign = reader.read<TrafficSign>();
-#endif
-            break;
+            uint16_t rawValue = reader.read<uint16_t>();
+            trafficSign = static_cast<TrafficSignType>(rawValue);
+            }break;
         
-        // FIXME: Compiler Error
-#if 0
-        default:
+        default:{
             ocMessageId msg_id = recv_packet.get_message_id();
             ocMemberId mbr_id = recv_packet.get_sender();
             logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
-            break;
-#endif
+            }break;
         }
 
     }
 
-    // FIXME: Compiler Error
-#if 0
-   statemachine->run(Crossing_3_Way_Right::get_instance);
-#endif
+   statemachine->run(nullptr);
 }
 
 
@@ -76,12 +69,11 @@ void Crossing_3_Way_Right::run(Statemachine* statemachine, void* data){
     bool drive_right = false;
     bool drive_forward = false;
 
-    // FIXME: Compiler/Linker Error
-#if 0
+    /*
     if (trafficSign.distanceCM < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
         switch(trafficSign.type){
             case TrafficSignType::Stop:
-                drive.stop(2000); //stop for 2s
+                Driver::stop(2000); //stop for 2s
                 break;
             case TrafficSignType::PriorityRoad:
                 drive_forward = true;
@@ -94,7 +86,7 @@ void Crossing_3_Way_Right::run(Statemachine* statemachine, void* data){
                 break;
         }
     }
-#endif
+    */
 
     if(drive_right && drive_forward){
         drive_forward = false;
@@ -105,15 +97,14 @@ void Crossing_3_Way_Right::run(Statemachine* statemachine, void* data){
     // FIXME: Compiler Error
 #if 0
     if(drive_right){
-        drive.turn_right();
+        Driver::turn_right();
     } else if (drive_forward){
-        drive.drive_forward();
+        Driver::drive_forward();
     } else{
-        drive.turn_right();
+        Driver::turn_right();
     }
 
-    statemachine->change_state(Normal_Drive::getInstance());
-#endif
+    statemachine->change_state(Normal_Drive::get_instance());
 }
 
 

@@ -35,19 +35,36 @@ void Normal_Drive::on_entry(Statemachine* statemachine){
 
 void Normal_Drive::run(Statemachine* statemachine, void* data){
     /*
-    while(true){
-        bool crossing_dtected = IPC-HUB has crossing been detected
-        bool parking_detected = IPC-HUB sign detection: parking
-        if (crossing_detected){
-            statemachine->change_state(Approaching_Crossing::getInstance());
+    ocPacket recv_packet;
+    
+    while (true) {
+       
+        int result = socket->read_packet(recv_packet);
+        ocTime now = ocTime::now();
+
+        if (result < 0) {
+            logger->error("Error reading the IPC socket: (%i) %s", errno, strerror(errno));
             break;
         }
-        if (parking_detected) {
-            statemachine->change_state(Parking::getInstance());
-            break;
+
+        switch (recv_packet.get_message_id())
+        {
+        case ocMessageId::Intersection_Detected:{
+            statemachine->change_state(Approaching_Crossing::getInstance());  
+            }break;
+        
+        default:{
+            ocMessageId msg_id = recv_packet.get_message_id();
+            ocMemberId mbr_id = recv_packet.get_sender();
+            logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+            }break;
         }
-        drive.drive_forward();
+
+        }
+
     }
+
+    drive.drive_forward();
     */
 
    while(true){
