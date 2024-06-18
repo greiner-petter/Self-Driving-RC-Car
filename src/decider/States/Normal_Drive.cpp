@@ -1,4 +1,5 @@
 #include "Normal_Drive.h"
+#include "Approaching_Crossing.h"
 #include "../Driver.h"
 
 
@@ -14,7 +15,7 @@ void Normal_Drive::initialize(){
         logger = member.get_logger();
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
         sup.clear_and_edit()
-            .write(ocMessageId::Driving_Task_Finished);
+            .write(ocMessageId::Intersection_Detected);
         socket->send_packet(sup);
 
         is_initialized = true;
@@ -28,53 +29,43 @@ void Normal_Drive::on_entry(Statemachine* statemachine){
     Code
     */
    initialize();
+   logger->log("Initialized Normale_Drive. Running the state next");
 
    statemachine->run(nullptr);
 }
 
 
 void Normal_Drive::run(Statemachine* statemachine, void* data){
-    /*
+    
     ocPacket recv_packet;
     
     while (true) {
        
-        int result = socket->read_packet(recv_packet);
+        int result = socket->read_packet(recv_packet, false);
         ocTime now = ocTime::now();
 
         if (result < 0) {
             logger->error("Error reading the IPC socket: (%i) %s", errno, strerror(errno));
-            break;
+        } else {
+            switch (recv_packet.get_message_id()){
+                case ocMessageId::Intersection_Detected:{
+                    logger->log("Changing state from Normal_Drive to Approaching_Crossing");
+                    statemachine->change_state(Approaching_Crossing::get_instance());  
+                }break;
+                
+                default:{
+                    ocMessageId msg_id = recv_packet.get_message_id();
+                    ocMemberId mbr_id = recv_packet.get_sender();
+                    logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+                }break;
+            }
         }
 
-        switch (recv_packet.get_message_id())
-        {
-        case ocMessageId::Intersection_Detected:{
-            statemachine->change_state(Approaching_Crossing::getInstance());  
-            }break;
-        
-        default:{
-            ocMessageId msg_id = recv_packet.get_message_id();
-            ocMemberId mbr_id = recv_packet.get_sender();
-            logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
-            }break;
-        }
 
-        }
+        Driver::drive_forward();
 
     }
 
-    drive.drive_forward();
-    */
-
-   while(true){
-
-    ocMember member = ocMember(ocMemberId::Driver, "Driver");
-    ocIpcSocket *socket;
-
-    int8_t angle = 0;
-    Driver::drive(20, angle);
-   }
     
 }
 

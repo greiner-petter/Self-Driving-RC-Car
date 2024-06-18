@@ -28,6 +28,7 @@ void Driver::initialize(){
  * This method is used to perform a right-turn.
 */
 void Driver::turn_right(){
+    logger->log("Turning right");
     drive_both_steering_values(25, 100, -50);
     wait(1.8);
     stop();
@@ -39,7 +40,8 @@ void Driver::turn_right(){
  * This method is used to perform a left-turn.
 */
 void Driver::turn_left(){
-    //dirve forward a little bit
+    logger->log("Turning left");
+    //drive forward a little bit
     drive(25, 0);
     wait(0.7);
 
@@ -73,7 +75,7 @@ void Driver::drive_forward(){
                 
 
                 struct start_driving_task_t start_driving_task = {
-                    .speed          = speed,
+                    .speed          = speed / 2,
                     .steering_front = steering_front,
                     .steering_rear  = 0,//steering_back,
                     .id             = 1,
@@ -81,7 +83,7 @@ void Driver::drive_forward(){
                 };
 
                 int32_t send_result = socket->send(ocMessageId::Start_Driving_Task, start_driving_task);
-                logger->log("Result of sending driving task: %d", send_result);
+                //logger->log("Result of sending driving task: %d", send_result);
             } break;
 
             default:{
@@ -112,7 +114,7 @@ void Driver::drive(int16_t speed, int8_t steering){
     };
 
     int32_t send_result = socket->send(ocMessageId::Start_Driving_Task, start_driving_task);
-    logger->log("Result of sending driving task: %d", send_result);
+    //logger->log("Result of sending driving task: %d", send_result);
 }
 
 
@@ -135,7 +137,7 @@ void Driver::drive_both_steering_values(int16_t speed, int8_t steering_front, in
     };
 
     int32_t send_result = socket->send(ocMessageId::Start_Driving_Task, start_driving_task);
-    logger->log("Result of sending driving task: %d", send_result);
+    //logger->log("Result of sending driving task: %d", send_result);
 }
 
 
@@ -146,6 +148,8 @@ void Driver::drive_both_steering_values(int16_t speed, int8_t steering_front, in
  * @param duration float: The duration for which to stop
 */
 void Driver::stop(float duration){
+    
+    logger->log("Stopping");
 
     struct start_driving_task_t start_driving_task = {
         .speed          = 0,
@@ -156,7 +160,7 @@ void Driver::stop(float duration){
     };
 
     int32_t send_result = socket->send(ocMessageId::Start_Driving_Task, start_driving_task);
-    logger->log("Result of sending stop task: %d", send_result);
+    //logger->log("Result of sending stop task: %d", send_result);
 
     wait(duration);
 }

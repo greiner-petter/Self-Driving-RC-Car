@@ -8,6 +8,10 @@ int main(){
     Driver::initialize();
 
     Statemachine statemachine;
+
+    Driver::logger->log("Now beginning to run the statemachine");
+
+    statemachine.change_state(Normal_Drive::get_instance());
     statemachine.run(nullptr);
 
     //Driver::stop(1);
