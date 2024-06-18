@@ -119,7 +119,7 @@ int main() {
     signal(SIGTERM, signal_handler);
     
 
-    ocMember member(ocMemberId::Intersection_Detected, "Intersection_Detected");
+    ocMember member(ocMemberId::Intersection_Detection, "Intersection_Detected");
     member.attach();
 
     ocIpcSocket *socket = member.get_socket();

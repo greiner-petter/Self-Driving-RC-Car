@@ -94,8 +94,6 @@ void Crossing_3_Way_Left::run(Statemachine* statemachine, void* data){
 
     //if obstacle, stop
 
-    // FIXME: Compiler Error
-#if 0
     if(drive_left){
         Driver::turn_left();
     } else if (drive_forward){

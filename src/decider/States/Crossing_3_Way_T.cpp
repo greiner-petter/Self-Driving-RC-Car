@@ -77,8 +77,6 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
 
     bool drive_left = false;
     bool drive_right = false;
-    // FIXME: Compiler/Linker Error
-#if 0
 
     /*
     if (trafficSign.distanceCM < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
@@ -105,8 +103,6 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
 
     //if obstacle, stop
 
-    // FIXME: Compiler Error
-#if 0
     if(drive_left){
         Driver::turn_left();
     } else if (drive_right){
