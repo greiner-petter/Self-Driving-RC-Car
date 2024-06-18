@@ -89,7 +89,7 @@ int main()
             {
                 case ocMessageId::Lines_Available:
                 {
-                    cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[1].img_buffer);
+                    cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[0].img_buffer);
 
                     cv::imwrite("bev.jpg", matrix);
                    
