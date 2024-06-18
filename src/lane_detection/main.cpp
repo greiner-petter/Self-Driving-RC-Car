@@ -18,8 +18,11 @@
 
 
 typedef std::array<int, 25> histogram_t;
-typedef std::vector<cv::Point> hist_points_t;
-typedef std::pair<histogram_t, hist_points_t> complete_histdata_t;
+typedef std::vector<cv::Point> points_vector_t;
+typedef std::pair<histogram_t, points_vector_t> complete_histdata_t;
+
+points_vector_t points_per_circle;
+points_vector_t destinations;
 
 ocMember member(ocMemberId::Lane_Detection_Values, "Lane Detection");
 
@@ -187,10 +190,10 @@ std::tuple<int, int, int> vectors_to_coordinates(std::vector<cv::Point> left_vec
 
 std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matrix) {
     histogram_t histogram_unten;
-    hist_points_t intersections_unten;
+    points_vector_t intersections_unten;
 
     histogram_t histogram_oben;
-    hist_points_t intersections_oben;
+    points_vector_t intersections_oben;
 
     for(int i = 0; i < 25; i++) {
         histogram_unten.at(i) = 0;
@@ -247,12 +250,42 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
                     intersections_unten.push_back(cv::Point(point[0].first,point[0].second));
                     intersections_unten.push_back(cv::Point(point[1].first,point[1].second));
 
+                    points_per_circle.push_back(cv::Point(point[0].first,point[0].second));
+
                     point[0] = std::pair(0,0);
                     point[1] = std::pair(0,0);
+                    
                     histogram_unten[x/16]++;
                 }
             }
         }
+        //points_per_circle auslesen und anzahl und position prüfen --> ziel ausrechnen, ziel liegt auf kreis
+        cv::Point dest;
+        if(points_per_circle.size() == 1) {
+            dest = points_per_circle.at(0);
+            double pi = 0;
+            while(calc_dist(std::pair(points_per_circle.at(0).x, points_per_circle.at(0).y), std::pair(dest.x, dest.y)) < 25) {
+                int x = 200 + round(cos(pi) * radius);
+                int y = 400 - round(sin(pi) * radius);
+
+                if(x > dest.x) {
+                    continue;
+                }
+
+                dest = cv::Point(x,y);
+
+                pi += 0.0001;
+
+                if(pi > 3.14) {
+                    break;
+                }
+            }
+        } else if(points_per_circle.size() == 2) {
+           
+        } else if(points_per_circle.size() >= 3) {
+            
+        }
+        destinations.push_back(dest);
     }
 
     for(int radius = 150; radius <= 225; radius+=25) {
