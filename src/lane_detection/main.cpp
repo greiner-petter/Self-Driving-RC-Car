@@ -185,8 +185,9 @@ std::tuple<int, int, int> vectors_to_coordinates(std::vector<cv::Point> left_vec
     return std::tuple<int, int, int>{left,mid,right};
 }
 
-points_vector_t calc_destinations(cv::Mat *matrix) {
+std::pair<points_vector_t, points_vector_t> calc_destinations(cv::Mat *matrix) {
     points_vector_t destinations;
+    points_vector_t intersections;
 
     for(int radius = 50; radius <= 225; radius+=25) {
 
@@ -239,6 +240,8 @@ points_vector_t calc_destinations(cv::Mat *matrix) {
 
                 if(dist <= 10) {
                     points_per_circle.push_back(cv::Point(point[0].first,point[0].second));
+
+                    intersections.push_back(cv::Point(point[0].first,point[0].second));
 
                     point[0] = std::pair(0,0);
                     point[1] = std::pair(0,0);
@@ -296,7 +299,7 @@ points_vector_t calc_destinations(cv::Mat *matrix) {
         destinations.push_back(dest);
     }
 
-    return destinations;
+    return std::pair<points_vector_t, points_vector_t>(destinations, intersections);
 }
 
 double radius_to_angle(float radius) {
@@ -345,9 +348,10 @@ int main()
                         cv::imwrite("bev.jpg", matrix);
                     } 
                    
-                    auto destinations = calc_destinations(&matrix);
+                    auto calced_destinations = calc_destinations(&matrix);
 
-                    points_vector_t histogram_unten = destinations;
+                    points_vector_t destinations = calced_destinations.first;
+                    points_vector_t intersections = calced_destinations.second;
 
                     std::string line = "";
 
@@ -430,6 +434,10 @@ int main()
                         }
 
                         for(const auto& i : destinations) {
+                            cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
+                        }
+
+                        for(const auto& i : intersections) {
                             cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
                         }
 
