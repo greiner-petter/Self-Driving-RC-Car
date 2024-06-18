@@ -21,9 +21,6 @@ typedef std::array<int, 25> histogram_t;
 typedef std::vector<cv::Point> points_vector_t;
 typedef std::pair<histogram_t, points_vector_t> complete_histdata_t;
 
-points_vector_t points_per_circle;
-points_vector_t destinations;
-
 ocMember member(ocMemberId::Lane_Detection_Values, "Lane Detection");
 
 ocLogger *logger;
@@ -188,19 +185,13 @@ std::tuple<int, int, int> vectors_to_coordinates(std::vector<cv::Point> left_vec
     return std::tuple<int, int, int>{left,mid,right};
 }
 
-std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matrix) {
-    histogram_t histogram_unten;
-    points_vector_t intersections_unten;
+points_vector_t calc_histogram(cv::Mat *matrix) {
+    points_vector_t destinations;
 
-    histogram_t histogram_oben;
-    points_vector_t intersections_oben;
+    for(int radius = 50; radius <= 225; radius+=25) {
 
-    for(int i = 0; i < 25; i++) {
-        histogram_unten.at(i) = 0;
-        histogram_oben.at(i) = 0;
-    }
+        points_vector_t points_per_circle;
 
-    for(int radius = 50; radius <= 125; radius+=25) {
         std::pair<int, int> point[2];
 
         for(double pi = 0; pi < 3.14; pi += 0.001) {
@@ -247,15 +238,10 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
                 double dist = calc_dist(point[0], point[1]);
 
                 if(dist <= 10) {
-                    intersections_unten.push_back(cv::Point(point[0].first,point[0].second));
-                    intersections_unten.push_back(cv::Point(point[1].first,point[1].second));
-
                     points_per_circle.push_back(cv::Point(point[0].first,point[0].second));
 
                     point[0] = std::pair(0,0);
                     point[1] = std::pair(0,0);
-                    
-                    histogram_unten[x/16]++;
                 }
             }
         }
@@ -280,73 +266,39 @@ std::pair<complete_histdata_t, complete_histdata_t> calc_histogram(cv::Mat *matr
                     break;
                 }
             }
-        } else if(points_per_circle.size() == 2) {
-           
-        } else if(points_per_circle.size() >= 3) {
-            
+        } else if(points_per_circle.size() >= 2) {
+            double dist = calc_dist(std::pair(points_per_circle.at(0).x, points_per_circle.at(0).y), std::pair(points_per_circle.at(1).x, points_per_circle.at(1).y));
+            if (dist > 30 && dist < 70) {
+                dest = cv::Point((points_per_circle.at(0).x + points_per_circle.at(1).x)/2, (points_per_circle.at(0).y + points_per_circle.at(1).y)/2);
+            } else if (dist >= 70) {
+                dest = cv::Point((points_per_circle.at(0).x*3 + points_per_circle.at(1).x)/4, (points_per_circle.at(0).y*3 + points_per_circle.at(1).y)/4);
+            } else {
+                dest = points_per_circle.at(0);
+                
+                double pi = 0;
+
+                while(calc_dist(std::pair(points_per_circle.at(0).x, points_per_circle.at(0).y), std::pair(dest.x, dest.y)) < 25) {
+                    int x = 200 + round(cos(pi) * radius);
+                    int y = 400 - round(sin(pi) * radius);
+
+                    if(x > dest.x) {
+                        continue;
+                    }
+
+                    dest = cv::Point(x,y);
+
+                    pi += 0.0001;
+
+                    if(pi > 3.14) {
+                        break;
+                    }
+                }
+            }
         }
         destinations.push_back(dest);
     }
 
-    for(int radius = 150; radius <= 225; radius+=25) {
-        std::pair<int, int> point[2];
-
-        for(double pi = 0; pi < 3.14; pi += 0.001) {
-            int x = 200 + round(cos(pi) * radius);
-            int y = 400 - round(sin(pi) * radius);
-
-            int x2 = 200 + round(cos(pi+0.01) * radius);
-            int y2 = 400 - round(sin(pi+0.01) * radius);
-
-            int x3 = 200 + round(cos(pi+0.03) * radius);
-            int y3 = 400 - round(sin(pi+0.03) * radius);
-
-            if ((400-y) < (-43/26*x + 215) || (400-y) < (43/26*x - 447)) {
-                continue;
-            }
-
-            if(x+1 >= 400 || x-1 < 0 || y+1 >= 400 || y-1 < 0) {
-                continue;
-            }
-
-            if(x2+1 >= 400 || x2-1 < 0 || y2+1 >= 400 || y2-1 < 0) {
-                continue;
-            }
-
-            if(x3+1 >= 400 || x3-1 < 0 || y3+1 >= 400 || y3-1 < 0) {
-                continue;
-            }
-
-            int color = matrix->at<uint8_t>(y, x);
-            int color2 = matrix->at<uint8_t>(y2, x2);
-            int color3 = matrix->at<uint8_t>(y3, x3);
-
-            if(color > 235) {
-                continue;
-            }
-
-            if(color2 - color > 5 && color3 - color > 5) {
-                point[0] = std::pair(x,y);
-            }
-
-            if(color - color2 > 5 && point[0].first != 0 && point[0].second != 0 && color - color3 > 5) {
-                point[1] = std::pair(x,y);
-
-                double dist = calc_dist(point[0], point[1]);
-
-                if(dist <= 10) {
-                    intersections_oben.push_back(cv::Point(point[0].first,point[0].second));
-                    intersections_oben.push_back(cv::Point(point[1].first,point[1].second));
-
-                    point[0] = std::pair(0,0);
-                    point[1] = std::pair(0,0);
-                    histogram_oben[x/16]++;
-                }
-            }
-        }
-    }
-
-    return std::pair(std::pair(histogram_unten, intersections_unten), std::pair(histogram_oben, intersections_oben));
+    return destinations;
 }
 
 double radius_to_angle(float radius) {
@@ -397,73 +349,15 @@ int main()
                    
                     auto histo_intersections = calc_histogram(&matrix);
 
-                    std::array<int, 25> histogram_unten = histo_intersections.first.first;
-                    std::vector<cv::Point> intersections_unten = histo_intersections.first.second;
-
-                    std::array<int, 25> histogram_oben = histo_intersections.second.first;
-                    std::vector<cv::Point> intersections_oben = histo_intersections.second.second;
+                    points_vector_t histogram_unten = histo_intersections;
 
                     std::string line = "";
-
-                    for(auto& i : histogram_unten) {
-                        line += std::to_string(i) + " ";
-                    }
 
                     logger->log("%s", line.c_str());
 
                     std::vector<std::pair<int, int>> max;
 
-                    for(int i = 1; i < histogram_unten.size()-1; i++) {
-                        if(histogram_unten[i] > histogram_unten[i+1] && histogram_unten[i] > histogram_unten[i-1] ) {
-                            max.push_back(std::pair<int, int>(i, histogram_unten[i]));
-                        } 
-                    }
-
-                    // Histogram evaluation
-                    std::sort(max.begin(), max.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
-                        return a.second > b.second;
-                    });
-
-                    std::vector<std::pair<int, int>> greatest_values(max.begin(), max.begin() + (max.size() >= 3 ? 3 : max.size()));
-
-                    std::sort(greatest_values.begin(), greatest_values.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
-                        return a.first < b.first;
-                    });
-
-                    std::vector<cv::Point> left_vec;
-                    std::vector<cv::Point> mid_vec;
-                    std::vector<cv::Point> right_vec;
-
-                    // Retrieve lanes by maximas of histogram_unten
-                    for(int i = 0; i < intersections_unten.size(); i++) {
-                        int x = intersections_unten.at(i).x/16;
-
-                        if(greatest_values.size() == 1) {
-                            if(greatest_values.at(0).first == x || greatest_values.at(0).first == x-1) {
-                                right_vec.push_back(intersections_unten.at(i));
-                            } 
-                        } else if(greatest_values.size() == 2) {
-                            if(greatest_values.at(0).first == x) {
-                                mid_vec.push_back(intersections_unten.at(i));
-                            } else if(greatest_values.at(1).first == x || greatest_values.at(1).first == x-1) {
-                                right_vec.push_back(intersections_unten.at(i));
-                            } 
-                        } else if(greatest_values.size() >= 3) {
-                            if(greatest_values.at(0).first == x || greatest_values.at(0).first == x+1) {
-                                left_vec.push_back(intersections_unten.at(i));
-                            } else if(greatest_values.at(1).first == x) {
-                                mid_vec.push_back(intersections_unten.at(i));
-                            } else if(greatest_values.at(2).first == x || greatest_values.at(2).first == x-1) {
-                                right_vec.push_back(intersections_unten.at(i));
-                            } 
-                        }
-                    }
-
-                    int left, mid, right;
-                    
-                    std::tie(left, mid, right) = vectors_to_coordinates(left_vec, mid_vec, right_vec);
-
-                    int dest = get_dest(mid, right) + 10;
+                    int dest = 10; //TODO
 
                     int angle = get_angle(dest);
 
@@ -537,24 +431,8 @@ int main()
                             cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
                         }
 
-                        for(const auto& i : intersections_unten) {
+                        for(const auto& i : histo_intersections) {
                             cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
-                        }
-
-                        for(const auto& i : intersections_oben) {
-                            cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
-                        }
-
-                        for(const auto& p : right_vec) {
-                            cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5);
-                        }
-
-                        for(const auto& p : mid_vec) {
-                            cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5); 
-                        }
-
-                        for(const auto& p : left_vec) {
-                        cv::rectangle(matrix, p-cv::Point(5,5), p+cv::Point(5,5), 5);    
                         }
 
                         cv::line(matrix, cv::Point(200, 400), cv::Point(dest, 300), cv::Scalar(255,255,255,1));
@@ -566,7 +444,17 @@ int main()
 
                     auto [front_angle, back_angle] = get_angles_from_average_angle(average_angle);
 
-                    if((check_if_on_street(histogram_unten) && onStreet) || true) {
+                    ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
+                        ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
+                        ipc_packet.clear_and_edit()
+                            .write<int16_t>(30)
+                            .write<int8_t>(front_angle)
+                            .write<int8_t>(back_angle);
+                        socket->send_packet(ipc_packet);
+
+                /*
+
+                    if((check_if_on_street(histogram_unten) && onStreet)) {
                         ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
@@ -592,7 +480,7 @@ int main()
                         
                     } else if (!onStreet){
                         return_to_street(front_angle, histogram_unten);
-                    }
+                    }*/
                 } break;
                 default:
                     {
