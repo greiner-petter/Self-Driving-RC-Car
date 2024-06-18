@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <memory>
 
+namespace cv { }
+
 class SignDetector
 {
 public:
