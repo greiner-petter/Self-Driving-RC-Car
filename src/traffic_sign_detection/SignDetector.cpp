@@ -13,6 +13,20 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
+static ocIpcSocket* s_Socket = nullptr;
+static ocSharedMemory* s_SharedMemory = nullptr;
+static ocLogger* s_Logger = nullptr;
+static bool s_SupportGUI = false;
+
+void SignDetector::Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger, bool supportGUI)
+{
+    logger->log("SignDetector::Init()");
+    s_Socket = socket;
+    s_SharedMemory = shared_memory;
+    s_Logger = logger;
+    s_SupportGUI = supportGUI;
+}
+
 // Converts into an estimated distance
 float SignDetector::ConvertRectSizeToEstimatedDistance(float rectSize, double sizeFactor)
 {

@@ -20,6 +20,7 @@ static bool s_SupportGUI = false;
 
 void HaarSignDetector::Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger, bool supportGUI)
 {
+    SignDetector::Init(socket, shared_memory, logger, supportGUI);
     logger->log("SignDetector::Init()");
     s_Socket = socket;
     s_SharedMemory = shared_memory;

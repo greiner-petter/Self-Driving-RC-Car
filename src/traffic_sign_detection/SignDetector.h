@@ -10,7 +10,7 @@
 class SignDetector
 {
 public:
-    virtual void Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger, bool supportGUI) = 0;
+    virtual void Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger, bool supportGUI);
     virtual void Run() = 0;
 
     static float ConvertRectSizeToEstimatedDistance(float rectSize, double sizeFactor);
