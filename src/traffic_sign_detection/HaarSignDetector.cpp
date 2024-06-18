@@ -1,4 +1,4 @@
-#include "HaarSignDetector.h.h"
+#include "HaarSignDetector.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs/imgcodecs.hpp>
