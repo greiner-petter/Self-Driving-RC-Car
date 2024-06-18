@@ -228,11 +228,11 @@ points_vector_t calc_destinations(cv::Mat *matrix) {
                 continue;
             }
 
-            if(color2 - color > 5 && color3 - color > 5) {
+            if(color2 - color > 10 && color3 - color > 10) {
                 point[0] = std::pair(x,y);
             }
 
-            if(color - color2 > 5 && point[0].first != 0 && point[0].second != 0 && color - color3 > 5) {
+            if(color - color2 > 10 && point[0].first != 0 && point[0].second != 0 && color - color3 > 10) {
                 point[1] = std::pair(x,y);
 
                 double dist = calc_dist(point[0], point[1]);
