@@ -42,6 +42,26 @@ static void signal_handler(int)
     running = false;
 }
 
+double radius_to_angle(float radius) {
+    if(radius > 0) {
+        return 3000000.0 * std::pow(radius, -3) + 10;
+    } else if(radius < 0) {
+        return 2700000.0 * std::pow(radius, -3) - 10;
+    } else {
+        return 0;
+    }
+}
+
+double radius_to_angle(float radius) {
+    if(radius > 0) {
+        return 3000000.0 * std::pow(radius, -3) + 10;
+    } else if(radius < 0) {
+        return 2700000.0 * std::pow(radius, -3) - 10;
+    } else {
+        return 0;
+    }
+}
+
 double calc_dist(std::pair<double, double> p1, std::pair<double, double> p2) {
     return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
 }
@@ -81,6 +101,25 @@ int get_angle(int dest) {
     return std::clamp((const int) angle, -65, 65); // Clamp between -65 and 65 so tire doesn't get stuck due to too high angle
 }
 
+float get_radius(cv::Point p1, cv::Point p2) {
+    cv::Point origin = cv::Point(200, 400);
+
+    // Calculate the lengths of the sides of the triangle
+    float a = cv::norm(p1 - origin); // distance from origin to p1
+    float b = cv::norm(p2 - origin); // distance from origin to p2
+    float c = cv::norm(p2 - p1);     // distance from p1 to p2
+
+    // Use the cosine rule to calculate the angles
+    // cos(angle) = (b^2 + c^2 - a^2) / (2 * b * c)
+    float angle_o_p1 = acos((b*b + c*c - a*a) / (2 * b * c));
+    // cos(angle) = (a^2 + c^2 - b^2) / (2 * a * c)
+    float angle_p1_p2 = acos((a*a + c*c - b*b) / (2 * a * c));
+    // cos(angle) = (a^2 + b^2 - c^2) / (2 * a * b)
+    float angle_o_p2 = acos((a*a + b*b - c*c) / (2 * a * b));
+
+    
+}
+
 int get_dest(int mid, int right) {
     int dest = (right + mid) / 2;
 
@@ -117,6 +156,8 @@ void continue_if_blinded(float front_angle, float back_angle, std::array<int, 25
 
 }
 
+
+
 std::pair<int, int> get_angles_from_average_angle(float average_angle) {
     average_angle *= 2;
 
@@ -149,6 +190,21 @@ std::pair<int, int> get_angles_from_average_angle(float average_angle) {
 
     //logger->log("avg: %f  --  fr: %f  --  ba: %f", average_angle, front_angle, back_angle);
     return std::pair<int, int>(front_angle+ANGLE_OFFSET_FRONT, back_angle);
+}
+
+std::pair<int, int> drive_parallel_in_angle(float angle) {
+    if(angle >= 65) {
+        return std::pair(65,65);
+    }
+    if(angle <= -65) {
+        return std::pair(-65,-65);
+    }
+
+    return std::pair(angle, angle);
+}
+
+cv::Point find_friend(cv::Point point, float degree) {
+    
 }
 
 std::tuple<int, int, int> vectors_to_coordinates(std::vector<cv::Point> left_vec, std::vector<cv::Point> mid_vec, std::vector<cv::Point> right_vec) {
@@ -248,6 +304,10 @@ std::pair<points_vector_t, points_vector_t> calc_destinations(cv::Mat *matrix) {
                 }
             }
         }
+
+        //get_depth_of_line(point, start_degree) --> return length of points following this point
+
+
         //points_per_circle auslesen und anzahl und position prüfen --> ziel ausrechnen, ziel liegt auf kreis
         cv::Point dest;
         if(points_per_circle.size() == 1) {
@@ -302,15 +362,6 @@ std::pair<points_vector_t, points_vector_t> calc_destinations(cv::Mat *matrix) {
     return std::pair<points_vector_t, points_vector_t>(destinations, intersections);
 }
 
-double radius_to_angle(float radius) {
-    if(radius > 0) {
-        return 3000000.0 * std::pow(radius, -3) + 10;
-    } else if(radius < 0) {
-        return 2700000.0 * std::pow(radius, -3) - 10;
-    } else {
-        return 0;
-    }
-}
 
 int main()
 {
