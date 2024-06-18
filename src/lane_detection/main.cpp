@@ -204,7 +204,7 @@ points_vector_t calc_destinations(cv::Mat *matrix) {
             int x3 = 200 + round(cos(pi+0.03) * radius);
             int y3 = 400 - round(sin(pi+0.03) * radius);
 
-            if ((400-y) < (-43/26*x + 215) || (400-y) < (43/26*x - 447)) {
+            if ((400-y) < (-1/2*x + 80) || (400-y) < (1/2*x - 120)) {
                 continue;
             }
 
