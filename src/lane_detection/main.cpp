@@ -185,7 +185,7 @@ std::tuple<int, int, int> vectors_to_coordinates(std::vector<cv::Point> left_vec
     return std::tuple<int, int, int>{left,mid,right};
 }
 
-points_vector_t calc_histogram(cv::Mat *matrix) {
+points_vector_t calc_destinations(cv::Mat *matrix) {
     points_vector_t destinations;
 
     for(int radius = 50; radius <= 225; radius+=25) {
@@ -347,9 +347,9 @@ int main()
                         cv::imwrite("bev.jpg", matrix);
                     } 
                    
-                    auto histo_intersections = calc_histogram(&matrix);
+                    auto destinations = calc_destinations(&matrix);
 
-                    points_vector_t histogram_unten = histo_intersections;
+                    points_vector_t histogram_unten = destinations;
 
                     std::string line = "";
 
@@ -431,7 +431,7 @@ int main()
                             cv::circle(matrix, cv::Point(200,400), radius, cv::Scalar(255,255,255,1), 5);
                         }
 
-                        for(const auto& i : histo_intersections) {
+                        for(const auto& i : destinations) {
                             cv::circle(matrix, i, 5, cv::Scalar(255,255,255,1), 5);
                         }
 
