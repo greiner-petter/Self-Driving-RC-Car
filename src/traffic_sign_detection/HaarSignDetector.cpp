@@ -106,6 +106,8 @@ void HaarSignDetector::Run()
                 cv::Rect roi = sign_scaled[i];
                 const uint32_t distance = ConvertRectToDistanceInCM(roi, (int)cam_data->width, (int)cam_data->height, signClassifier->signSizeFactor);
 
+                if (distance <= 8) continue;
+
                 // Draw rectangle around the sign
                 cv::rectangle(cam_image, cv::Point(roi.x, roi.y),
                               cv::Point(roi.x + roi.width, roi.y + roi.height),
