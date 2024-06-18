@@ -255,10 +255,9 @@ points_vector_t calc_destinations(cv::Mat *matrix) {
                 int y = 400 - round(sin(pi) * radius);
 
                 if(x > dest.x) {
+                    dest = cv::Point(x,y);
                     continue;
                 }
-
-                dest = cv::Point(x,y);
 
                 pi += 0.0001;
 
@@ -282,10 +281,9 @@ points_vector_t calc_destinations(cv::Mat *matrix) {
                     int y = 400 - round(sin(pi) * radius);
 
                     if(x > dest.x) {
+                        dest = cv::Point(x,y);
                         continue;
                     }
-
-                    dest = cv::Point(x,y);
 
                     pi += 0.0001;
 
