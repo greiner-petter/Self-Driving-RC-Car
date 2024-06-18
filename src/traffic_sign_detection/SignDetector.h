@@ -5,10 +5,7 @@
 #include <filesystem>
 #include <memory>
 
-namespace cv
-{
-    class Rect;
-}
+#include <opencv2/core/types.hpp>
 
 class SignDetector
 {
