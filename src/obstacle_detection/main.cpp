@@ -6,6 +6,19 @@
 #include <string>
 #include <vector>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgcodecs/imgcodecs.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/videoio/videoio.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/objdetect.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/videoio.hpp>
+
 int main(int argc,char* argv[])
 {
     // Parsing Params
@@ -32,6 +45,24 @@ int main(int argc,char* argv[])
     ocIpcSocket* socket = member.get_socket();
     ocSharedMemory* shared_memory = member.get_shared_memory();
     ocLogger*    logger = member.get_logger();
+
+    while (true)
+    {
+        // Fetch Camera Data
+        ocCamData *cam_data = &s_SharedMemory->cam_data[s_SharedMemory->last_written_cam_data_index];
+
+        int type = CV_8UC1;
+        if (3 == bytes_per_pixel(cam_data->pixel_format)) type = CV_8UC3;
+        if (4 == bytes_per_pixel(cam_data->pixel_format)) type = CV_8UC4;
+        if (12 == bytes_per_pixel(cam_data->pixel_format)) type = CV_32FC3;
+
+        cv::Mat cam_image((int)cam_data->height, (int)cam_data->width, type);
+        cam_image.data = cam_data->img_buffer;
+
+        cv::Mat gray;
+        cv::cvtColor(cam_image, gray, cv::COLOR_BGR2GRAY);
+
+    }
 
     logger->warn("Obstacle-Detection: Process Shutdown.");
 
