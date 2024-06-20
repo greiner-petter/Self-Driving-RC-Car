@@ -23,6 +23,8 @@ class Helper {
 
         int calculate_radius(cv::Mat* matrix) {
             this->matrix = matrix;
+
+            cv::cvtColor(*this->matrix, *this->matrix, cv::COLOR_GRAY2RGB);
             
             const int INITIAL_RADIUS = 50;
             const int FINAL_RADIUS = 250;
