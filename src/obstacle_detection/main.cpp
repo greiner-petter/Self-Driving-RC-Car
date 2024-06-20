@@ -19,6 +19,11 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
+static double CalcObstacleCoverage(const cv::Mat& camData, int32_t width, int32_t height)
+{
+    return 0.0;
+}
+
 int main(int argc,char* argv[])
 {
     // Parsing Params
@@ -59,9 +64,7 @@ int main(int argc,char* argv[])
         cv::Mat cam_image((int)cam_data->height, (int)cam_data->width, type);
         cam_image.data = cam_data->img_buffer;
 
-        cv::Mat gray;
-        cv::cvtColor(cam_image, gray, cv::COLOR_BGR2GRAY);
-
+        logger->info(std::to_string(CalcObstacleCoverage(cam_image, cam_data->width, cam_data->height)).c_str());
     }
 
     logger->warn("Obstacle-Detection: Process Shutdown.");
