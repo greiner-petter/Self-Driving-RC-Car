@@ -54,7 +54,7 @@ int main(int argc,char* argv[])
     while (true)
     {
         // Fetch Camera Data
-        ocCamData *cam_data = &s_SharedMemory->cam_data[s_SharedMemory->last_written_cam_data_index];
+        ocCamData *cam_data = &shared_memory->cam_data[s_SharedMemory->last_written_cam_data_index];
 
         int type = CV_8UC1;
         if (3 == bytes_per_pixel(cam_data->pixel_format)) type = CV_8UC3;
