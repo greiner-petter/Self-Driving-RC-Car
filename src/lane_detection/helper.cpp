@@ -55,8 +55,10 @@ class Helper {
             cv::Point final_center;
             int final_radius;
 
-            std::tie(final_center, final_radius) = fit_circle_with_fixed_point_ransac(center_point_list, cv::Point(200, 400));
-
+            try {
+                std::tie(final_center, final_radius) = fit_circle_with_fixed_point_ransac(center_point_list, cv::Point(200, 400));
+            } catch(const InvalidCircle& e) {} // Just an unfitting lane width so no need to worry abt an actual error
+            
             cv::circle(*matrix, final_center, final_radius, (255,0,0,1), 1);
 
             for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
@@ -79,11 +81,14 @@ class Helper {
     private:
         void get_two_random_element_indexes (const int size, int &first, int &second) {
             // pick a random element
-            first = rand () * size / 2;
+            first = rand() / RAND_MAX * (size - 1);
             // pick a random element from what's left (there is one fewer to choose from)...
-            second = rand () * (size - 1) / 2;
+            second = rand() / RAND_MAX * (size - 1);
             // ...and adjust second choice to take into account the first choice
-            if (second >= first)
+            if (second == first && second != 0)
+            {
+                --second;
+            } else if (second == first && second == 0)
             {
                 ++second;
             }
@@ -168,7 +173,7 @@ class Helper {
             });
 
             if(right_pointlist.empty() && left_pointlist.empty()) {
-                return cv::Point(200, 400-radius);
+                return cv::Point(200, radius);
             }
 
             if(right_pointlist.empty()) {
@@ -248,6 +253,10 @@ class Helper {
             std::pair<cv::Point, int>* best_circle = nullptr;
             std::vector<cv::Point> best_inliners;
             int num_points = points.size();
+
+            if(num_points == 0) {
+                throw InvalidCircle();
+            }
 
             for (int _ = 0; _ < MAX_ITERATIONS; _++) {
                 int first_index;
