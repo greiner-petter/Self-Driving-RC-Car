@@ -1,7 +1,10 @@
 #include "../common/ocTypes.h"
 #include "../common/ocMember.h"
+#include "Histogram.h"
+#include "IntersectionConstants.h"
 #include <signal.h>
 #include <csignal>
+#include <bit>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/types.hpp>
 
@@ -11,25 +14,7 @@ using cv::Point;
 
 using std::vector;
 
-// allowed +/- for horizontal lines
-#define ALLOWED_DEGREE_RANGE 6
-
-// amount of values to take for blurring the histogram; changing this
-// requires manual changes in the code too!
-#define HISTOGRAM_BLUR_SIZE 4
-
-// for a part of the "blurred" histogram to be considered
-// it has to be at least LONGEST / REQUIRED_LENGTH_DIV
-#define REQUIRED_LENGTH_DIV 1.5
-
-// maximum required amount of parts in histogram that fulfils
-// the previous condition. If it's too much there is bad data
-// *or* a curve
-#define MAX_FOUND_RESULTS 2
-
-// required consecutive images needed before it broadcasts that
-// a detected intersection
-#define REQUIRED_CONSEC 4
+//#define LOG_NEGATIVE_RESULTS
 
 static bool running = true;
 ocLogger *logger;
@@ -37,10 +22,6 @@ ocLogger *logger;
 static void signal_handler(int)
 {
     running = false;
-}
-
-static uint32_t distance_between_points(Point &p1, Point &p2) {
-    return (uint32_t) cv::norm(p1 - p2);
 }
 
 static vector<vector<Point>> read_lines(ocPacket &packet) {
@@ -64,50 +45,46 @@ static vector<vector<Point>> read_lines(ocPacket &packet) {
     return lines;
 }
 
-static void generate_angle_length_histogram(uint32_t *output, vector<vector<Point>> &input_data) {
-    memset(output, 0, sizeof(uint32_t) * 180);
-    for (auto points : input_data) {
-        vector<Point> points_filtered;
+static uint32_t distance_between_points_indexed(const vector<Point> &points, size_t &start_index) {
+    assert(start_index < points.size() - 1);
+    const Point &p1 = points.at(start_index);
+    const Point &p2 = points.at(start_index + 1);
+    return (uint32_t) cv::norm(p1 - p2);
+}
+
+static uint32_t calculate_angle_indexed(const vector<Point> &points, size_t &start_index) {
+    assert(start_index < points.size() - 1);
+    const Point &p1 = points.at(start_index);
+    const Point &p2 = points.at(start_index + 1);
+    Point pos = p2 - p1;
+    double rad = atan2(pos.y, pos.x) - 0.5 * CV_PI;
+    if (rad < 0) {
+        rad += 2 * CV_PI;
+    }
+    double degree = rad * (180 / CV_PI);
+    // 0° means pointing left, 90° means upward and 180° means pointing right
+    return (uint32_t)(((int) degree + 90) % 180);
+}
+
+static void generate_angle_length_histogram(Histogram<INTERSECTION_DEGREE_SIZE> &histogram, const vector<vector<Point>> &input_data) {
+    for (const vector<Point> &points : input_data) {
         for (size_t i = 0; i < points.size() - 1; ++i) {
-            Point &p1 = points.at(i);
-            Point &p2 = points.at(i + 1);
-            Point pos = p2 - p1;
-            double rad = atan2(pos.y, pos.x) - 0.5 * CV_PI;
-            if (rad < 0) {
-                rad += 2 * CV_PI;
-            }
-            double degree = rad * (180 / CV_PI);
-            // 0° means pointing left, 90° means upward and 180° means pointing right
-            int degree_adjusted = ((int) degree + 90) % 180;
-            uint32_t distance = distance_between_points(p1, p2);
-            output[degree_adjusted] += distance;
+            uint32_t degree_adjusted = calculate_angle_indexed(points, i);
+            uint32_t distance = distance_between_points_indexed(points, i);
+            histogram.add_to_index(degree_adjusted, distance);
         }
     }
 }
 
-static void generate_blurred_histogram(uint32_t *input, uint32_t *output, uint32_t *highest) {
-    memset(output, 0, sizeof(uint32_t) * 180);
-    *highest = 0;
-    for (size_t i = 0; i < 180 - HISTOGRAM_BLUR_SIZE; ++i) {
-        output[i] = (input[i] + input[i + 1] + input[i + 2] + input[i + 3]) / HISTOGRAM_BLUR_SIZE;
-        if (output[i] > *highest) {
-            *highest = output[i];
-        }
-    }
-}
-
-static void get_histogram_peak_points(uint32_t *input, const uint32_t required_value, vector<int> &output) {
-    output.clear();
-
-    bool found = false;
-    for (size_t i = 0; i < 180 - HISTOGRAM_BLUR_SIZE; ++i) {
-        if (input[i] > required_value) {
-            if (found == false) {
-                output.push_back((int) i);
+static void generate_filtered_histogram(Histogram<INTERSECTION_Y_LENGTH_SIZE> &histogram, const vector<vector<Point>> &input_data) {
+    for (auto &points : input_data) {
+        for (size_t i = 0; i < points.size() - 1; ++i) {
+            uint32_t degree_adjusted = calculate_angle_indexed(points, i);
+            if (degree_adjusted < ALLOWED_DEGREE_RANGE || degree_adjusted > 180 - ALLOWED_DEGREE_RANGE) {
+                uint32_t distance = distance_between_points_indexed(points, i);
+                size_t mid = ((size_t)points.at(i).y + (size_t) points.at(i + 1).y) / 2;
+                histogram.add_to_index(mid, distance);
             }
-            found = true;
-        } else {
-            found = false;
         }
     }
 }
@@ -142,64 +119,60 @@ int main() {
                     static uint32_t distance;
                     distance = 0;
                     vector<vector<Point>> lines = read_lines(ipc_packet);
-                    static uint32_t histogram[180];
-                    generate_angle_length_histogram(&histogram[0], lines);
-
-                    // the last blur_size values aren't set; also the histogram gets shifted here!
-                    uint32_t histogram_blurred[180] = {0};
-                    uint32_t highest;
-                    generate_blurred_histogram(histogram, histogram_blurred, &highest);
+                    static Histogram<INTERSECTION_DEGREE_SIZE> angle_length_hist;
+                    angle_length_hist.clear();
+                    generate_angle_length_histogram(angle_length_hist, lines);
+                    angle_length_hist.blur();
+                    static uint8_t last_found = 0;
 
                     // indices of where the peaks are
-                    vector<int> histogram_peak_indices;
-                    get_histogram_peak_points(histogram_blurred, (uint32_t)(highest / REQUIRED_LENGTH_DIV), histogram_peak_indices);
+                    vector<size_t> histogram_peak_indices = angle_length_hist.get_peaks((uint32_t) ((double) angle_length_hist.get_highest_point_index() * REQUIRED_LENGTH_MULT));
 
-                    // used to avoid consecutive peaks that occur due to the blur
-                    static size_t found_consec = 0;
                     if (histogram_peak_indices.size() > MAX_FOUND_RESULTS) {
-                        found_consec = 0;
+#ifdef LOG_NEGATIVE_RESULTS
+                        logger->log("Skipping this frame since we found %llu results", (unsigned long long) histogram_peak_indices.size());
+#endif
+                        last_found <<= 1;
                         continue;
                     }
                     // TODO: Find diagonal (45° and 135°) and if they exist skip due to curve
-                    bool has_in_range = false;
-                    for (auto i : histogram_peak_indices) {
-                        if (i > 90 - ALLOWED_DEGREE_RANGE && i < 90 + ALLOWED_DEGREE_RANGE) {
-                            has_in_range = true;
-                        }
-                    }
-                    if (!has_in_range) {
-                        found_consec = 0;
+
+                    static Histogram<INTERSECTION_Y_LENGTH_SIZE> histogram_filtered;
+                    histogram_filtered.clear();
+                    generate_filtered_histogram(histogram_filtered, lines);
+                    histogram_filtered.blur();
+
+                    uint32_t highest_in_filtered = histogram_filtered.get_highest_point_value();
+                    if (highest_in_filtered < REQUIRED_H_LENGTH_INTERSECTION) {
+#ifdef LOG_NEGATIVE_RESULTS
+                        logger->log("Skipping this frame since the length was only %lu", (unsigned long) highest_in_filtered);
+#endif
+                        last_found <<= 1;
                         continue;
                     }
-                    if (++found_consec < REQUIRED_CONSEC) {
+
+                    last_found <<= 1;
+                    last_found |= 1;
+
+                    if (std::popcount(last_found) < REQUIRED_CONSEC) {
+#ifdef LOG_NEGATIVE_RESULTS
+                        logger->log("Skipping this frame since only the last %u results were positive", (unsigned int) std::popcount(last_found));
+#endif
                         continue;
                     }
-                    std::cout << "-------\n";
 
-                    for (auto points : lines) {
-                        vector<Point> points_filtered;
-                        for (size_t i = 0; i < points.size() - 1; ++i) {
-                            Point &p1 = points.at(i);
-                            Point &p2 = points.at(i + 1);
-                            Point pos = p2 - p1;
-                            double rad = atan2(pos.y, pos.x) - 0.5 * CV_PI;
-                            if (rad < 0) {
-                                rad += 2 * CV_PI;
-                            }
-                            double degree = rad * (180 / CV_PI);
-                            // 0° means pointing left, 90° means upward and 180° means pointing right
-                            int degree_adjusted = ((int) degree + 90) % 180;
-                            for (int &a : histogram_peak_indices) {
-                                if (std::abs(a - degree_adjusted) < 10) {
-                                    distance = (uint32_t) p1.y;
-                                    std::cout << "y = " << p1.y << '\n';
-                                }
+                    //angle_length_hist.debug_print();
+                    //histogram_filtered.debug_print();
 
-                            }
-                        }
-                    }
+                    size_t pixel_height = 399 - histogram_filtered.get_highest_fulfilling_condition([](const size_t index, const uint32_t val) -> bool {
+                            (void) index;
+                            return val >= REQUIRED_H_LENGTH_INTERSECTION;
+                    });
+                    // we don't have to check, if the original return value is 400 (out of range) since
 
-                    std::cout << "\n-------\n\n\n";
+                    logger->log("Distance in pixels: %lu", (unsigned long) pixel_height);
+
+                    // TODO: Implement possible directions
                     uint8_t directions = 6;
                     if (distance != 0) {
                         ipc_packet.clear();
