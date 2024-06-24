@@ -124,6 +124,7 @@ int main() {
                     generate_angle_length_histogram(angle_length_hist, lines);
                     angle_length_hist.blur();
                     static uint8_t last_found = 0;
+                    last_found <<= 1;
 
                     // indices of where the peaks are
                     vector<size_t> histogram_peak_indices = angle_length_hist.get_peaks((uint32_t) ((double) angle_length_hist.get_highest_point_index() * REQUIRED_LENGTH_MULT));
@@ -132,7 +133,6 @@ int main() {
 #ifdef LOG_NEGATIVE_RESULTS
                         logger->log("Skipping this frame since we found %llu results", (unsigned long long) histogram_peak_indices.size());
 #endif
-                        last_found <<= 1;
                         continue;
                     }
                     // TODO: Find diagonal (45° and 135°) and if they exist skip due to curve
@@ -147,11 +147,9 @@ int main() {
 #ifdef LOG_NEGATIVE_RESULTS
                         logger->log("Skipping this frame since the length was only %lu", (unsigned long) highest_in_filtered);
 #endif
-                        last_found <<= 1;
                         continue;
                     }
 
-                    last_found <<= 1;
                     last_found |= 1;
 
                     if (std::popcount(last_found) < REQUIRED_CONSEC) {
