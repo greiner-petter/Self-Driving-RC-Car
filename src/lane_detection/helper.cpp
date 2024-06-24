@@ -76,16 +76,6 @@ class Helper {
             }
         }
 
-        double radius_to_angle(float radius) {
-            if(radius > 0) {
-                return 3000000.0 * std::pow(radius, -3) + 10;
-            } else if(radius < 0) {
-                return 2700000.0 * std::pow(radius, -3) - 10;
-            } else {
-                return 0;
-            }
-        }
-
     private:
         void get_two_random_element_indexes (const int size, int &first, int &second) {
             // pick a random element
