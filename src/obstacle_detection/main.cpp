@@ -26,14 +26,14 @@ static double CalcObstacleCoverage(const cv::Mat& camData)
     int totalCount = 0, obstaclePixelCount = 0;
 
     for (int row = camData.rows / 3; row < camData.rows / 3 * 2; row++) {
-        for (int col = camData.cols / 3; col < camData.cols / 3 * 2; col++) {
+        for (int col = camData.cols / 3 + 10; col < camData.cols / 3 * 2 - 10; col++) {
             cv::Vec3b pixel = camData.at<cv::Vec3b>(row, col);
 
             uchar B = pixel[0];
             uchar G = pixel[1];
             uchar R = pixel[2];
 
-            if (G > std::max(R, B) && G >= 16) {
+            if (G > std::max(R, B) && G >= 12) {
                 obstaclePixelCount++;
             }
             totalCount++;
