@@ -28,7 +28,6 @@ class Helper {
             
             const int INITIAL_RADIUS = 50;
             const int FINAL_RADIUS = 250;
-            float angle = 0;
 
             cv::Point* previous_center = nullptr;
             int previous_center_radian = -1;
@@ -48,7 +47,7 @@ class Helper {
                     center_point_list.push_back(point);
                     previous_center = &point;
 
-                    cv::circle(*matrix, point, 2, (0, 255, 255, 1), 2);
+                    cv::circle(*matrix, point, 2, cv::Scalar(0, 255, 255, 1), 2);
                 } catch(const UnfittingLaneWidth& e) {} // Just an unfitting lane width so no need to worry abt an actual error
             }
 
@@ -59,10 +58,10 @@ class Helper {
                 std::tie(final_center, final_radius) = fit_circle_with_fixed_point_ransac(center_point_list, cv::Point(200, 400));
             } catch(const InvalidCircle& e) {} // Just an unfitting lane width so no need to worry abt an actual error
             
-            cv::circle(*matrix, final_center, final_radius, (255,0,0,1), 1);
+            cv::circle(*matrix, final_center, final_radius, cv::Scalar(255,0,0,1), 1);
 
             for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
-                cv::circle(*matrix, cv::Point(200, 400), radius, (255,255,255,1), 1);
+                cv::circle(*matrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1);
             }
 
             return final_radius * (final_center.x < 200 ? -1 : 1);
