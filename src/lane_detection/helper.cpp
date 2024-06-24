@@ -167,6 +167,10 @@ class Helper {
                 return abs(a.x - x) < abs(b.x - x);
             });
 
+            if(right_pointlist.empty() && left_pointlist.empty()) {
+                return cv::Point(200, 400-radius);
+            }
+
             if(right_pointlist.empty()) {
                 return cv::Point(left_pointlist[0].x - 25, left_pointlist[0].y);
             }
