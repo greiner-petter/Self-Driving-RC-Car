@@ -25,8 +25,8 @@ static double CalcObstacleCoverage(const cv::Mat& camData)
 {
     int totalCount = 0, obstaclePixelCount = 0;
 
-    for (int row = camData.rows / 5 * 3; row < camData.rows / 5 * 4; row++) {
-        for (int col = camData.cols / 5 * 3; col < camData.cols / 5 * 4; col++) {
+    for (int row = camData.rows / 5 * 2; row < camData.rows / 5 * 3; row++) {
+        for (int col = camData.cols / 5 * 2; col < camData.cols / 5 * 3; col++) {
             cv::Vec3b pixel = camData.at<cv::Vec3b>(row, col);
 
             uchar B = pixel[0];
