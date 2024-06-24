@@ -104,6 +104,8 @@ int main() {
                 {
                     case ocMessageId::Camera_Image_Available:
                     {
+                        static uint8_t write_bit = 1;
+                        write_bit ^= 1;
 
                         // Move to shared memory
 
@@ -128,7 +130,7 @@ int main() {
                             {}
                         };
 
-                        shared_memory->bev_data[2] = (ocBevData) {
+                        shared_memory->bev_data[2 | write_bit] = (ocBevData) {
                             tempCamData->frame_time,
                             tempCamData->frame_number,
                             0,(int32_t) 400,
@@ -165,6 +167,8 @@ int main() {
                         // notify others about available picture
                         ipc_packet.set_sender(ocMemberId::Image_Processing);
                         ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
+                        ocBufferWriter writer = ipc_packet.clear_and_edit();
+                        writer.write(write_bit);
                         socket->send_packet(ipc_packet);
                         
 #ifndef hideContours

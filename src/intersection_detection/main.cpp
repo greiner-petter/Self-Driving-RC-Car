@@ -107,7 +107,7 @@ int main() {
     ocPacket ipc_packet;
     ipc_packet.set_message_id(ocMessageId::Subscribe_To_Messages);
     ipc_packet.clear_and_edit()
-        .write(ocMessageId::Lines_Available);
+        .write(ocMessageId::Birdseye_Image_Available);
     socket->send_packet(ipc_packet);
 
     // Listen for detected Lines
@@ -116,8 +116,11 @@ int main() {
     {
         switch(ipc_packet.get_message_id())
             {
-                case ocMessageId::Lines_Available:
+                case ocMessageId::Birdseye_Image_Available:
                 {
+                    ocBufferReader reader = ipc_packet.read_from_start();
+                    uint8_t bit;
+                    reader.read(&bit);
                     static uint32_t distance;
                     distance = 0;
                     Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2].img_buffer);
