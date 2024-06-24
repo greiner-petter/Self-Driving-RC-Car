@@ -90,7 +90,7 @@ int main(int argc,char* argv[])
             ocPacket s(ocMessageId::Object_Found);
             s.clear_and_edit().write(percent);
             socket->send_packet(s);
-            logger->warn((std::string("Obstacle detected: ") + percent).c_str());
+            logger->warn((std::string("Obstacle detected: ") + std::to_string(percent)).c_str());
         }
         if (verbose)
         {
