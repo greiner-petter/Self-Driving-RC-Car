@@ -133,7 +133,7 @@ int main() {
                     last_found <<= 1;
 
                     // indices of where the peaks are
-                    vector<size_t> histogram_peak_indices = angle_length_hist.get_peaks((uint32_t) ((double) angle_length_hist.get_highest_point_index() * REQUIRED_LENGTH_MULT));
+                    vector<size_t> histogram_peak_indices = angle_length_hist.get_peaks((uint32_t) ((double) angle_length_hist.get_highest_point_value() * REQUIRED_LENGTH_MULT));
 
                     if (histogram_peak_indices.size() > MAX_FOUND_RESULTS) {
 #ifdef LOG_NEGATIVE_RESULTS
