@@ -19,14 +19,14 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
-#define THRESHOLD 0.20
+#define THRESHOLD 0.16
 
 static double CalcObstacleCoverage(const cv::Mat& camData)
 {
     int totalCount = 0, obstaclePixelCount = 0;
 
-    for (int row = camData.rows / 7 * 3; row < camData.rows / 7 * 4; row++) {
-        for (int col = camData.cols / 7 * 3; col < camData.cols / 7 * 4; col++) {
+    for (int row = camData.rows / 3; row < camData.rows / 3 * 2; row++) {
+        for (int col = camData.cols / 3; col < camData.cols / 3 * 2; col++) {
             cv::Vec3b pixel = camData.at<cv::Vec3b>(row, col);
 
             uchar B = pixel[0];
