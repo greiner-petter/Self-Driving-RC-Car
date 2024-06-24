@@ -27,3 +27,9 @@ constexpr std::uint32_t REQUIRED_H_LENGTH_INTERSECTION = 17;
 
 constexpr std::size_t INTERSECTION_DEGREE_SIZE = 180;
 constexpr std::size_t INTERSECTION_Y_LENGTH_SIZE = 400;
+
+// measured with chessboard
+constexpr double CM_PER_PIXEL = 5.7 / 11;
+
+// amount of bottom pixels that can be ignored
+constexpr uint32_t PIXEL_UNTIL_CAR_END = 43;

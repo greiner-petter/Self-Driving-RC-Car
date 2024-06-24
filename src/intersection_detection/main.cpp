@@ -168,7 +168,14 @@ int main() {
                     });
                     // we don't have to check, if the original return value is 400 (out of range) since
 
-                    logger->log("Distance in pixels: %lu", (unsigned long) pixel_height);
+                    distance = (uint32_t) (((double) pixel_height - PIXEL_UNTIL_CAR_END) * CM_PER_PIXEL);
+                    if (distance > 10000) {
+#ifdef LOG_NEGATIVE_RESULTS
+                        logger->log("Found a frame but not publishing result due overflow because of negative result!");
+#endif
+                        continue;
+                    }
+                    logger->log("Distance in cm: %lu", (unsigned long) distance);
 
                     // TODO: Implement possible directions
                     uint8_t directions = 6;
