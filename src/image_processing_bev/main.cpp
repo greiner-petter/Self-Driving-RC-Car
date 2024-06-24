@@ -104,9 +104,6 @@ int main() {
                 {
                     case ocMessageId::Camera_Image_Available:
                     {
-                        if(shared_memory->last_written_cam_data_index != 0) {
-                            continue;
-                        }
 
                         // Move to shared memory
 
@@ -120,8 +117,8 @@ int main() {
                             .read<uint32_t>(&frameNumber)
                             .read<ptrdiff_t>(&memoryAdressOffset)
                             .read<size_t>(&dataSize);
-                        
-                        ocCamData* tempCamData = (ocCamData*) ((std::byte *)shared_memory + memoryAdressOffset);
+
+                        ocCamData *tempCamData = &shared_memory->cam_data[shared_memory->last_written_cam_data_index];
 
                         shared_memory->bev_data[0] = (ocBevData) {
                             tempCamData->frame_time,
