@@ -172,7 +172,7 @@ class Helper {
             });
 
             if(right_pointlist.empty() && left_pointlist.empty()) {
-                return cv::Point(200, radius);
+                return cv::Point(200, 400-radius);
             }
 
             if(right_pointlist.empty()) {
