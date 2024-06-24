@@ -155,6 +155,8 @@ int main()
                         cv::imwrite("bev_lines.jpg", matrix);
                     }
 
+                    logger->log("%d", radius);
+
                     auto [front_angle, back_angle] = drive_circle_in_angle(helper.radius_to_angle(radius));
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
