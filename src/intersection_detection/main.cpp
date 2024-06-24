@@ -11,6 +11,10 @@
 using cv::Point2f;
 using cv::Rect;
 using cv::Point;
+using cv::Mat;
+
+using cv::RETR_LIST;
+using cv::CHAIN_APPROX_NONE;
 
 using std::vector;
 
@@ -22,27 +26,6 @@ ocLogger *logger;
 static void signal_handler(int)
 {
     running = false;
-}
-
-static vector<vector<Point>> read_lines(ocPacket &packet) {
-    vector<vector<Point>> lines;
-    ocBufferReader reader = packet.read_from_start();
-    size_t num_contours;
-    reader.read(&num_contours);
-
-    for (size_t i = 0; i < num_contours; ++i) {
-        vector<Point> points;
-        size_t num_points;
-        reader.read(&num_points);
-        for (size_t j = 0; j < num_points; ++j) {
-            Point p;
-            reader.read(&p.x);
-            reader.read(&p.y);
-            points.push_back(p);
-        }
-        lines.push_back(points);
-    }
-    return lines;
 }
 
 static uint32_t distance_between_points_indexed(const vector<Point> &points, size_t &start_index) {
@@ -89,6 +72,24 @@ static void generate_filtered_histogram(Histogram<INTERSECTION_Y_LENGTH_SIZE> &h
     }
 }
 
+static vector<vector<Point>> detect_lines_in_image(Mat &image) {
+    vector<vector<Point>> contours;
+    findContours(image, contours, RETR_LIST, CHAIN_APPROX_NONE);
+
+    vector<vector<Point>> cleaned_data;
+    for (auto &contour : contours) {
+        double len = cv::arcLength(contour, false);
+        if (len < 30) {
+            continue;
+        }
+        vector<Point> reduced_contour;
+        double epsilon = 0.007 * arcLength(contour, false);
+        approxPolyDP(contour, reduced_contour, epsilon, false);
+        cleaned_data.push_back(reduced_contour);
+    }
+    return cleaned_data;
+}
+
 int main() {
     // Catch some signals to allow us to gracefully shut down the process
     signal(SIGINT, signal_handler);
@@ -101,6 +102,7 @@ int main() {
 
     ocIpcSocket *socket = member.get_socket();
     logger = member.get_logger();
+    ocSharedMemory *shared_memory = member.get_shared_memory();
 
     ocPacket ipc_packet;
     ipc_packet.set_message_id(ocMessageId::Subscribe_To_Messages);
@@ -118,7 +120,8 @@ int main() {
                 {
                     static uint32_t distance;
                     distance = 0;
-                    vector<vector<Point>> lines = read_lines(ipc_packet);
+                    Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2].img_buffer);
+                    vector<vector<Point>> lines = detect_lines_in_image(image);
                     static Histogram<INTERSECTION_DEGREE_SIZE> angle_length_hist;
                     angle_length_hist.clear();
                     generate_angle_length_histogram(angle_length_hist, lines);
