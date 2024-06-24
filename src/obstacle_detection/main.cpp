@@ -33,7 +33,7 @@ static double CalcObstacleCoverage(const cv::Mat& camData)
             uchar G = pixel[1];
             uchar R = pixel[2];
 
-            if (G > std::max(R, B) && G >= 24) {
+            if (G > std::max(R, B) && G >= 16) {
                 obstaclePixelCount++;
             }
             totalCount++;
