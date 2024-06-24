@@ -19,7 +19,9 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
-static double CalcObstacleCoverage(const cv::Mat& camData, int32_t width, int32_t height)
+#define THRESHOLD 0.20
+
+static double CalcObstacleCoverage(const cv::Mat& camData)
 {
     int totalCount = 0, obstaclePixelCount = 0;
 
@@ -44,13 +46,13 @@ static double CalcObstacleCoverage(const cv::Mat& camData, int32_t width, int32_
 int main(int argc,char* argv[])
 {
     // Parsing Params
-    bool supportGUI = true;
+    bool verbose = false;
     std::vector<std::string> params{argv, argv+argc};
     for (auto i : params)
     {
-        if (i == "--nogui")
+        if (i == "--verbose" || i == "-v")
         {
-            supportGUI = false;
+            verbose = true;
         }
     }
 
@@ -81,7 +83,20 @@ int main(int argc,char* argv[])
         cv::Mat cam_image((int)cam_data->height, (int)cam_data->width, type);
         cam_image.data = cam_data->img_buffer;
 
-        logger->warn(std::to_string(CalcObstacleCoverage(cam_image, cam_data->width, cam_data->height)).c_str());
+        const double percent = CalcObstacleCoverage(cam_image);
+
+        if (percent >= THRESHOLD)
+        {
+            ocPacket s(ocMessageId::Object_Found);
+            s.clear_and_edit().write(percent);
+            socket->send_packet(s);
+            logger->warn(std::string("Obstacle detected: ") + percent);
+        }
+        if (verbose)
+        {
+            logger->warn(std::to_string(percent));
+        }
+
     }
 
     logger->warn("Obstacle-Detection: Process Shutdown.");
