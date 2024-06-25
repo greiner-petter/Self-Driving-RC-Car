@@ -81,7 +81,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
         if(distance <= min_distance) {
             is_at_crossing = true;
         } else if (distance > max_distance){
-            Driver::drive(speed / 4, steering_front);
+            Driver::drive(speed, steering_front);
             Driver::wait(0.1);
         } else {
             Driver::drive(min_speed, steering_front);

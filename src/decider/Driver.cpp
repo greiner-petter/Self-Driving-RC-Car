@@ -75,7 +75,7 @@ void Driver::drive_forward(){
                 
 
                 struct start_driving_task_t start_driving_task = {
-                    .speed          = speed / 2,
+                    .speed          = speed,
                     .steering_front = steering_front,
                     .steering_rear  = 0,//steering_back,
                     .id             = 1,
