@@ -17,7 +17,7 @@ int main(int argc,char* argv[])
     std::vector<std::string> params{argv, argv+argc};
     for (auto i : params)
     {
-        if (i == "--nogui")
+        if (i == "--nogui" || i == "--headless")
         {
             supportGUI = false;
         }

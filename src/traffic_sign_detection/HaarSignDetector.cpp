@@ -108,14 +108,16 @@ void HaarSignDetector::Run()
 
                 if (distance <= 8) continue;
 
-                // Draw rectangle around the sign
-                cv::rectangle(cam_image, cv::Point(roi.x, roi.y),
+                if (s_SupportGUI)
+                {
+                	// Draw rectangle around the sign
+                	cv::rectangle(cam_image, cv::Point(roi.x, roi.y),
                               cv::Point(roi.x + roi.width, roi.y + roi.height),
                               cv::Scalar(0, 255, 0), 3);
-                // Write Text on the bottom of the rectangle
-                cv::putText(cam_image, "Found " + signClassifier->label + " Sign", cv::Point(roi.x, roi.y + roi.height + 30),
+                	// Write Text on the bottom of the rectangle
+                	cv::putText(cam_image, "Found " + signClassifier->label + " Sign", cv::Point(roi.x, roi.y + roi.height + 30),
                             cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2, cv::LINE_4);
-
+                }
                 s_Logger->log("Found %s Sign in distance: %d", signClassifier->label.c_str(), distance);
                 SendPacket({signClassifier->type, distance});
             }
