@@ -8,7 +8,6 @@ $BINARY_DIR/virtual_car -cc 4 -vm cam &
 $BINARY_DIR/video_viewer &
 $BINARY_DIR/image_processing_bev &
 $BINARY_DIR/traffic_sign_detection &
-$BINARY_DIR/obstacle_detection &
 
 # Add any additional process you want to run here.
 #$BINARY_DIR/<your_process_name> &
