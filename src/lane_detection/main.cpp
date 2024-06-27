@@ -165,7 +165,7 @@ int main()
                         cv::imwrite("bev_lines.jpg", matrix2);
                     }
 
-                    auto [front_angle, back_angle] = drive_circle_in_angle(helper.map(-172));
+                    auto [front_angle, back_angle] = drive_circle_in_angle(helper.radius_to_angle(-172));
 
                     logger->log("Radius: %d, ANGLE: %d, BANGLE: %d", radius, front_angle, back_angle);
 
