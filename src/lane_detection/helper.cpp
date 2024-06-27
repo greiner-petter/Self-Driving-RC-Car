@@ -7,7 +7,7 @@ const int IMAGE_WIDTH = 400;
 const int COLOR_DIFFERENCE = 5;
 
 class InvalidPoint : public std::exception {};
-class InvalidCircle : public std::exception {};
+//class InvalidCircle : public std::exception {};
 class UnfittingLaneWidth : public std::exception {};
 
 class Helper {
@@ -41,7 +41,9 @@ class Helper {
                 std::vector<cv::Point> point_list = get_pointlist_of_radius(radius);
 
                 if(previous_center != nullptr) {
-                    previous_center_radian = int(std::atan((400 - previous_center->y) / (previous_center->x - 200)) * 100);
+                    float dy = previous_center->y - 400;
+                    float dx = previous_center->x - 200;
+                    previous_center_radian = int(std::atan2(dx, dy) * 100);
                 }
                 
                 try {
@@ -54,7 +56,7 @@ class Helper {
                 } catch(const UnfittingLaneWidth& e) {} // Just an unfitting lane width so no need to worry abt an actual error
             }
 
-            cv::Point final_center = cv::Point(200,400);
+            /*cv::Point final_center = cv::Point(200,400);
             int final_radius = 0;
 
             try {
@@ -62,7 +64,7 @@ class Helper {
                 std::tie(final_center, final_radius) = val;
             } catch(const InvalidCircle& e) {} // Just an unfitting lane width so no need to worry abt an actual error
             
-            cv::circle(*drawMatrix, final_center, final_radius, cv::Scalar(255,0,0,1), 1);
+            cv::circle(*drawMatrix, final_center, final_radius, cv::Scalar(255,0,0,1), 1);*/
 
             for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
                 cv::circle(*drawMatrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1);
@@ -78,6 +80,12 @@ class Helper {
                 }
             #endif
 
+            cv::Point final_center;
+            int final_radius;
+
+            std::tie(final_center, final_radius) = loop_through_circles(center_point_list);
+
+            cv::circle(*this->drawMatrix, final_center, abs(final_radius), cv::Scalar(200, 110, 50, 255), 5);
 
             return final_radius * (final_center.x < 200 ? -1 : 1);
         }
@@ -139,7 +147,7 @@ class Helper {
                 int color2 = matrix->at<uint8_t>(y2, x2);
                 int color3 = matrix->at<uint8_t>(y3, x3);
 
-                if (color > 240) {
+                if (color > 235) {
                     continue;
                 }
 
@@ -163,14 +171,18 @@ class Helper {
 
         cv::Point get_street_middle_from_points(std::vector<cv::Point> point_list, int previous_center, int radius) {
             if (previous_center == -1) {
-                previous_center = 1.57;
-            }
-
-            for(cv::Point point : point_list) {
-                cv::circle(*this->drawMatrix, point, 20, cv::Scalar(0,255,0,0), 1);
+                previous_center = 3.14;
             }
                 
-            int x = 200 + round(std::cos(previous_center) * radius);
+            int x = 200 + round(std::sin(previous_center / 100) * radius);
+            int y = 400 + round(std::cos(previous_center / 100) * radius);
+
+            cv::circle(*this->drawMatrix, cv::Point(int(x), int(y)), 10, cv::Scalar(255,255,255,0), 2); // white
+
+
+            for(cv::Point point : point_list) {
+                cv::circle(*this->drawMatrix, point, 20, cv::Scalar(0,255,0,0), 1); //green
+            }
 
             std::vector<cv::Point> right_pointlist, left_pointlist;
 
@@ -183,7 +195,7 @@ class Helper {
             }
 
             for(cv::Point left : left_pointlist) {
-                cv::circle(*this->drawMatrix, left, 20, cv::Scalar(0,0,255,0), 1);
+                cv::circle(*this->drawMatrix, left, 20, cv::Scalar(0,0,255,0), 1); //red
             }
 
             std::sort(right_pointlist.begin(), right_pointlist.end(), [&](const cv::Point& a, const cv::Point& b) {
@@ -195,7 +207,7 @@ class Helper {
             });
 
             if(right_pointlist.empty() && left_pointlist.empty()) {
-                return cv::Point(200, 400-radius);
+                throw UnfittingLaneWidth();
             }
 
             if(right_pointlist.empty()) {
@@ -233,7 +245,7 @@ class Helper {
             return point_list;
         }
 
-        std::pair<cv::Point, int> calculate_circle_center_radius(cv::Point p1, cv::Point p2, cv::Point fixed_point) {
+        /*std::pair<cv::Point, int> calculate_circle_center_radius(cv::Point p1, cv::Point p2, cv::Point fixed_point) {
             float ma;
             float mb;
 
@@ -265,9 +277,9 @@ class Helper {
             int radius = std::sqrt(std::pow(cx - p1.x, 2) + std::pow(cy - p1.y, 2));
 
             return std::pair(cv::Point(cx, cy), radius);
-        }
+        }*/
 
-        std::pair<cv::Point, int> fit_circle_with_fixed_point_ransac(std::vector<cv::Point> points, cv::Point fixed_point) {
+        /*std::pair<cv::Point, int> fit_circle_with_fixed_point_ransac(std::vector<cv::Point> points, cv::Point fixed_point) {
             const int MAX_ITERATIONS = 1000;
             const float DISTANCE_THRESHOLD = 1;
             const float MIN_INLIERS_RATIO = 0.5;
@@ -361,5 +373,34 @@ class Helper {
             float r = std::sqrt(std::pow(h - x_fixed, 2) + std::pow(k - y_fixed, 2));
 
             return std::make_tuple(static_cast<int>(h), static_cast<int>(k), static_cast<int>(r));
+        }*/
+
+        std::tuple<cv::Point, int> loop_through_circles(std::vector<cv::Point> points) {
+            int best_radius = 100000000;
+            cv::Point best_center = cv::Point(0,0);
+            int best_dist = 100000000;
+
+            for(float ra = -5; ra < 5; ra+= 0.1) {
+                if (std::abs(ra) < 11) {
+                    continue;
+                }
+
+                int r = int(std::pow(ra, 5));
+                cv::Point center = cv::Point(200+r, 400);
+
+                double dist = 0;
+
+                for (cv::Point point : points) {
+                    dist += abs(calc_dist(center, point) - abs(r));
+                }
+
+                if (dist < best_dist) {
+                    best_dist = dist;
+                    best_radius = r;
+                    best_center = center;
+                }
+            }
+
+            return std::make_tuple(best_center, best_radius);
         }
 };
