@@ -33,7 +33,7 @@ class Helper {
             const int FINAL_RADIUS = 250;
 
             cv::Point* previous_center = nullptr;
-            int previous_center_radian = -1;
+            float previous_center_radian = -1;
 
             std::vector<cv::Point> center_point_list;
 
@@ -43,7 +43,7 @@ class Helper {
                 if(previous_center != nullptr) {
                     float dy = previous_center->y - 400;
                     float dx = previous_center->x - 200;
-                    previous_center_radian = int(std::atan2(dx, dy) * 100);
+                    previous_center_radian = std::atan2(dx, dy);
                 }
                 
                 try {
@@ -52,7 +52,7 @@ class Helper {
                     center_point_list.push_back(point);
                     previous_center = &point;
 
-                    cv::circle(*drawMatrix, point, 2, cv::Scalar(0, 255, 255, 1), 2);
+                    cv::circle(*drawMatrix, point, 2, cv::Scalar(0, 255, 255, 1), 2); //gelb
                 } catch(const UnfittingLaneWidth& e) {} // Just an unfitting lane width so no need to worry abt an actual error
             }
 
@@ -67,7 +67,7 @@ class Helper {
             cv::circle(*drawMatrix, final_center, final_radius, cv::Scalar(255,0,0,1), 1);*/
 
             for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
-                cv::circle(*drawMatrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1);
+                cv::circle(*drawMatrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1); //weiße radien kreise
             }
 
             #ifdef DEBUG
@@ -85,9 +85,9 @@ class Helper {
 
             std::tie(final_center, final_radius) = loop_through_circles(center_point_list);
 
-            cv::circle(*this->drawMatrix, final_center, abs(final_radius), cv::Scalar(200, 110, 50, 255), 5);
+            cv::circle(*this->drawMatrix, final_center, abs(final_radius), cv::Scalar(200, 110, 50, 255), 5); //end radius kreis
 
-            return final_radius * (final_center.x < 200 ? -1 : 1);
+            return final_radius;
         }
 
         double radius_to_angle(float radius) {
@@ -169,13 +169,13 @@ class Helper {
             throw InvalidPoint();
         }
 
-        cv::Point get_street_middle_from_points(std::vector<cv::Point> point_list, int previous_center, int radius) {
+        cv::Point get_street_middle_from_points(std::vector<cv::Point> point_list, float previous_center, int radius) {
             if (previous_center == -1) {
                 previous_center = 3.14;
             }
                 
-            int x = 200 + round(std::sin(previous_center / 100) * radius);
-            int y = 400 + round(std::cos(previous_center / 100) * radius);
+            int x = 200 + round(std::sin(previous_center) * radius);
+            int y = 400 + round(std::cos(previous_center) * radius);
 
             cv::circle(*this->drawMatrix, cv::Point(int(x), int(y)), 10, cv::Scalar(255,255,255,0), 2); // white
 
@@ -223,7 +223,7 @@ class Helper {
             if(dist < 70) {
                 return cv::Point((right_pointlist[0].x + left_pointlist[0].x) / 2, (right_pointlist[0].y + left_pointlist[0].y) / 2);
             } else if(dist >= 70 && dist <= 130) {
-                return cv::Point((right_pointlist[0].x + left_pointlist[0].x) / 4, (right_pointlist[0].y + left_pointlist[0].y) / 4);
+                return cv::Point((3*right_pointlist[0].x + left_pointlist[0].x) / 4, (3*right_pointlist[0].y + left_pointlist[0].y) / 4);
             } else {
                 throw UnfittingLaneWidth();
             }
@@ -381,7 +381,7 @@ class Helper {
             int best_dist = 100000000;
 
             for(float ra = -5; ra < 5; ra+= 0.1) {
-                if (std::abs(ra) < 11) {
+                if (std::abs(ra) < 1.1) {
                     continue;
                 }
 

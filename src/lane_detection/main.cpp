@@ -155,7 +155,7 @@ int main()
 
                     int radius = helper.calculate_radius(&matrix, &matrix2);
                    
-                    int speed = std::abs(radius) / 10;
+                    int speed = 10;//std::abs(radius) / 10;
                     if(speed < 10) {
                         speed = 10;
                     }
