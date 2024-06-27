@@ -163,6 +163,10 @@ class Helper {
                 previous_center = 1.57;
             }
 
+            for(cv::Point point : point_list) {
+                cv::circle(*this->matrix, point, 20, (0,255,0,0), 1);
+            }
+                
             int x = 200 + round(std::cos(previous_center) * radius);
 
             std::vector<cv::Point> right_pointlist, left_pointlist;
@@ -173,6 +177,10 @@ class Helper {
                 } else {
                     left_pointlist.push_back(point);
                 }
+            }
+
+            for(cv::Point left : left_pointlist) {
+                cv::circle(*this->matrix, left, 20, (0,0,255,0), 1);
             }
 
             std::sort(right_pointlist.begin(), right_pointlist.end(), [&](const cv::Point& a, const cv::Point& b) {
