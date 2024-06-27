@@ -142,13 +142,18 @@ int main()
             {
                 case ocMessageId::Lines_Available:
                 {
-                    cv::Mat matrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[0].img_buffer);
+                    cv::Mat camImageMatrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[0].img_buffer);
+                    cv::Mat matrix;
+                    cv::Mat matrix2;
+
+                    camImageMatrix.copyTo(matrix);
+                    matrix.copyTo(matrix2);
 
                     if(std::getenv("CAR_ENV") != NULL) {
                         cv::imwrite("bev.jpg", matrix);
                     } 
 
-                    int radius = helper.calculate_radius(&matrix);
+                    int radius = helper.calculate_radius(&matrix, &matrix2);
                    
                     int speed = std::abs(radius) / 10;
                     if(speed < 10) {
@@ -158,7 +163,7 @@ int main()
                     speed = std::clamp(speed, 0, 30);
 
                     if(std::getenv("CAR_ENV") != NULL) {
-                        cv::imwrite("bev_lines.jpg", matrix);
+                        cv::imwrite("bev_lines.jpg", matrix2);
                     }
 
                     logger->log("%d", radius);

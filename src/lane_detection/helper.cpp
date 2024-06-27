@@ -4,6 +4,7 @@
 
 const int IMAGE_HEIGHT = 400;
 const int IMAGE_WIDTH = 400;
+const int COLOR_DIFFERENCE = 5;
 
 class InvalidPoint : public std::exception {};
 class InvalidCircle : public std::exception {};
@@ -12,6 +13,7 @@ class UnfittingLaneWidth : public std::exception {};
 class Helper {
     public:
         cv::Mat* matrix;
+        cv::Mat* drawMatrix;
 
         double calc_dist(cv::Point p1, cv::Point p2) {
             return calc_dist(std::pair(p1.x, p1.y), std::pair(p2.x, p2.y));
@@ -21,10 +23,11 @@ class Helper {
             return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
         }
 
-        int calculate_radius(cv::Mat* matrix) {
+        int calculate_radius(cv::Mat* matrix, cv::Mat* drawMatrix) {
             this->matrix = matrix;
+            this->drawMatrix = drawMatrix;
 
-            cv::cvtColor(*this->matrix, *this->matrix, cv::COLOR_GRAY2RGB);
+            cv::cvtColor(*this->drawMatrix, *this->drawMatrix, cv::COLOR_GRAY2RGB);
             
             const int INITIAL_RADIUS = 50;
             const int FINAL_RADIUS = 250;
@@ -47,7 +50,7 @@ class Helper {
                     center_point_list.push_back(point);
                     previous_center = &point;
 
-                    cv::circle(*matrix, point, 2, cv::Scalar(0, 255, 255, 1), 2);
+                    cv::circle(*drawMatrix, point, 2, cv::Scalar(0, 255, 255, 1), 2);
                 } catch(const UnfittingLaneWidth& e) {} // Just an unfitting lane width so no need to worry abt an actual error
             }
 
@@ -59,14 +62,14 @@ class Helper {
                 std::tie(final_center, final_radius) = val;
             } catch(const InvalidCircle& e) {} // Just an unfitting lane width so no need to worry abt an actual error
             
-            cv::circle(*matrix, final_center, final_radius, cv::Scalar(255,0,0,1), 1);
+            cv::circle(*drawMatrix, final_center, final_radius, cv::Scalar(255,0,0,1), 1);
 
             for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
-                cv::circle(*matrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1);
+                cv::circle(*drawMatrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1);
             }
 
             #ifdef DEBUG
-                cv::imshow("Lane Detection", *matrix);
+                cv::imshow("Lane Detection", *drawMatrix);
                 char key = cv::waitKey(30);
                 if (key == 'q')
                 {
@@ -108,17 +111,17 @@ class Helper {
         cv::Point check_for_valid_point(int direction, int radius, float looking_pi) {
             std::pair<int, int> pair[2];
 
-            for (double pi = 0; pi < 1; pi += 0.01) {
-                pi = looking_pi + pi * direction;
+            for (double pi = 0; pi < 1; pi += 0.001) {
+                double offset = looking_pi + pi * direction;
 
-                int x = 200 + round(cos(pi) * radius);
-                int y = 400 - round(sin(pi) * radius);
+                int x = 200 + round(cos(offset) * radius);
+                int y = 400 - round(sin(offset) * radius);
 
-                int x2 = 200 + round(cos(pi+0.01 * direction) * radius);
-                int y2 = 400 - round(sin(pi+0.01 * direction) * radius);
+                int x2 = 200 + round(cos(offset+0.01 * direction) * radius);
+                int y2 = 400 - round(sin(offset+0.01 * direction) * radius);
 
-                int x3 = 200 + round(cos(pi+0.03 * direction) * radius);
-                int y3 = 400 - round(sin(pi+0.03 * direction) * radius);
+                int x3 = 200 + round(cos(offset+0.03 * direction) * radius);
+                int y3 = 400 - round(sin(offset+0.03 * direction) * radius);
 
                 if (x >= IMAGE_WIDTH || x < 0 || y >= IMAGE_HEIGHT || y < 0) {
                     continue;
@@ -136,20 +139,20 @@ class Helper {
                 int color2 = matrix->at<uint8_t>(y2, x2);
                 int color3 = matrix->at<uint8_t>(y3, x3);
 
-                if (color > 235) {
+                if (color > 240) {
                     continue;
                 }
 
-                if ((color2 - color) * direction > 5 && (color3 - color) * direction > 5) {
+                if ((color2 - color) * direction > COLOR_DIFFERENCE && (color3 - color) * direction > COLOR_DIFFERENCE) {
                     pair[0] = std::pair(x,y);
                 }
 
-                if((color - color2) * direction > 5 && pair[0].first != 0 && pair[0].second != 0 && (color - color3) * direction > 5) {
+                if((color - color2) * direction > COLOR_DIFFERENCE && pair[0].first != 0 && pair[0].second != 0 && (color - color3) * direction > COLOR_DIFFERENCE) {
                     pair[1] = std::pair(x,y);
 
                     double dist = calc_dist(pair[0], pair[1]);
 
-                    if(dist <= 10) {
+                    if(dist <= 10.0f) {
                         return cv::Point((pair[0].first + pair[1].first) / 2, (pair[0].second + pair[1].second) / 2);
                     }
                 }
@@ -164,7 +167,7 @@ class Helper {
             }
 
             for(cv::Point point : point_list) {
-                cv::circle(*this->matrix, point, 20, (0,255,0,0), 1);
+                cv::circle(*this->drawMatrix, point, 20, cv::Scalar(0,255,0,0), 1);
             }
                 
             int x = 200 + round(std::cos(previous_center) * radius);
@@ -180,7 +183,7 @@ class Helper {
             }
 
             for(cv::Point left : left_pointlist) {
-                cv::circle(*this->matrix, left, 20, (0,0,255,0), 1);
+                cv::circle(*this->drawMatrix, left, 20, cv::Scalar(0,0,255,0), 1);
             }
 
             std::sort(right_pointlist.begin(), right_pointlist.end(), [&](const cv::Point& a, const cv::Point& b) {
@@ -217,7 +220,7 @@ class Helper {
         std::vector<cv::Point> get_pointlist_of_radius(int radius) {
             std::vector<cv::Point> point_list;
 
-            for(float pi = 0; pi < 3.14; pi += 0.01f) {
+            for(float pi = 0; pi < 3.14; pi += 0.001f) {
                 try {
                     cv::Point point = check_for_valid_point(1, radius, pi);
 
