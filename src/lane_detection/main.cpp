@@ -97,7 +97,6 @@ std::pair<int, int> drive_circle_in_angle(float angle) {
         back_angle = -pos_result.second;
     }
 
-    logger->log("avg: %f  --  fr: %f  --  ba: %f", angle, front_angle, back_angle);
     return std::pair<int, int>(front_angle+ANGLE_OFFSET_FRONT, back_angle);
 }
 
@@ -154,8 +153,6 @@ int main()
                     } 
 
                     int radius = helper.calculate_radius(&matrix, &matrix2);
-
-                    logger->log("Radius: %d", radius);
                    
                     int speed = 30;//std::abs(radius) / 10;
                     if(speed < 10) {
@@ -169,6 +166,8 @@ int main()
                     }
 
                     auto [front_angle, back_angle] = drive_circle_in_angle(helper.radius_to_angle(radius));
+
+                    logger->log("Radius: %d, ANGLE: %d, BANGLE: %d", radius, front_angle, back_angle);
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
