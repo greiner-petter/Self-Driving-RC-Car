@@ -38,22 +38,22 @@ class Helper {
             for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
                 std::vector<cv::Point> point_list = get_pointlist_of_radius(radius);
 
-                /*if(previous_center != nullptr) {
+                if(previous_center != nullptr) {
                     float dy = previous_center->y - 400;
                     float dx = previous_center->x - 200;
                     previous_center_radian = std::atan2(dx, dy);
-                }*/
+                }
                 
-                //cv::Point point = get_street_middle_from_points(point_list, previous_center_radian, radius);
+                cv::Point point = get_street_middle_from_points(point_list, previous_center_radian, radius);
 
-                /*if(point.x != -1) {
+                if(point.x != -1) {
                     center_point_list.push_back(point);
                     previous_center = &point;
 
                     if(std::getenv("CAR_ENV") != NULL) {
                         cv::circle(*drawMatrix, point, 2, cv::Scalar(0, 255, 255, 1), 2); //gelb
                     }
-                }*/
+                }
             }
 
             if(std::getenv("CAR_ENV") != NULL) {
@@ -75,13 +75,13 @@ class Helper {
             cv::Point final_center;
             int final_radius;
 
-            //TODO: std::tie(final_center, final_radius) = loop_through_circles(center_point_list);
+            std::tie(final_center, final_radius) = loop_through_circles(center_point_list);
 
             if(std::getenv("CAR_ENV") != NULL) {
                 cv::circle(*this->drawMatrix, final_center, abs(final_radius), cv::Scalar(200, 110, 50, 255), 5); //end radius kreis
             }
 
-            return 10;//TODO: //final_radius;
+            return final_radius;
         }
 
         double radius_to_angle(float radius) {
