@@ -157,7 +157,7 @@ int main()
 
                     int radius = helper.calculate_radius(&camImageMatrix, &matrix2);
                    
-                    int speed = 10;//std::abs(radius) / 10;
+                    int speed = 30;//std::abs(radius) / 10;
                     if(speed < 10) {
                         speed = 10;
                     }
