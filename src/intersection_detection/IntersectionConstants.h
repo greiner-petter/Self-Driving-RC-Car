@@ -20,7 +20,7 @@
 
 // required positive images in the last 8 frames to count
 // result as actual positive and publish data
-#define REQUIRED_CONSEC 5
+#define REQUIRED_CONSEC 3
 
 
 constexpr std::uint32_t REQUIRED_H_LENGTH_INTERSECTION = 13;
