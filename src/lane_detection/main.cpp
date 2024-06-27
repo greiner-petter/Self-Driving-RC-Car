@@ -155,8 +155,7 @@ int main()
                         cv::imwrite("bev.jpg", matrix);
                     } 
 
-                    int radius = 10;
-                    helper.calculate_radius(&camImageMatrix, &matrix2);
+                    int radius = helper.calculate_radius(&camImageMatrix, &matrix2);
                    
                     int speed = 10;//std::abs(radius) / 10;
                     if(speed < 10) {
