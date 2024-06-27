@@ -75,13 +75,13 @@ class Helper {
             cv::Point final_center;
             int final_radius;
 
-            std::tie(final_center, final_radius) = loop_through_circles(center_point_list);
+            //std::tie(final_center, final_radius) = loop_through_circles(center_point_list);
 
             if(std::getenv("CAR_ENV") != NULL) {
                 cv::circle(*this->drawMatrix, final_center, abs(final_radius), cv::Scalar(200, 110, 50, 255), 5); //end radius kreis
             }
 
-            return final_radius;
+            return 10;//final_radius;
         }
 
         double radius_to_angle(float radius) {
