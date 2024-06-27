@@ -51,11 +51,12 @@ class Helper {
                 } catch(const UnfittingLaneWidth& e) {} // Just an unfitting lane width so no need to worry abt an actual error
             }
 
-            cv::Point final_center;
-            int final_radius;
+            cv::Point final_center = cv::Point(200,400);
+            int final_radius = 0;
 
             try {
-                std::tie(final_center, final_radius) = fit_circle_with_fixed_point_ransac(center_point_list, cv::Point(200, 400));
+                auto val = fit_circle_with_fixed_point_ransac(center_point_list, cv::Point(200, 400));
+                std::tie(final_center, final_radius) = val;
             } catch(const InvalidCircle& e) {} // Just an unfitting lane width so no need to worry abt an actual error
             
             cv::circle(*matrix, final_center, final_radius, cv::Scalar(255,0,0,1), 1);
@@ -63,6 +64,15 @@ class Helper {
             for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
                 cv::circle(*matrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1);
             }
+
+            cv::imshow("Lane Detection", *matrix);
+            char key = cv::waitKey(30);
+            if (key == 'q')
+            {
+                cv::destroyAllWindows();
+                return 0;
+            }
+
 
             return final_radius * (final_center.x < 200 ? -1 : 1);
         }
@@ -80,9 +90,9 @@ class Helper {
     private:
         void get_two_random_element_indexes (const int size, int &first, int &second) {
             // pick a random element
-            first = rand() / RAND_MAX * (size - 1);
+            first = ((float)rand()) / RAND_MAX * (size - 1);
             // pick a random element from what's left (there is one fewer to choose from)...
-            second = rand() / RAND_MAX * (size - 1);
+            second = ((float)rand()) / RAND_MAX * (size - 1);
             // ...and adjust second choice to take into account the first choice
             if (second == first && second != 0)
             {
@@ -197,7 +207,7 @@ class Helper {
         std::vector<cv::Point> get_pointlist_of_radius(int radius) {
             std::vector<cv::Point> point_list;
 
-            for(float pi = 0; pi < 3.14; pi += 0.01) {
+            for(float pi = 0; pi < 3.14; pi += 0.01f) {
                 try {
                     cv::Point point = check_for_valid_point(1, radius, pi);
 
@@ -215,13 +225,13 @@ class Helper {
             float mb;
 
             if(p2.x != p1.x && p2.y != p1.y) {
-                ma = (p2.y - p1.y) / (p2.x - p1.x);
+                ma = ((float)(p2.y - p1.y)) / (p2.x - p1.x);
             } else {
                 ma = std::numeric_limits<float>::infinity();
             }
 
             if(fixed_point.x != p2.x && fixed_point.y != p2.y) {
-                mb = (fixed_point.y - p2.y) / (fixed_point.x - p2.x);
+                mb = ((float)(fixed_point.y - p2.y)) / (fixed_point.x - p2.x);
             } else {
                 mb = std::numeric_limits<float>::infinity();
             }
@@ -287,7 +297,7 @@ class Helper {
                     }
                 }
 
-                if(inliers.size() > MIN_INLIERS_RATIO * num_points && inliers.size() > best_inliners.size()) {
+                if(inliers.size() > MIN_INLIERS_RATIO * num_points && inliers.size() > best_inliners.size()) { // TODO: Zu wenig inliers
                     best_circle = &circle_center_radius;
                     best_inliners = inliers;
                 }

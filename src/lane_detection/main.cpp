@@ -15,6 +15,8 @@
 
 #define DRAW_LINE_SAMPLES
 
+//#define DEBUG
+
 //#define DEBUG_WINDOW
 
 
@@ -38,7 +40,11 @@ static bool running = true;
 bool onStreet = true;
 int onStreetCount = 0;
 
-int ANGLE_OFFSET_FRONT = 21; // Positive to right, negative to left
+#define ANGLE_OFFSET_FRONT 21
+
+#ifdef DEBUG
+    #define ANGLE_OFFSET_FRONT 0 // Positive to right, negative to left
+#endif
 
 static void signal_handler(int)
 {
@@ -145,7 +151,7 @@ int main()
                     int radius = helper.calculate_radius(&matrix);
                    
                     int speed = std::abs(radius) / 10;
-                    if(speed == 0) {
+                    if(speed < 10) {
                         speed = 10;
                     }
 
