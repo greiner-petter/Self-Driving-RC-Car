@@ -44,7 +44,7 @@ class Helper {
                     previous_center_radian = std::atan2(dx, dy);
                 }
                 
-                cv::Point point = get_street_middle_from_points(point_list, previous_center_radian, radius);
+                //cv::Point point = get_street_middle_from_points(point_list, previous_center_radian, radius);
 
                 /*if(point.x != -1) {
                     center_point_list.push_back(point);
