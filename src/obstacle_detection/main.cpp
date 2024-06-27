@@ -19,7 +19,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
-#define THRESHOLD 0.16
+#define THRESHOLD 0.165
 
 static double CalcObstacleCoverage(const cv::Mat& camData)
 {
@@ -33,7 +33,8 @@ static double CalcObstacleCoverage(const cv::Mat& camData)
             uchar G = pixel[1];
             uchar R = pixel[2];
 
-            if ((std::abs((int)G - (int)R)>8 || std::abs((int)G - (int)B)>8) && G >= 12) {
+            bool diff = (std::abs((int)G - (int)R)>8 || std::abs((int)G - (int)B)>8);
+            if (G > std::max(R, B) && diff && G >= 12) {
                 obstaclePixelCount++;
             }
             totalCount++;
