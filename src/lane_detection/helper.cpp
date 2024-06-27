@@ -36,7 +36,7 @@ class Helper {
             std::vector<cv::Point> center_point_list;
 
             for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
-                std::vector<cv::Point> point_list = get_pointlist_of_radius(radius);
+                //std::vector<cv::Point> point_list = get_pointlist_of_radius(radius);
 
                 /*if(previous_center != nullptr) {
                     float dy = previous_center->y - 400;
