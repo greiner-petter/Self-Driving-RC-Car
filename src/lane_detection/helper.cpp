@@ -94,6 +94,11 @@ class Helper {
             }
         }
 
+        double map(float X) {
+            //3125 Y = (X-A)/(B-A) * (D-C) + C
+            return (X-0)/(3125-0) * (65-0) + 0;
+        }
+
     private:
         cv::Point check_for_valid_point(int direction, int radius, float looking_pi) {
             std::pair<int, int> pair[2];
