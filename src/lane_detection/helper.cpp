@@ -38,11 +38,11 @@ class Helper {
             for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
                 std::vector<cv::Point> point_list = get_pointlist_of_radius(radius);
 
-                if(previous_center != nullptr) {
+                /*if(previous_center != nullptr) {
                     float dy = previous_center->y - 400;
                     float dx = previous_center->x - 200;
                     previous_center_radian = std::atan2(dx, dy);
-                }
+                }*/
                 
                 //cv::Point point = get_street_middle_from_points(point_list, previous_center_radian, radius);
 
