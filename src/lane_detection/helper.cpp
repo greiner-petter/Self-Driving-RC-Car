@@ -242,7 +242,7 @@ class Helper {
                 }
 
                 int r = int(std::pow(ra, 5));
-                cv::Point center = cv::Point(200+r, 400);
+                cv::Point center = cv::Point(200+r, 450);
 
                 double dist = 0;
 
