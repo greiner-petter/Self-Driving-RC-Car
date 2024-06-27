@@ -123,7 +123,7 @@ int main() {
                     reader.read(&bit);
                     static uint32_t distance;
                     distance = 0;
-                    Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2].img_buffer);
+                    Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2 | bit].img_buffer);
                     vector<vector<Point>> lines = detect_lines_in_image(image);
                     static Histogram<INTERSECTION_DEGREE_SIZE> angle_length_hist;
                     angle_length_hist.clear();

@@ -150,7 +150,7 @@ int main() {
                         Mat src(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
 
                         Mat dst_lane(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
-                        Mat dst_intersection(400, 400, CV_8UC1, shared_memory->bev_data[2].img_buffer);
+                        Mat dst_intersection(400, 400, CV_8UC1, shared_memory->bev_data[2 | write_bit].img_buffer);
 
                         // intersection needs to be calculated first since lane writes to itself!
                         toBirdsEyeView(src, dst_intersection, M_intersection_detection);
