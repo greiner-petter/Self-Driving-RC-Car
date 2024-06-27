@@ -147,7 +147,9 @@ int main()
                     cv::Mat matrix2;
 
                     camImageMatrix.copyTo(matrix);
-                    matrix.copyTo(matrix2);
+                    if(std::getenv("CAR_ENV") != NULL) {
+                        matrix.copyTo(matrix2);
+                    }
 
                     if(std::getenv("CAR_ENV") != NULL) {
                         cv::imwrite("bev.jpg", matrix);
@@ -165,8 +167,6 @@ int main()
                     if(std::getenv("CAR_ENV") != NULL) {
                         cv::imwrite("bev_lines.jpg", matrix2);
                     }
-
-                    logger->log("%d", radius);
 
                     auto [front_angle, back_angle] = drive_circle_in_angle(helper.radius_to_angle(radius));
 

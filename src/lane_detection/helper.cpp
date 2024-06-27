@@ -27,7 +27,9 @@ class Helper {
             this->matrix = matrix;
             this->drawMatrix = drawMatrix;
 
-            cv::cvtColor(*this->drawMatrix, *this->drawMatrix, cv::COLOR_GRAY2RGB);
+            if(std::getenv("CAR_ENV") != NULL) {
+                cv::cvtColor(*this->drawMatrix, *this->drawMatrix, cv::COLOR_GRAY2RGB);
+            }
             
             const int INITIAL_RADIUS = 50;
             const int FINAL_RADIUS = 250;
@@ -52,22 +54,16 @@ class Helper {
                     center_point_list.push_back(point);
                     previous_center = &point;
 
-                    cv::circle(*drawMatrix, point, 2, cv::Scalar(0, 255, 255, 1), 2); //gelb
+                    if(std::getenv("CAR_ENV") != NULL) {
+                        cv::circle(*drawMatrix, point, 2, cv::Scalar(0, 255, 255, 1), 2); //gelb
+                    }
                 } catch(const UnfittingLaneWidth& e) {} // Just an unfitting lane width so no need to worry abt an actual error
             }
 
-            /*cv::Point final_center = cv::Point(200,400);
-            int final_radius = 0;
-
-            try {
-                auto val = fit_circle_with_fixed_point_ransac(center_point_list, cv::Point(200, 400));
-                std::tie(final_center, final_radius) = val;
-            } catch(const InvalidCircle& e) {} // Just an unfitting lane width so no need to worry abt an actual error
-            
-            cv::circle(*drawMatrix, final_center, final_radius, cv::Scalar(255,0,0,1), 1);*/
-
-            for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
-                cv::circle(*drawMatrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1); //weiße radien kreise
+            if(std::getenv("CAR_ENV") != NULL) {
+                for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
+                    cv::circle(*drawMatrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1); //weiße radien kreise
+                }
             }
 
             #ifdef DEBUG
@@ -85,7 +81,9 @@ class Helper {
 
             std::tie(final_center, final_radius) = loop_through_circles(center_point_list);
 
-            cv::circle(*this->drawMatrix, final_center, abs(final_radius), cv::Scalar(200, 110, 50, 255), 5); //end radius kreis
+            if(std::getenv("CAR_ENV") != NULL) {
+                cv::circle(*this->drawMatrix, final_center, abs(final_radius), cv::Scalar(200, 110, 50, 255), 5); //end radius kreis
+            }
 
             return final_radius;
         }
@@ -101,21 +99,6 @@ class Helper {
         }
 
     private:
-        void get_two_random_element_indexes (const int size, int &first, int &second) {
-            // pick a random element
-            first = ((float)rand()) / RAND_MAX * (size - 1);
-            // pick a random element from what's left (there is one fewer to choose from)...
-            second = ((float)rand()) / RAND_MAX * (size - 1);
-            // ...and adjust second choice to take into account the first choice
-            if (second == first && second != 0)
-            {
-                --second;
-            } else if (second == first && second == 0)
-            {
-                ++second;
-            }
-        }
-
         cv::Point check_for_valid_point(int direction, int radius, float looking_pi) {
             std::pair<int, int> pair[2];
 
@@ -177,11 +160,13 @@ class Helper {
             int x = 200 + round(std::sin(previous_center) * radius);
             int y = 400 + round(std::cos(previous_center) * radius);
 
-            cv::circle(*this->drawMatrix, cv::Point(int(x), int(y)), 10, cv::Scalar(255,255,255,0), 2); // white
+            if(std::getenv("CAR_ENV") != NULL) {
+                cv::circle(*this->drawMatrix, cv::Point(int(x), int(y)), 10, cv::Scalar(255,255,255,0), 2); // white
 
 
-            for(cv::Point point : point_list) {
-                cv::circle(*this->drawMatrix, point, 20, cv::Scalar(0,255,0,0), 1); //green
+                for(cv::Point point : point_list) {
+                    cv::circle(*this->drawMatrix, point, 20, cv::Scalar(0,255,0,0), 1); //green
+                }
             }
 
             std::vector<cv::Point> right_pointlist, left_pointlist;
@@ -194,8 +179,10 @@ class Helper {
                 }
             }
 
-            for(cv::Point left : left_pointlist) {
-                cv::circle(*this->drawMatrix, left, 20, cv::Scalar(0,0,255,0), 1); //red
+            if(std::getenv("CAR_ENV") != NULL) {
+                for(cv::Point left : left_pointlist) {
+                    cv::circle(*this->drawMatrix, left, 20, cv::Scalar(0,0,255,0), 1); //red
+                }
             }
 
             std::sort(right_pointlist.begin(), right_pointlist.end(), [&](const cv::Point& a, const cv::Point& b) {
@@ -245,140 +232,10 @@ class Helper {
             return point_list;
         }
 
-        /*std::pair<cv::Point, int> calculate_circle_center_radius(cv::Point p1, cv::Point p2, cv::Point fixed_point) {
-            float ma;
-            float mb;
-
-            if(p2.x != p1.x && p2.y != p1.y) {
-                ma = ((float)(p2.y - p1.y)) / (p2.x - p1.x);
-            } else {
-                ma = std::numeric_limits<float>::infinity();
-            }
-
-            if(fixed_point.x != p2.x && fixed_point.y != p2.y) {
-                mb = ((float)(fixed_point.y - p2.y)) / (fixed_point.x - p2.x);
-            } else {
-                mb = std::numeric_limits<float>::infinity();
-            }
-
-            if(ma == mb) {
-                throw InvalidCircle();
-            }
-
-            int cx = (ma * mb * (p1.y - fixed_point.y) + mb * (p1.x + p2.x) - ma * (p2.x + fixed_point.x)) / (2 * (mb - ma));
-            int cy;
-
-            if(ma != std::numeric_limits<float>::infinity()) {
-                cy = -1 * (cx - (p1.x + p2.x) / 2) / ma + (p1.y + p2.y) / 2;
-            } else {
-                cy = (cx - (p2.x + fixed_point.x) / 2) / mb + (p2.y + fixed_point.y) / 2;
-            }
-
-            int radius = std::sqrt(std::pow(cx - p1.x, 2) + std::pow(cy - p1.y, 2));
-
-            return std::pair(cv::Point(cx, cy), radius);
-        }*/
-
-        /*std::pair<cv::Point, int> fit_circle_with_fixed_point_ransac(std::vector<cv::Point> points, cv::Point fixed_point) {
-            const int MAX_ITERATIONS = 1000;
-            const float DISTANCE_THRESHOLD = 1;
-            const float MIN_INLIERS_RATIO = 0.5;
-
-            std::pair<cv::Point, int>* best_circle = nullptr;
-            std::vector<cv::Point> best_inliners;
-            int num_points = points.size();
-
-            if(num_points == 0) {
-                throw InvalidCircle();
-            }
-
-            for (int _ = 0; _ < MAX_ITERATIONS; _++) {
-                int first_index;
-                int second_index;
-
-                get_two_random_element_indexes(points.size(), first_index, second_index);
-
-                cv::Point sample[2] = {
-                    points[first_index],
-                    points[second_index]
-                };
-
-                std::pair<cv::Point, int> circle_center_radius;
-
-                try {
-                    circle_center_radius = calculate_circle_center_radius(sample[0], sample[1], fixed_point);
-                } catch(const InvalidCircle& e) { // Just an invalid circle so no need to worry abt an actual error
-                    continue;
-                }
-                
-                cv::Point center = circle_center_radius.first;
-                int radius = circle_center_radius.second;
-
-                std::vector<cv::Point> inliers;
-
-                for(cv::Point p : points) {
-                    if(std::abs(std::sqrt(std::pow(p.x - center.x, 2) + std::pow(p.y - center.y, 2)) - radius) < DISTANCE_THRESHOLD) {
-                        inliers.push_back(p);
-                    }
-                }
-
-                if(inliers.size() > MIN_INLIERS_RATIO * num_points && inliers.size() > best_inliners.size()) { // TODO: Zu wenig inliers
-                    best_circle = &circle_center_radius;
-                    best_inliners = inliers;
-                }
-            }
-
-            if(best_circle == nullptr) {
-                throw InvalidCircle();
-            }
-
-            int h, k ,r;
-            
-            std::tie(h, k ,r) = fit_circle_with_fixed_point(points, fixed_point);
-
-            return std::pair(cv::Point(h, k), r);
-        }
-
-        std::tuple<int, int, int> fit_circle_with_fixed_point(std::vector<cv::Point> points, cv::Point fixed_point) {
-            int x_fixed, y_fixed; 
-            x_fixed = fixed_point.x;
-            y_fixed = fixed_point.y;
-
-            std::vector<int> x_shifted, y_shifted;
-
-            for(cv::Point p : points) {
-                x_shifted.push_back(p.x - x_fixed);
-                y_shifted.push_back(p.y - y_fixed);
-            }
-
-            cv::Mat A(points.size(), 2, CV_32F);
-            cv::Mat b(points.size(), 1, CV_32F);
-
-            for (size_t i = 0; i < points.size(); ++i) {
-                A.at<float>(i, 0) = 2 * x_shifted[i];
-                A.at<float>(i, 1) = 2 * y_shifted[i];
-                b.at<float>(i, 0) = std::pow(x_shifted[i], 2) + std::pow(y_shifted[i], 2);
-            }
-
-            cv::Mat h_k_shifted;
-            cv::solve(A, b, h_k_shifted, cv::DECOMP_NORMAL);
-
-            float h_shifted = h_k_shifted.at<float>(0, 0);
-            float k_shifted = h_k_shifted.at<float>(1, 0);
-
-            // Step 4: Convert the coordinates back to the original coordinate system
-            float h = h_shifted + x_fixed;
-            float k = k_shifted + y_fixed;
-
-            float r = std::sqrt(std::pow(h - x_fixed, 2) + std::pow(k - y_fixed, 2));
-
-            return std::make_tuple(static_cast<int>(h), static_cast<int>(k), static_cast<int>(r));
-        }*/
-
         std::tuple<cv::Point, int> loop_through_circles(std::vector<cv::Point> points) {
             int best_radius = 100000000;
             cv::Point best_center = cv::Point(0,0);
-            int best_dist = 100000000;
+            double best_dist = 100000000;
 
             for(float ra = -5; ra < 5; ra+= 0.1) {
                 if (std::abs(ra) < 1.1) {
