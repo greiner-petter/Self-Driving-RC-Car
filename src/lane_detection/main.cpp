@@ -97,7 +97,7 @@ std::pair<int, int> drive_circle_in_angle(float average_angle) {
         back_angle = -pos_result.second;
     }
 
-    //logger->log("avg: %f  --  fr: %f  --  ba: %f", average_angle, front_angle, back_angle);
+    logger->log("avg: %f  --  fr: %f  --  ba: %f", average_angle, front_angle, back_angle);
     return std::pair<int, int>(front_angle+ANGLE_OFFSET_FRONT, back_angle);
 }
 
