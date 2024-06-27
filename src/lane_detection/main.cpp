@@ -67,37 +67,37 @@ void return_to_street(float front_angle) { //TODO:
     }
 }
 
-std::pair<int, int> drive_circle_in_angle(float average_angle) {
-    average_angle *= 2;
+std::pair<int, int> drive_circle_in_angle(float angle) {
+    angle *= 2;
 
-    float front_angle = average_angle;
+    float front_angle = angle;
     float back_angle = 0;
 
-    if(average_angle == 0) {
-        front_angle = average_angle;
-        back_angle = average_angle;
+    if(angle == 0) {
+        front_angle = angle;
+        back_angle = angle;
         return std::pair<int, int>(front_angle+ANGLE_OFFSET_FRONT, back_angle);
     }
 
-    if(average_angle >= 65) {
+    if(angle >= 65) {
         front_angle = 65;
-        back_angle = -average_angle + 65;
-    } else if(average_angle >= 15 && average_angle <= 30) {
-        front_angle = average_angle;
-        back_angle = 30 - average_angle;
-    } else if(average_angle < 15 && average_angle > 0) {
-        front_angle = average_angle;
-        back_angle = average_angle;
+        back_angle = -angle + 65;
+    } else if(angle >= 15 && angle <= 30) {
+        front_angle = angle;
+        back_angle = 30 - angle;
+    } else if(angle < 15 && angle > 0) {
+        front_angle = angle;
+        back_angle = angle;
     }
     
-    if(average_angle < 0) {
-        std::pair<int, int> pos_result = drive_circle_in_angle(-average_angle/2);
+    if(angle < 0) {
+        std::pair<int, int> pos_result = drive_circle_in_angle(-angle/2);
 
         front_angle = -pos_result.first;
         back_angle = -pos_result.second;
     }
 
-    logger->log("avg: %f  --  fr: %f  --  ba: %f", average_angle, front_angle, back_angle);
+    logger->log("avg: %f  --  fr: %f  --  ba: %f", angle, front_angle, back_angle);
     return std::pair<int, int>(front_angle+ANGLE_OFFSET_FRONT, back_angle);
 }
 
@@ -154,6 +154,8 @@ int main()
                     } 
 
                     int radius = helper.calculate_radius(&matrix, &matrix2);
+
+                    logger->log("Radius: %d", radius);
                    
                     int speed = 30;//std::abs(radius) / 10;
                     if(speed < 10) {
