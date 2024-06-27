@@ -6,10 +6,6 @@ const int IMAGE_HEIGHT = 400;
 const int IMAGE_WIDTH = 400;
 const int COLOR_DIFFERENCE = 5;
 
-class InvalidPoint : public std::exception {};
-//class InvalidCircle : public std::exception {};
-class UnfittingLaneWidth : public std::exception {};
-
 class Helper {
     public:
         cv::Mat* matrix;
@@ -48,16 +44,16 @@ class Helper {
                     previous_center_radian = std::atan2(dx, dy);
                 }
                 
-                try {
-                    cv::Point point = get_street_middle_from_points(point_list, previous_center_radian, radius);
+                cv::Point point = get_street_middle_from_points(point_list, previous_center_radian, radius);
 
+                if(point.x != -1) {
                     center_point_list.push_back(point);
                     previous_center = &point;
 
                     if(std::getenv("CAR_ENV") != NULL) {
                         cv::circle(*drawMatrix, point, 2, cv::Scalar(0, 255, 255, 1), 2); //gelb
                     }
-                } catch(const UnfittingLaneWidth& e) {} // Just an unfitting lane width so no need to worry abt an actual error
+                }
             }
 
             if(std::getenv("CAR_ENV") != NULL) {
@@ -149,7 +145,7 @@ class Helper {
                 }
             }
 
-            throw InvalidPoint();
+            return cv::Point(-1,-1);
         }
 
         cv::Point get_street_middle_from_points(std::vector<cv::Point> point_list, float previous_center, int radius) {
@@ -194,7 +190,7 @@ class Helper {
             });
 
             if(right_pointlist.empty() && left_pointlist.empty()) {
-                throw UnfittingLaneWidth();
+                return cv::Point(-1, -1);
             }
 
             if(right_pointlist.empty()) {
@@ -212,7 +208,7 @@ class Helper {
             } else if(dist >= 70 && dist <= 130) {
                 return cv::Point((3*right_pointlist[0].x + left_pointlist[0].x) / 4, (3*right_pointlist[0].y + left_pointlist[0].y) / 4);
             } else {
-                throw UnfittingLaneWidth();
+                return cv::Point(-1, -1);
             }
         }
 
@@ -220,13 +216,11 @@ class Helper {
             std::vector<cv::Point> point_list;
 
             for(float pi = 0; pi < 3.14; pi += 0.001f) {
-                try {
-                    cv::Point point = check_for_valid_point(1, radius, pi);
+                cv::Point point = check_for_valid_point(1, radius, pi);
 
-                    if(std::find(point_list.begin(), point_list.end(), point) == point_list.end()) {
-                        point_list.push_back(point);
-                    }
-                } catch(const InvalidPoint& e) {} // Just an invalid point so no need to worry abt an actual error
+                if(point.x != -1 && std::find(point_list.begin(), point_list.end(), point) == point_list.end()) {
+                    point_list.push_back(point);
+                }
             }
 
             return point_list;
