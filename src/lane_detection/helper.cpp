@@ -65,13 +65,15 @@ class Helper {
                 cv::circle(*matrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1);
             }
 
-            cv::imshow("Lane Detection", *matrix);
-            char key = cv::waitKey(30);
-            if (key == 'q')
-            {
-                cv::destroyAllWindows();
-                return 0;
-            }
+            #ifdef DEBUG
+                cv::imshow("Lane Detection", *matrix);
+                char key = cv::waitKey(30);
+                if (key == 'q')
+                {
+                    cv::destroyAllWindows();
+                    return 0;
+                }
+            #endif
 
 
             return final_radius * (final_center.x < 200 ? -1 : 1);
