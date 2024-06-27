@@ -46,14 +46,14 @@ class Helper {
                 
                 cv::Point point = get_street_middle_from_points(point_list, previous_center_radian, radius);
 
-                if(point.x != -1) {
+                /*if(point.x != -1) {
                     center_point_list.push_back(point);
                     previous_center = &point;
 
                     if(std::getenv("CAR_ENV") != NULL) {
                         cv::circle(*drawMatrix, point, 2, cv::Scalar(0, 255, 255, 1), 2); //gelb
                     }
-                }
+                }*/
             }
 
             if(std::getenv("CAR_ENV") != NULL) {
