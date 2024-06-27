@@ -146,7 +146,7 @@ int main()
                     cv::Mat matrix;
                     cv::Mat matrix2;
 
-                    camImageMatrix.copyTo(matrix);
+                    //camImageMatrix.copyTo(matrix);
                     if(std::getenv("CAR_ENV") != NULL) {
                         matrix.copyTo(matrix2);
                     }
@@ -155,7 +155,7 @@ int main()
                         cv::imwrite("bev.jpg", matrix);
                     } 
 
-                    int radius = helper.calculate_radius(&matrix, &matrix2);
+                    int radius = helper.calculate_radius(&camImageMatrix, &matrix2);
                    
                     int speed = 10;//std::abs(radius) / 10;
                     if(speed < 10) {
