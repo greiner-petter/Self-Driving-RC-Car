@@ -27,3 +27,4 @@ class Histogram {
 
 template class Histogram<INTERSECTION_DEGREE_SIZE>;
 template class Histogram<INTERSECTION_Y_LENGTH_SIZE>;
+template class Histogram<2 * intersection_classification::INITIAL_SEARCH>;

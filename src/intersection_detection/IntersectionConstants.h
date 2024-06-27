@@ -33,3 +33,11 @@ constexpr double CM_PER_PIXEL = 5.7 / 11;
 
 // amount of bottom pixels that can be ignored
 constexpr uint32_t PIXEL_UNTIL_CAR_END = 43;
+
+namespace intersection_classification {
+    // search in both directions to find start and end
+    constexpr std::size_t INITIAL_SEARCH = 20;
+
+    constexpr std::size_t INTERSECTION_SQUARE_PX_W = 90;
+    constexpr std::size_t INTERSECTION_SQUARE_PX_H = 130;
+}

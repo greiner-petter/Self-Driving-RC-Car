@@ -2,6 +2,7 @@
 #include "../common/ocMember.h"
 #include "Histogram.h"
 #include "IntersectionConstants.h"
+#include "IntersectionClassification.h"
 #include <signal.h>
 #include <csignal>
 #include <bit>
@@ -26,6 +27,10 @@ ocLogger *logger;
 static void signal_handler(int)
 {
     running = false;
+}
+
+static void debug_print_directions(uint8_t directions) {
+    std::cout << "Links: " << (directions & 1 ? "true" : "false") << "; Rechts: " << (directions & 2 ? "true" : "false") << "; Geradeaus: " << (directions & 4 ? "true" : "false") << std::endl;
 }
 
 static uint32_t distance_between_points_indexed(const vector<Point> &points, size_t &start_index) {
@@ -165,16 +170,20 @@ int main() {
                         continue;
                     }
 
-                    //angle_length_hist.debug_print();
-                    //histogram_filtered.debug_print();
-
-                    size_t pixel_height = 399 - histogram_filtered.get_highest_fulfilling_condition([](const size_t index, const uint32_t val) -> bool {
+                    // y in bev
+                    size_t found_line_y = histogram_filtered.get_highest_fulfilling_condition([](const size_t index, const uint32_t val) -> bool {
                             (void) index;
                             return val >= REQUIRED_H_LENGTH_INTERSECTION;
                     });
-                    // we don't have to check, if the original return value is 400 (out of range) since
 
+                    IntersectionPostprocessing proc(image, found_line_y);
+                    if (!proc.calculate_result()) {
+                        continue;
+                    }
+
+                    size_t pixel_height = 399 - proc.get_height();
                     distance = (uint32_t) (((double) pixel_height - PIXEL_UNTIL_CAR_END) * CM_PER_PIXEL);
+
                     if (distance > 10000) {
 #ifdef LOG_NEGATIVE_RESULTS
                         logger->log("Found a frame but not publishing result due overflow because of negative result!");
@@ -183,8 +192,8 @@ int main() {
                     }
                     logger->log("Distance in cm: %lu", (unsigned long) distance);
 
-                    // TODO: Implement possible directions
-                    uint8_t directions = 6;
+                    uint8_t directions = proc.get_possible_directions();
+                    // debug_print_directions(directions);
                     if (distance != 0) {
                         ipc_packet.clear();
                         ipc_packet.set_sender(ocMemberId::Intersection_Detection);
