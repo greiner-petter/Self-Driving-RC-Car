@@ -36,7 +36,7 @@ class Helper {
             std::vector<cv::Point> center_point_list;
 
             for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
-                //std::vector<cv::Point> point_list = get_pointlist_of_radius(radius);
+                std::vector<cv::Point> point_list = get_pointlist_of_radius(radius);
 
                 /*if(previous_center != nullptr) {
                     float dy = previous_center->y - 400;
@@ -98,7 +98,7 @@ class Helper {
         cv::Point check_for_valid_point(int direction, int radius, float looking_pi) {
             std::pair<int, int> pair[2];
 
-            for (double pi = 0; pi < 1; pi += 0.001) {
+            for (double pi = 0; pi < 0.5; pi += 0.01) {
                 double offset = looking_pi + pi * direction;
 
                 int x = 200 + round(cos(offset) * radius);
@@ -215,7 +215,7 @@ class Helper {
         std::vector<cv::Point> get_pointlist_of_radius(int radius) {
             std::vector<cv::Point> point_list;
 
-            for(float pi = 0; pi < 3.14; pi += 0.001f) {
+            for(float pi = 0; pi < 3.14; pi += 0.1f) {
                 cv::Point point = check_for_valid_point(1, radius, pi);
 
                 if(point.x != -1 && std::find(point_list.begin(), point_list.end(), point) == point_list.end()) {
