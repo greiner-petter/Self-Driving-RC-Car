@@ -96,7 +96,11 @@ class Helper {
 
         double map(float X) {
             //3125 Y = (X-A)/(B-A) * (D-C) + C
-            return (X-0)/(3125-0) * (65-0) + 0;
+            if(X < 0) {
+                return -map(-X);
+            }
+
+            return (X-0)/(3125-0) * (0-65) + 65;
         }
 
     private:
