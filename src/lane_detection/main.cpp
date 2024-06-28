@@ -40,7 +40,7 @@ static bool running = true;
 bool onStreet = true;
 int onStreetCount = 0;
 
-#define ANGLE_OFFSET_FRONT 21
+#define ANGLE_OFFSET_FRONT 10
 
 #ifdef DEBUG
     #define ANGLE_OFFSET_FRONT 0 // Positive to right, negative to left
