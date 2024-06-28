@@ -164,7 +164,7 @@ int main()
 
                     float angle = std::asin(20 / radius_in_cm) * (180/3.14);
 
-                    float multiplikator = 30 / (angle + 1) + .5;
+                    float multiplikator = 30 / (std::abs(angle) + 1) + .5;
 
                     angle *= multiplikator;
 
