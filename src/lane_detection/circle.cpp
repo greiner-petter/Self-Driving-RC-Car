@@ -14,8 +14,8 @@ class Circle {
 
             if (intersections == 2)
             {
-                double dist1 = Distance(intersection1, cv::Point(200,300));
-                double dist2 = Distance(intersection2, cv::Point(200,300));
+                double dist1 = Distance(intersection1, cv::Point(200,395));
+                double dist2 = Distance(intersection2, cv::Point(200,395));
 
                 if (dist1 < dist2)
                     return intersection1;
