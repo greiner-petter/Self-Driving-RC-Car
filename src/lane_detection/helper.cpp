@@ -171,7 +171,7 @@ class Helper {
 
 
                 for(cv::Point point : point_list) {
-                    cv::circle(*this->drawMatrix, point, 20, cv::Scalar(0,255,0,0), 1); //green
+                    cv::circle(*this->drawMatrix, point, 20, cv::Scalar(0,255,0,0), 1); //green = right
                 }
             }
 
@@ -187,7 +187,7 @@ class Helper {
 
             if(std::getenv("CAR_ENV") != NULL) {
                 for(cv::Point left : left_pointlist) {
-                    cv::circle(*this->drawMatrix, left, 20, cv::Scalar(0,0,255,0), 1); //red
+                    cv::circle(*this->drawMatrix, left, 20, cv::Scalar(0,0,255,0), 1); //red = left
                 }
             }
 

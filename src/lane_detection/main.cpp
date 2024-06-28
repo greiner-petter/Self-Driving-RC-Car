@@ -5,6 +5,8 @@
 #include <signal.h>
 #include <vector>
 #include <unistd.h>
+#include <deque>
+#include <numeric> // Für std::accumulate
 
 #include "../common/ocWindow.h"
 #include "./helper.cpp"
@@ -20,10 +22,6 @@
 //#define DEBUG_WINDOW
 
 
-typedef std::array<int, 25> histogram_t;
-typedef std::vector<cv::Point> points_vector_t;
-typedef std::pair<histogram_t, points_vector_t> complete_histdata_t;
-
 ocMember member(ocMemberId::Lane_Detection_Values, "Lane Detection");
 
 ocLogger *logger;
@@ -34,7 +32,7 @@ ocCarProperties car_properties;
 
 Helper helper;
 
-std::list<int> last_angles; 
+std::deque<float> last_angles;
 
 static bool running = true;
 bool onStreet = true;
@@ -49,6 +47,24 @@ int onStreetCount = 0;
 static void signal_handler(int)
 {
     running = false;
+}
+
+void add_last_angle(float angle) {
+    if (last_angles.size() > 30) {
+        last_angles.pop_back(); // Remove the oldest angle (from the back)
+    }
+    last_angles.push_front(angle); // Add the new angle to the front
+}
+
+float average_angle() {
+    if (last_angles.empty()) {
+        return 0.0f; // Falls die Liste leer ist, gib 0 zurück
+    }
+    float sum = 0.0f;
+    for (float angle : last_angles) {
+        sum += angle;
+    }
+    return sum / last_angles.size();
 }
 
 bool check_if_on_street() { // TODO:
@@ -164,7 +180,9 @@ int main()
 
                     float angle = std::asin(20 / radius_in_cm) * (180/3.14);
 
-                    float multiplikator = 30 / (std::abs(angle) + 1) + .5;
+                    add_last_angle(angle);
+
+                    float multiplikator = 30 / (std::abs(average_angle()) + 1) + .5;
 
                     angle *= multiplikator;
 
@@ -172,7 +190,7 @@ int main()
                     float back_angle = std::clamp<float>(-angle, -65, 65);
 
                    
-                    int speed = 1950/(abs(front_angle)+30);//std::abs(radius) / 10;
+                    int speed = (950/(abs(front_angle)+30))*5;//std::abs(radius) / 10;
 
 
                     speed = std::clamp(speed, 0, 60);
