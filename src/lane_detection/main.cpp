@@ -172,7 +172,7 @@ int main()
                     float back_angle = std::clamp<float>(-angle, -65, 65);
 
                    
-                    int speed = 950/(abs(front_angle)+30);//std::abs(radius) / 10;
+                    int speed = 600/(abs(front_angle)+30);//std::abs(radius) / 10;
 
 
                     speed = std::clamp(speed, 0, 60);
