@@ -191,7 +191,7 @@ int main()
 
                     float direction = abs(radius_in_cm)/radius_in_cm;
 
-                    angle = std::asin(height / radius_in_cm) * (180/3.14);
+                    angle = abs(std::asin(height / radius_in_cm) * (180/3.14)) * direction;
                     if(radius_in_cm <= height) {
                         angle = 65 * direction;
                     }
