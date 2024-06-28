@@ -162,7 +162,7 @@ int main()
 
                     float pixelRadiusTocmRadius = 0.6 * radius;
 
-                    float front_angle = -std::clamp<float>(std::asin(110 / pixelRadiusTocmRadius) * (180/3.14), -65, 65);
+                    float front_angle = -std::clamp<float>(std::asin(11 / pixelRadiusTocmRadius) * (1800/3.14), -65, 65);
                     float back_angle = -front_angle;
 
                    
@@ -172,7 +172,7 @@ int main()
                     speed = std::clamp(speed, 0, 30);
 
 
-                    logger->log("Radius: %d, rad in cm %f, sinErgebnis %f, ANGLE: %f, BANGLE: %f", radius, pixelRadiusTocmRadius, std::asin(110 / pixelRadiusTocmRadius),front_angle, back_angle);
+                    logger->log("Radius: %d, rad in cm %f, sinErgebnis %f, ANGLE: %f, BANGLE: %f", radius, pixelRadiusTocmRadius, std::asin(11 / pixelRadiusTocmRadius),front_angle, back_angle);
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
