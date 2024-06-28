@@ -40,7 +40,7 @@ class SquareApproach {
                         continue;
                     }
 
-                    return -(x / 200 * 25 + 40); // -40 to -65
+                    return -(x / 200.0 * 25 + 40); // -40 to -65
                 } else if(y == 400) { // oben
                     if(!first_intersection) {
                         first_intersection = true;
