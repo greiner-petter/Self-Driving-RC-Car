@@ -197,6 +197,8 @@ int main()
                         destX = dest.x;
                     }
 
+                    std::cout << "DESTX: " << destX;
+
                     cv::line(matrix2, cv::Point(400, 300), cv::Point(0, 300), cv::Scalar(100,0,255,0), 3);
                     cv::circle(matrix2, cv::Point(destX, 300), 5, cv::Scalar(0,0,255,0), 5);
 
