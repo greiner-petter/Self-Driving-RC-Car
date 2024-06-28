@@ -192,12 +192,12 @@ int main()
                     float direction = abs(radius_in_cm)/radius_in_cm;
 
                     angle = abs(std::asin(height / radius_in_cm) * (180/3.14)) * direction;
-                    if(radius_in_cm <= height) {
-                        angle = 65 * direction;
+                    if(abs(radius_in_cm) <= height) {
+                        angle = 450 * direction;
                     }
 
                     angle+=ANGLE_OFFSET_FRONT;
-                    angle = std::clamp<float>(abs(std::pow(abs(angle), 1.35))*direction, -65,65);
+                    angle = std::clamp<float>(std::pow(abs(angle), 1.35)*direction, -65,65);
 
 
                     //add_last_angle(angle);
