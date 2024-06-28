@@ -200,7 +200,7 @@ int main()
                             continue;
                         }
 
-                        if(y > lowestY) {
+                        if(y < lowestY) {
                             lowestY = y;
                             destX = x;
                         }
