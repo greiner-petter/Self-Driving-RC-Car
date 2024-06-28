@@ -164,6 +164,10 @@ int main()
 
                     float angle = std::asin(20 / radius_in_cm) * (180/3.14);
 
+                    float multiplikator = 30 / (angle + 1) + .5;
+
+                    angle *= multiplikator;
+
                     float front_angle = std::clamp<float>(angle + ANGLE_OFFSET_FRONT, -65, 65);
                     float back_angle = std::clamp<float>(-angle, -65, 65);
 

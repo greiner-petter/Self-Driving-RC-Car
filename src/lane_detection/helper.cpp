@@ -27,9 +27,9 @@ class Helper {
                 cv::cvtColor(*this->drawMatrix, *this->drawMatrix, cv::COLOR_GRAY2RGB);
             }
             
-            const int INITIAL_RADIUS = 100;
-            const int FINAL_RADIUS = 250;
-            const int ZIRKLE_DIFF = 50;
+            const int INITIAL_RADIUS = 50;
+            const int FINAL_RADIUS = 200;
+            const int ZIRKLE_DIFF = 25;
 
             cv::Point* previous_center = nullptr;
             float previous_center_radian = -1;
