@@ -179,16 +179,12 @@ int main()
 
                     float radius_in_cm = 0.6 * radius;
 
-                    //float angle = std::asin(20 / radius_in_cm) * (180/3.14);
+                    float angle = std::asin(60 / radius_in_cm) * (180/3.14);
 
                     ///add_last_angle(angle);
 
-                    //float multiplikator = 30 / (std::abs(average_angle()) + 1) + .5;
-
-                    //angle *= multiplikator;
-
                     //angle = average_angle();
-
+/*
                     float lowestY = 0;
                     float destX = 0;
 
@@ -218,19 +214,19 @@ int main()
                     float angle = helper.map(destX);
 
                     auto [front_angle, back_angle] = drive_circle_in_angle(angle);
-
-                    int speed = (950/(abs(front_angle)+30))*5;//std::abs(radius) / 10;
+*/
+                    int speed = (950/(abs(angle)+30))*5;//std::abs(radius) / 10;
                     speed = std::clamp(speed, 0, 60);
 
 
-                    logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius_in_cm, front_angle, back_angle, destX);
+                    //logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius_in_cm, front_angle, back_angle, destX);
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
                             .write<int16_t>(speed)
-                            .write<int8_t>(front_angle)
-                            .write<int8_t>(back_angle);
+                            .write<int8_t>(angle)
+                            .write<int8_t>(-angle);
                         socket->send_packet(ipc_packet);
 
                 /*
