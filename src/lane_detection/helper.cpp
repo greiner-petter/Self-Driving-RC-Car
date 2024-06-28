@@ -31,7 +31,7 @@ class Helper {
             const int FINAL_RADIUS = 175;
             const int ZIRKLE_DIFF = 25;
 
-            const int radiusse[] = {50, 55, 60, 65, 75, 100, 150, 225};
+            const int radiusse[] = {50, 55, 60, 65, 75, 100, 150};
 
             cv::Point* previous_center = nullptr;
             float previous_center_radian = -1;
