@@ -208,7 +208,7 @@ int main()
 
                     std::cout << "DESTX: " << destX;
 
-                    cv::line(matrix2, cv::Point(400, 200), cv::Point(0, 200), cv::Scalar(100,0,255,0), 3);
+                    cv::line(matrix2, cv::Point(400, lowestY), cv::Point(0, lowestY), cv::Scalar(100,0,255,0), 3);
                     cv::circle(matrix2, cv::Point(destX, lowestY), 5, cv::Scalar(0,0,255,0), 5);
 
                     if(std::getenv("CAR_ENV") != NULL) {
