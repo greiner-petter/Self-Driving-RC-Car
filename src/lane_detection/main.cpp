@@ -175,7 +175,7 @@ int main()
                     int speed = 950/(abs(front_angle)+30);//std::abs(radius) / 10;
 
 
-                    speed = std::clamp(speed, 0, 30);
+                    speed = std::clamp(speed, 0, 60);
 
 
                     logger->log("Radius: %d, rad in cm %f, sinErgebnis %f, ANGLE: %f, BANGLE: %f", radius, radius_in_cm, std::asin(11 / radius_in_cm),front_angle, back_angle);
