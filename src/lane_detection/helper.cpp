@@ -58,7 +58,7 @@ class Helper {
             }
 
             if(std::getenv("CAR_ENV") != NULL) {
-                for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
+                for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += ZIRKLE_DIFF) {
                     cv::circle(*drawMatrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1); //weiße radien kreise
                 }
             }
