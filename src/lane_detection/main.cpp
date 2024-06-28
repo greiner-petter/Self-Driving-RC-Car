@@ -192,7 +192,7 @@ int main()
                     } else if(abs(radius_in_cm) > 200) {
                         angle = 40 * direction;
                     } else {
-                        angle = 60;
+                        angle = 60 * direction;
                     }
 
                     ///add_last_angle(angle);
