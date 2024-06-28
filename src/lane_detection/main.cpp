@@ -227,6 +227,8 @@ int main()
 
                     //logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius_in_cm, front_angle, back_angle, destX);
 
+                     logger->log("Radius in cm %f, ANGLE: %f", radius_in_cm, angle);
+
                     ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
