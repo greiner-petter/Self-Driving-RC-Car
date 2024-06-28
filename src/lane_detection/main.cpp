@@ -216,7 +216,7 @@ int main()
                     speed = std::clamp(speed, 0, 60);
 
 
-                    logger->log("Radius: %d, rad in cm %f, sinErgebnis %f, ANGLE: %f, BANGLE: %f", radius, radius_in_cm, std::asin(11 / radius_in_cm),front_angle, back_angle);
+                    logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius, radius_in_cm, std::asin(11 / radius_in_cm),front_angle, back_angle, destX);
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
