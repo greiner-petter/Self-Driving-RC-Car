@@ -31,12 +31,15 @@ class Helper {
             const int FINAL_RADIUS = 175;
             const int ZIRKLE_DIFF = 25;
 
+            const int radiusse[] = {50, 55, 60, 65, 75, 100, 150, 225};
+
             cv::Point* previous_center = nullptr;
             float previous_center_radian = -1;
 
             std::vector<cv::Point> center_point_list;
 
-            for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += ZIRKLE_DIFF) {
+            //for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += ZIRKLE_DIFF) {
+            for(int radius : radiusse) {
                 std::vector<cv::Point> point_list = get_pointlist_of_radius(radius);
 
                 if(previous_center != nullptr) {
@@ -58,7 +61,8 @@ class Helper {
             }
 
             if(std::getenv("CAR_ENV") != NULL) {
-                for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += ZIRKLE_DIFF) {
+            //for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += ZIRKLE_DIFF) {
+            for(int radius : radiusse) {
                     cv::circle(*drawMatrix, cv::Point(200, 400), radius, cv::Scalar(255,255,255,1), 1); //weiße radien kreise
                 }
             }
