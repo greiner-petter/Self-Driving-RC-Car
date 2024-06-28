@@ -160,7 +160,7 @@ int main()
 
                     //auto [front_angle, back_angle] = drive_circle_in_angle(helper.map(radius));
 
-                    float pixelRadiusTocmRadius = 0.6 * radius;
+                    float pixelRadiusTocmRadius = 0.5 * radius;
 
                     float front_angle = std::clamp<float>(std::asin(11 / pixelRadiusTocmRadius) * (180/3.14), -65, 65);
                     float back_angle = -front_angle;
