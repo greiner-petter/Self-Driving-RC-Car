@@ -206,22 +206,15 @@ int main()
                         cv::imwrite("bev_lines.jpg", matrix2);
                     }
 
-                    float angle = ((destX - 200)/4) * 1.5; // MAPPING TO INT 8 -80 to 80 for angle
+                    float angle = helper.map(destX);
 
-                    if(destX-200 < 0) {
-                        angle *= -1;
-                    }
-
-                    angle = std::clamp((int) angle, -65, 65); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle (150 and -150 if back steering is enabled)
-
-                    float front_angle = angle;
-                    float back_angle = -angle;
+                    auto [front_angle, back_angle] = drive_circle_in_angle(angle);
 
                     int speed = (950/(abs(front_angle)+30))*5;//std::abs(radius) / 10;
                     speed = std::clamp(speed, 0, 60);
 
 
-                    logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius, radius_in_cm, std::asin(11 / radius_in_cm),front_angle, back_angle, destX);
+                    logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius_in_cm, front_angle, back_angle, destX);
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
