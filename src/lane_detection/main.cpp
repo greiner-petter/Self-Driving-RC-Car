@@ -197,7 +197,7 @@ int main()
                     }
 
                     angle+=ANGLE_OFFSET_FRONT;
-                    angle = std::clamp<float>(angle, -65,65);
+                    angle = std::clamp<float>(angle*3, -65,65);
 
 
                     //add_last_angle(angle);
