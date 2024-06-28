@@ -186,26 +186,14 @@ int main()
 
                     float radius_in_cm = 0.6 * radius;
 
-                    float height = 60.0;
+                    float height = 11.0;
                     float angle;
 
                     float direction = abs(radius_in_cm)/radius_in_cm;
 
-                    //angle = std::asin(height / radius_in_cm) * (180/3.14);
-                    if(abs(radius_in_cm) > 1000) {
-                        angle = 0;
-                    } else if(abs(radius_in_cm) > 800) {
-                        angle = 2 * direction;
-                    } else if(abs(radius_in_cm) > 600) {
-                        angle = 4 * direction;
-                    } else if(abs(radius_in_cm) > 400) {
-                        angle = 8 * direction;
-                    } else if(abs(radius_in_cm) > 200) {
-                        angle = 16 * direction;
-                    } else if(abs(radius_in_cm) > 100) {
-                        angle = 32 * direction;
-                    } else {
-                        angle = 60 * direction;
+                    angle = std::asin(height / radius_in_cm) * (180/3.14);
+                    if(radius_in_cm <= height) {
+                        angle = 65 * direction;
                     }
 
                     angle+=ANGLE_OFFSET_FRONT;
@@ -248,7 +236,7 @@ int main()
 
                     //logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius_in_cm, front_angle, back_angle, destX);
 
-                     logger->log("Radius in cm %f, ANGLE: %f", radius_in_cm, angle);
+                    logger->log("Radius in cm %f, ANGLE: %f", radius_in_cm, angle);
 
                     ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
