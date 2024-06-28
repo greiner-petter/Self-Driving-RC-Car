@@ -27,15 +27,16 @@ class Helper {
                 cv::cvtColor(*this->drawMatrix, *this->drawMatrix, cv::COLOR_GRAY2RGB);
             }
             
-            const int INITIAL_RADIUS = 150;
-            const int FINAL_RADIUS = 225;
+            const int INITIAL_RADIUS = 100;
+            const int FINAL_RADIUS = 250;
+            const int ZIRKLE_DIFF = 50;
 
             cv::Point* previous_center = nullptr;
             float previous_center_radian = -1;
 
             std::vector<cv::Point> center_point_list;
 
-            for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += 25) {
+            for(int radius = INITIAL_RADIUS; radius < FINAL_RADIUS; radius += ZIRKLE_DIFF) {
                 std::vector<cv::Point> point_list = get_pointlist_of_radius(radius);
 
                 if(previous_center != nullptr) {
