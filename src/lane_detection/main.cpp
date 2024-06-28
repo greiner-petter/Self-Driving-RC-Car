@@ -189,7 +189,7 @@ int main()
 
                     //angle = average_angle();
 
-                    float lowestY = 401;
+                    float lowestY = 0;
                     float destX = 0;
 
                     for (double pi = 0; pi < 3.14; pi += 0.01) {
