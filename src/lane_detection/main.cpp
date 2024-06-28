@@ -225,8 +225,6 @@ int main()
                         cv::imwrite("bev_lines.jpg", matrix2);
                     }
 
-                    auto [front_angle, back_angle] = drive_circle_in_angle(angle);
-
                     int speed = (950/(abs(angle)+30))*5;//std::abs(radius) / 10;
                     speed = std::clamp(speed, 0, 60);
 
