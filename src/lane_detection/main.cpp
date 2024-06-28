@@ -69,6 +69,13 @@ float average_angle() {
     return sum / last_angles.size();
 }
 
+float get_oldest_angle() {
+    if (last_angles.empty()) {
+        return 0.0f; // Falls die Liste leer ist, gib 0 zurück
+    }
+    return last_angles.back(); // Gib den ältesten Winkel zurück
+}
+
 bool check_if_on_street() { // TODO:
    return true;
 }
@@ -187,17 +194,23 @@ int main()
                     //angle = std::asin(height / radius_in_cm) * (180/3.14);
                     if(abs(radius_in_cm) > 1000) {
                         angle = 0;
-                    } else if(abs(radius_in_cm) > 500) {
+                    } else if(abs(radius_in_cm) > 800) {
+                        angle = 10 * direction;
+                    } else if(abs(radius_in_cm) > 600) {
                         angle = 20 * direction;
+                    } else if(abs(radius_in_cm) > 400) {
+                        angle = 30 * direction;
                     } else if(abs(radius_in_cm) > 200) {
                         angle = 40 * direction;
+                    } else if(abs(radius_in_cm) > 100) {
+                        angle = 50 * direction;
                     } else {
                         angle = 60 * direction;
                     }
 
-                    ///add_last_angle(angle);
+                    add_last_angle(angle);
 
-                    //angle = average_angle();
+                    angle = get_oldest_angle();
 /*
                     float lowestY = 0;
                     float destX = 0;
