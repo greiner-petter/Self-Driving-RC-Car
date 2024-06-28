@@ -19,21 +19,21 @@ class SquareApproach {
                         continue;
                     }
 
-                    return -((400 - y) / 400 * 30 + 10); // -10 to -40
+                    return -((400 - y) / 400.0 * 30 + 10); // -10 to -40
                 } else if(x == 400) { // rechts
                     if(!first_intersection) {
                         first_intersection = true;
                         continue;
                     }
 
-                    return (400 - y) / 400 * 30 + 10; // 10 to 40
+                    return (400 - y) / 400.0 * 30 + 10; // 10 to 40
                 } else if(y == 0 && x > 200) { // rechts unten
                     if(!first_intersection) {
                         first_intersection = true;
                         continue;
                     }
 
-                    return (400 - x) / 200 * 25 + 40; // 40 to 65
+                    return (400 - x) / 200.0 * 25 + 40; // 40 to 65
                 } else if(y == 0 && x < 200) { // links unten
                     if(!first_intersection) {
                         first_intersection = true;
@@ -47,7 +47,7 @@ class SquareApproach {
                         continue;
                     }
 
-                    return (x - 200) / 200 * 10; // -10 to 10
+                    return (x - 200) / 200.0 * 10; // -10 to 10
                 }
             }
 
