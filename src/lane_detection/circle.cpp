@@ -49,21 +49,21 @@ class Circle {
             if ((A <= 0.0000001) || (det < 0))
             {
                 // No real solutions.
-                intersection1 = &cv::Point(-1, -1);
-                intersection2 = &cv::Point(-1, -1);
+                *intersection1 = cv::Point(-1, -1);
+                *intersection2 = cv::Point(-1, -1);
                 return 0;
             } else if (det == 0) {
                 // One solution.
                 t = -B / (2 * A);
-                intersection1 = &cv::Point(point1.x + t * dx, point1.y + t * dy);
-                intersection2 = &cv::Point(-1, -1);
+                *intersection1 = cv::Point(point1.x + t * dx, point1.y + t * dy);
+                *intersection2 = cv::Point(-1, -1);
                 return 1;
             } else {
                 // Two solutions.
                 t = (float)((-B + std::sqrt(det)) / (2 * A));
-                intersection1 = &cv::Point(point1.x + t * dx, point1.y + t * dy);
+                *intersection1 = cv::Point(point1.x + t * dx, point1.y + t * dy);
                 t = (float)((-B - std::sqrt(det)) / (2 * A));
-                intersection2 = &cv::Point(point1.x + t * dx, point1.y + t * dy);
+                *intersection2 = cv::Point(point1.x + t * dx, point1.y + t * dy);
                 return 2;
             }
         }
