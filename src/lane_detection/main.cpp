@@ -168,7 +168,7 @@ int main()
 
                     angle *= multiplikator;
 
-                    float front_angle = std::clamp<float>(angle + ANGLE_OFFSET_FRONT, -65, 65);
+                    float front_angle = std::clamp<float>(angle, -65, 65);
                     float back_angle = std::clamp<float>(-angle, -65, 65);
 
                    
