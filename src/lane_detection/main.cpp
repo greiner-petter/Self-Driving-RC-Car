@@ -195,22 +195,22 @@ int main()
                     if(abs(radius_in_cm) > 1000) {
                         angle = 0;
                     } else if(abs(radius_in_cm) > 800) {
-                        angle = 10 * direction;
+                        angle = 2 * direction;
                     } else if(abs(radius_in_cm) > 600) {
-                        angle = 20 * direction;
+                        angle = 4 * direction;
                     } else if(abs(radius_in_cm) > 400) {
-                        angle = 30 * direction;
+                        angle = 8 * direction;
                     } else if(abs(radius_in_cm) > 200) {
-                        angle = 40 * direction;
+                        angle = 16 * direction;
                     } else if(abs(radius_in_cm) > 100) {
-                        angle = 50 * direction;
+                        angle = 32 * direction;
                     } else {
                         angle = 60 * direction;
                     }
 
-                    add_last_angle(angle);
+                    //add_last_angle(angle);
 
-                    angle = get_oldest_angle();
+                    //angle = get_oldest_angle();
 /*
                     float lowestY = 0;
                     float destX = 0;
