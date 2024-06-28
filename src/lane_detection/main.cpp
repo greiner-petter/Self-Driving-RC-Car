@@ -175,10 +175,6 @@ int main()
 
                     std::tie(center, radius) = helper.calculate_radius(&matrix, &matrix2);
 
-                    if(std::getenv("CAR_ENV") != NULL) {
-                        cv::imwrite("bev_lines.jpg", matrix2);
-                    }
-
                     //auto [front_angle, back_angle] = drive_circle_in_angle(helper.map(radius));
 
                     float radius_in_cm = 0.6 * radius;
@@ -199,6 +195,13 @@ int main()
 
                     if(dest.x != -1) {
                         destX = dest.x;
+                    }
+
+                    cv::line(matrix2, cv::Point(400, 100), cv::Point(0, 100), cv::Scalar(100,0,255,0), 3);
+                    cv::circle(matrix2, cv::Point(destX, 100), 5, cv::Scalar(0,0,255,0), 5);
+
+                    if(std::getenv("CAR_ENV") != NULL) {
+                        cv::imwrite("bev_lines.jpg", matrix2);
                     }
 
                     float angle = ((destX - 200)/4) * 1.5; // MAPPING TO INT 8 -80 to 80 for angle
