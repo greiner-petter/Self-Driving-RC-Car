@@ -153,13 +153,6 @@ int main()
                     } 
 
                     int radius = helper.calculate_radius(&matrix, &matrix2);
-                   
-                    int speed = 30;//std::abs(radius) / 10;
-                    if(speed < 10) {
-                        speed = 10;
-                    }
-
-                    speed = std::clamp(speed, 0, 30);
 
                     if(std::getenv("CAR_ENV") != NULL) {
                         cv::imwrite("bev_lines.jpg", matrix2);
@@ -167,8 +160,15 @@ int main()
 
                     //auto [front_angle, back_angle] = drive_circle_in_angle(helper.map(radius));
 
-                    float front_angle = helper.map(90 - std::acos(radius / 40.0));
+                    float front_angle = std::clamp<float>(helper.map(90 - std::asin(0.11 / radius) * (180/3.14)), -65, 65);
                     float back_angle = -front_angle;
+
+                   
+                    int speed = 950/(abs(front_angle)+30);//std::abs(radius) / 10;
+
+
+                    speed = std::clamp(speed, 0, 30);
+
 
                     logger->log("Radius: %d, ANGLE: %d, BANGLE: %d", radius, front_angle, back_angle);
 

@@ -100,7 +100,7 @@ class Helper {
                 return -map(-X);
             }
 
-            return (X-0)/(3.14-0) * (0-65) + 65;
+            return (X-0)/(3.14-0) * (0-180) + 180;
         }
 
     private:
