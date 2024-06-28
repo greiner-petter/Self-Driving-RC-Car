@@ -181,10 +181,18 @@ int main()
 
                     float height = 60.0;
                     float angle;
-                    if(radius_in_cm > height) {
-                        angle = std::asin(height / radius_in_cm) * (180/3.14);
+
+                    float direction = abs(radius_in_cm)/radius_in_cm;
+
+                    //angle = std::asin(height / radius_in_cm) * (180/3.14);
+                    if(abs(radius_in_cm) > 1000) {
+                        angle = 0;
+                    } else if(abs(radius_in_cm) > 500) {
+                        angle = 20 * direction;
+                    } else if(abs(radius_in_cm) > 200) {
+                        angle = 40 * direction;
                     } else {
-                        angle = 65 * abs(radius_in_cm)/radius_in_cm;
+                        angle = 60;
                     }
 
                     ///add_last_angle(angle);
