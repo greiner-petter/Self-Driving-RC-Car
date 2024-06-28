@@ -167,7 +167,7 @@ int main()
 
                     //auto [front_angle, back_angle] = drive_circle_in_angle(helper.map(radius));
 
-                    float front_angle = 90 - std::acos(radius / 40.0);
+                    float front_angle = helper.map(90 - std::acos(radius / 40.0));
                     float back_angle = -front_angle;
 
                     logger->log("Radius: %d, ANGLE: %d, BANGLE: %d", radius, front_angle, back_angle);
