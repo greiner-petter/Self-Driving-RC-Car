@@ -97,7 +97,7 @@ class Helper {
         }
 
         double map(float X) {
-            return (X-170)/(230-170) * (-65-65) + 65;
+            return (X-0)/(400-0) * (-65-65) + 65;
         }
 
     private:

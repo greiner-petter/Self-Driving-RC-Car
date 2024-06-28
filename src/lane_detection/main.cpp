@@ -189,18 +189,27 @@ int main()
 
                     //angle = average_angle();
 
-                    cv::Point dest = circle.ClosestIntersection(center.x, center.y, radius, cv::Point(400, 395), cv::Point(0, 395));
+                    float lowestY = 401;
+                    float destX = 0;
 
-                    int destX = 200;
+                    for (double pi = 0; pi < 3.14/4; pi += 0.01) {
+                        float x = center.x + std::cos(pi) * radius;
+                        float y = center.y + std::sin(pi) * radius;
 
-                    if(dest.x != -1) {
-                        destX = dest.x;
+                        if(x > 400 || x < 0 || y > 400 || y < 0) {
+                            continue;
+                        }
+
+                        if(y < lowestY) {
+                            lowestY = y;
+                            destX = x;
+                        }
                     }
 
                     std::cout << "DESTX: " << destX;
 
-                    cv::line(matrix2, cv::Point(400, 395), cv::Point(0, 395), cv::Scalar(100,0,255,0), 3);
-                    cv::circle(matrix2, cv::Point(destX, 395), 5, cv::Scalar(0,0,255,0), 5);
+                    cv::line(matrix2, cv::Point(400, 200), cv::Point(0, 200), cv::Scalar(100,0,255,0), 3);
+                    cv::circle(matrix2, cv::Point(destX, lowestY), 5, cv::Scalar(0,0,255,0), 5);
 
                     if(std::getenv("CAR_ENV") != NULL) {
                         cv::imwrite("bev_lines.jpg", matrix2);
