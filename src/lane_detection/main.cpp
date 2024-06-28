@@ -184,7 +184,7 @@ int main()
 
                     float multiplikator = 30 / (std::abs(average_angle()) + 1) + .5;
 
-                    angle *= multiplikator;
+                    //angle *= multiplikator;
 
                     float front_angle = std::clamp<float>(angle, -65, 65);
                     float back_angle = std::clamp<float>(-angle, -65, 65);
