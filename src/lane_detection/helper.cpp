@@ -28,7 +28,7 @@ class Helper {
             }
             
             const int INITIAL_RADIUS = 50;
-            const int FINAL_RADIUS = 200;
+            const int FINAL_RADIUS = 125;
 
             cv::Point* previous_center = nullptr;
             float previous_center_radian = -1;
