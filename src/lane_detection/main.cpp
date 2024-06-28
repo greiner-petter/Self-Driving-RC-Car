@@ -192,7 +192,7 @@ int main()
                     float lowestY = 401;
                     float destX = 0;
 
-                    for (double pi = 0; pi < 3.14/4; pi += 0.01) {
+                    for (double pi = 0; pi < 3.14; pi += 0.01) {
                         float x = center.x + std::cos(pi) * radius;
                         float y = center.y + std::sin(pi) * radius;
 
