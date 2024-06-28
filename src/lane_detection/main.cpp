@@ -162,8 +162,10 @@ int main()
 
                     float radius_in_cm = 0.6 * radius;
 
-                    float front_angle = std::clamp<float>(std::asin(20 / radius_in_cm) * (180/3.14), -65, 65);
-                    float back_angle = -front_angle;
+                    float angle = std::asin(20 / radius_in_cm) * (180/3.14);
+
+                    float front_angle = std::clamp<float>(angle + ANGLE_OFFSET_FRONT, -65, 65);
+                    float back_angle = std::clamp<float>(-angle, -65, 65);
 
                    
                     int speed = 950/(abs(front_angle)+30);//std::abs(radius) / 10;
