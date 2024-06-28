@@ -160,10 +160,10 @@ int main()
 
                     //auto [front_angle, back_angle] = drive_circle_in_angle(helper.map(radius));
 
-                    float pixelRadiusTocmRadius = 0.6 * radius;
+                    double pixelRadiusTocmRadius = 0.6 * radius;
 
-                    float front_angle = -std::clamp<float>(std::asin(110 / pixelRadiusTocmRadius) * (180/3.14), -65, 65);
-                    float back_angle = -front_angle;
+                    double front_angle = -std::clamp<double>(std::asin(110 / pixelRadiusTocmRadius) * (180/3.14), -65, 65);
+                    double back_angle = -front_angle;
 
                    
                     int speed = 950/(abs(front_angle)+30);//std::abs(radius) / 10;
