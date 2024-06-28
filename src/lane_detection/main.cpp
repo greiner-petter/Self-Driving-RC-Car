@@ -208,6 +208,10 @@ int main()
                         angle = 60 * direction;
                     }
 
+                    angle+=ANGLE_OFFSET_FRONT;
+                    angle = std::clamp<float>(angle, -65,65);
+
+
                     //add_last_angle(angle);
 
                     //angle = get_oldest_angle();
