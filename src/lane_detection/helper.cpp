@@ -28,7 +28,7 @@ class Helper {
             }
             
             const int INITIAL_RADIUS = 50;
-            const int FINAL_RADIUS = 250;
+            const int FINAL_RADIUS = 175;
             const int ZIRKLE_DIFF = 25;
 
             cv::Point* previous_center = nullptr;
