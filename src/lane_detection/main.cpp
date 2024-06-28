@@ -11,6 +11,7 @@
 #include "../common/ocWindow.h"
 #include "./helper.cpp"
 #include "./circle.cpp"
+#include "./squareApproach.cpp"
 
 #include <opencv2/opencv.hpp>
 
@@ -33,6 +34,7 @@ ocCarProperties car_properties;
 
 Helper helper;
 Circle circle;
+SquareApproach square_approach;
 
 std::deque<float> last_angles;
 
@@ -187,17 +189,17 @@ int main()
                     float radius_in_cm = 0.6 * radius;
 
                     float height = 11.0;
-                    float angle;
+                    float angle = square_approach.calc_angle(center, radius);
 
                     float direction = abs(radius_in_cm)/radius_in_cm;
 
-                    angle = abs(std::asin(height / radius_in_cm) * (180/3.14)) * direction;
+                    /*angle = abs(std::asin(height / radius_in_cm) * (180/3.14)) * direction;
                     if(abs(radius_in_cm) <= height) {
                         angle = 450 * direction;
                     }
 
                     angle+=ANGLE_OFFSET_FRONT;
-                    angle = std::clamp<float>(std::pow(abs(angle), 1.35)*direction, -65,65);
+                    angle = std::clamp<float>(std::pow(abs(angle), 1.35)*direction, -65,65);*/
 
 
                     //add_last_angle(angle);
@@ -230,7 +232,7 @@ int main()
                         cv::imwrite("bev_lines.jpg", matrix2);
                     }
 
-                    int speed = (950/(abs(angle)+30))*5;//std::abs(radius) / 10;
+                    int speed = 30;//std::abs(radius) / 10;
                     speed = std::clamp(speed, 0, 60);
 
 
