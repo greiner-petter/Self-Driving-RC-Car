@@ -220,15 +220,13 @@ int main()
 
                     cv::line(matrix2, cv::Point(400, lowestY), cv::Point(0, lowestY), cv::Scalar(100,0,255,0), 3);
                     cv::circle(matrix2, cv::Point(destX, lowestY), 5, cv::Scalar(0,0,255,0), 5);
-
+*/
                     if(std::getenv("CAR_ENV") != NULL) {
                         cv::imwrite("bev_lines.jpg", matrix2);
                     }
 
-                    float angle = helper.map(destX);
-
                     auto [front_angle, back_angle] = drive_circle_in_angle(angle);
-*/
+
                     int speed = (950/(abs(angle)+30))*5;//std::abs(radius) / 10;
                     speed = std::clamp(speed, 0, 60);
 
