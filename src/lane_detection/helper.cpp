@@ -19,7 +19,7 @@ class Helper {
             return std::sqrt(std::pow(std::get<0>(p1) - std::get<0>(p2), 2) + std::pow(std::get<1>(p1) - std::get<1>(p2), 2));
         }
 
-        int calculate_radius(cv::Mat* matrix, cv::Mat* drawMatrix) {
+        std::tuple<cv::Point, int> calculate_radius(cv::Mat* matrix, cv::Mat* drawMatrix) {
             this->matrix = matrix;
             this->drawMatrix = drawMatrix;
 
@@ -76,13 +76,14 @@ class Helper {
             cv::Point final_center;
             int final_radius;
 
-            std::tie(final_center, final_radius) = loop_through_circles(center_point_list);
+            std::tuple<cv::Point, int> final = loop_through_circles(center_point_list);
+            std::tie(final_center, final_radius) = final;
 
             if(std::getenv("CAR_ENV") != NULL) {
                 cv::circle(*this->drawMatrix, final_center, abs(final_radius), cv::Scalar(200, 110, 50, 255), 5); //end radius kreis
             }
 
-            return final_radius;
+            return final;
         }
 
         double radius_to_angle(float radius) {

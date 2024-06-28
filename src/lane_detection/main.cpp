@@ -10,6 +10,7 @@
 
 #include "../common/ocWindow.h"
 #include "./helper.cpp"
+#include "./circle.cpp"
 
 #include <opencv2/opencv.hpp>
 
@@ -31,6 +32,7 @@ ocSharedMemory *shared_memory;
 ocCarProperties car_properties;
 
 Helper helper;
+Circle circle;
 
 std::deque<float> last_angles;
 
@@ -168,7 +170,10 @@ int main()
                         cv::imwrite("bev.jpg", matrix);
                     } 
 
-                    int radius = helper.calculate_radius(&matrix, &matrix2);
+                    int radius;
+                    cv::Point center;
+
+                    std::tie(center, radius) = helper.calculate_radius(&matrix, &matrix2);
 
                     if(std::getenv("CAR_ENV") != NULL) {
                         cv::imwrite("bev_lines.jpg", matrix2);
@@ -178,23 +183,36 @@ int main()
 
                     float radius_in_cm = 0.6 * radius;
 
-                    float angle = std::asin(20 / radius_in_cm) * (180/3.14);
+                    //float angle = std::asin(20 / radius_in_cm) * (180/3.14);
 
-                    add_last_angle(angle);
+                    ///add_last_angle(angle);
 
-                    float multiplikator = 30 / (std::abs(average_angle()) + 1) + .5;
+                    //float multiplikator = 30 / (std::abs(average_angle()) + 1) + .5;
 
                     //angle *= multiplikator;
 
-                    angle = average_angle();
+                    //angle = average_angle();
 
-                    float front_angle = std::clamp<float>(angle, -65, 65);
-                    float back_angle = std::clamp<float>(-angle, -65, 65);
+                    cv::Point dest = circle.ClosestIntersection(center.x, center.y, radius, cv::Point(400, 100), cv::Point(0, 100));
 
-                   
+                    int destX = 200;
+
+                    if(dest.x != -1) {
+                        destX = dest.x;
+                    }
+
+                    float angle = ((destX - 200)/4) * 1.5; // MAPPING TO INT 8 -80 to 80 for angle
+
+                    if(destX-200 < 0) {
+                        angle *= -1;
+                    }
+
+                    angle = std::clamp((int) angle, -65, 65); // Clamp between -80 and 80 so tire doesn't get stuck due to too high angle (150 and -150 if back steering is enabled)
+
+                    float front_angle = angle;
+                    float back_angle = -angle;
+
                     int speed = (950/(abs(front_angle)+30))*5;//std::abs(radius) / 10;
-
-
                     speed = std::clamp(speed, 0, 60);
 
 
