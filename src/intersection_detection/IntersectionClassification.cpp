@@ -61,6 +61,19 @@ bool IntersectionPostprocessing::calculate_result() {
     possibilities |= this->test_forward();
     possibilities |= this->test_left();
     possibilities |= this->test_right();
+
+    // if all directions are free it's most likely that canny didn't output the line furthest away
+    if (std::popcount(possibilities) == 3) {
+        possibilities &= ~(0b100);
+    } else if (std::popcount(possibilities) == 1) {
+        // this isn't safe but there is probably light interfering *somewhere*; assume it's also possible to drive straight
+        possibilities |= 0b100;
+    } else if (std::popcount(possibilities) != 2) {
+        // this is **really** unsafe since it's really just a guess to where we could drive since the decider expects this...
+        // a better approach would be to publish that the data isn't stable
+        // FIXME: FIX THIS! Especially since it's not true for large distances!
+        possibilities = 0b101;
+    }
     this->possible_directions = possibilities;
 
     // Mit Linien basierend auf Linien herausfinden, in welche Richtungen gefahren werden könnte
