@@ -161,15 +161,6 @@ int main() {
                         continue;
                     }
 
-                    last_found |= 1;
-
-                    if (std::popcount(last_found) < REQUIRED_CONSEC) {
-#ifdef LOG_NEGATIVE_RESULTS
-                        logger->log("Skipping this frame since only the last %u results were positive", (unsigned int) std::popcount(last_found));
-#endif
-                        continue;
-                    }
-
                     // y in bev
                     size_t found_line_y = histogram_filtered.get_highest_fulfilling_condition([](const size_t index, const uint32_t val) -> bool {
                             (void) index;
@@ -194,6 +185,15 @@ int main() {
                     }
 
             logger->log("Distance in cm: %lu", (unsigned long) distance);
+
+                    last_found |= 1;
+
+                    if (std::popcount(last_found) < REQUIRED_CONSEC) {
+#ifdef LOG_NEGATIVE_RESULTS
+                        logger->log("Skipping this frame since only the last %u results were positive", (unsigned int) std::popcount(last_found));
+#endif
+                        continue;
+                    }
 
                     uint8_t directions = proc.get_possible_directions();
                     // debug_print_directions(directions);
