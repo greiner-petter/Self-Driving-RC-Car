@@ -186,6 +186,12 @@ int main() {
 
                     size_t pixel_height = 399 - proc.get_height();
                     distance = (uint32_t) (((double) pixel_height) * CM_PER_PIXEL);
+                    if (distance > 40) {
+#ifdef LOG_NEGATIVE_RESULTS
+                        logger->log("Not publishing the distance %lu since it's too high", (unsigned long) distance);
+#endif
+                        continue;
+                    }
 
             logger->log("Distance in cm: %lu", (unsigned long) distance);
 
