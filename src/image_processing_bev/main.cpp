@@ -53,11 +53,11 @@ void initializeTransformParams() {
     src_vertices_lane_detection[2] = Point2f(780, 310);
     src_vertices_lane_detection[3] = Point2f(-380, 310);
 
-    src_vertices_intersection_detection[0] = Point2f(130,190);
-    src_vertices_intersection_detection[1] = Point2f(270,190);
-    src_vertices_intersection_detection[2] = Point2f(1200, 400);
-    src_vertices_intersection_detection[3] = Point2f(-800, 400);
 
+    src_vertices_intersection_detection[0] = Point2f(100,190);
+    src_vertices_intersection_detection[1] = Point2f(290,190);
+    src_vertices_intersection_detection[2] = Point2f(1200, 285);
+    src_vertices_intersection_detection[3] = Point2f(-800, 285);
 
     dst_vertices[0] = Point2f(0, 0);
     dst_vertices[1] = Point2f(400, 0);

@@ -18,7 +18,7 @@ bool IntersectionPostprocessing::calculate_result() {
     histo.clear();
     for (size_t i = 0; i < 2 * intersection_classification::INITIAL_SEARCH; ++i) {
         const int32_t search_y = (int32_t) this->some_line + ((int32_t) intersection_classification::INITIAL_SEARCH - (int32_t) i);
-        if (search_y < 0 || (uint32_t) search_y >=  399 - PIXEL_UNTIL_CAR_END) {
+        if (search_y < 0 || (uint32_t) search_y >=  399) {
             // out of bounds
             continue;
         }

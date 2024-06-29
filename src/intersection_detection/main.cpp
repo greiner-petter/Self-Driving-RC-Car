@@ -182,15 +182,9 @@ int main() {
                     }
 
                     size_t pixel_height = 399 - proc.get_height();
-                    distance = (uint32_t) (((double) pixel_height - PIXEL_UNTIL_CAR_END) * CM_PER_PIXEL);
+                    distance = (uint32_t) (((double) pixel_height) * CM_PER_PIXEL);
 
-                    if (distance > 10000) {
-#ifdef LOG_NEGATIVE_RESULTS
-                        logger->log("Found a frame but not publishing result due overflow because of negative result!");
-#endif
-                        continue;
-                    }
-                    logger->log("Distance in cm: %lu", (unsigned long) distance);
+            logger->log("Distance in cm: %lu", (unsigned long) distance);
 
                     uint8_t directions = proc.get_possible_directions();
                     // debug_print_directions(directions);

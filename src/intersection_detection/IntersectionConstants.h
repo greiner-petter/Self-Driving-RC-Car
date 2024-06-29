@@ -3,7 +3,7 @@
 #include <cstdint>
 
 // allowed +/- for horizontal lines
-#define ALLOWED_DEGREE_RANGE 6
+#define ALLOWED_DEGREE_RANGE 8
 
 // amount of values to take for blurring the histogram; changing this
 // requires manual changes in the code too!
@@ -23,21 +23,18 @@
 #define REQUIRED_CONSEC 3
 
 
-constexpr std::uint32_t REQUIRED_H_LENGTH_INTERSECTION = 13;
+constexpr std::uint32_t REQUIRED_H_LENGTH_INTERSECTION = 7;
 
 constexpr std::size_t INTERSECTION_DEGREE_SIZE = 180;
 constexpr std::size_t INTERSECTION_Y_LENGTH_SIZE = 400;
 
 // measured with chessboard
-constexpr double CM_PER_PIXEL = 5.7 / 11;
-
-// amount of bottom pixels that can be ignored
-constexpr uint32_t PIXEL_UNTIL_CAR_END = 43;
+constexpr double CM_PER_PIXEL = 39.9 / 63.0;
 
 namespace intersection_classification {
     // search in both directions to find start and end
     constexpr std::size_t INITIAL_SEARCH = 20;
 
-    constexpr std::size_t INTERSECTION_SQUARE_PX_W = 90;
-    constexpr std::size_t INTERSECTION_SQUARE_PX_H = 130;
+    constexpr std::size_t INTERSECTION_SQUARE_PX_W = 50;
+    constexpr std::size_t INTERSECTION_SQUARE_PX_H = 90;
 }
