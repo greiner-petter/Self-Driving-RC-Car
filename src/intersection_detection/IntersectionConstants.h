@@ -37,4 +37,7 @@ namespace intersection_classification {
 
     constexpr std::size_t INTERSECTION_SQUARE_PX_W = 50;
     constexpr std::size_t INTERSECTION_SQUARE_PX_H = 90;
+
+    constexpr std::uint32_t BEV_MID = 197;
+    constexpr std::uint32_t LINETEST_DIFF = 4;
 }

@@ -14,21 +14,40 @@ IntersectionPostprocessing::IntersectionPostprocessing(Mat image, size_t found_l
 }
 
 bool IntersectionPostprocessing::calculate_result() {
-    static Histogram<2 * intersection_classification::INITIAL_SEARCH> histo;
-    histo.clear();
+    static Histogram<2 * intersection_classification::INITIAL_SEARCH> histo_left;
+    static Histogram<2 * intersection_classification::INITIAL_SEARCH> histo_right;
+    histo_left.clear();
+    histo_right.clear();
     for (size_t i = 0; i < 2 * intersection_classification::INITIAL_SEARCH; ++i) {
         const int32_t search_y = (int32_t) this->some_line + ((int32_t) intersection_classification::INITIAL_SEARCH - (int32_t) i);
         if (search_y < 0 || (uint32_t) search_y >=  399) {
             // out of bounds
             continue;
         }
-        const uint32_t data = this->data.at<uint8_t>(search_y, 200);
-        histo.add_to_index(i, data);
+        constexpr uint32_t SEARCH_LEFT = intersection_classification::BEV_MID - intersection_classification::LINETEST_DIFF;
+        constexpr uint32_t SEARCH_RIGHT = intersection_classification::BEV_MID + intersection_classification::LINETEST_DIFF;
+
+        const uint32_t data_left = this->data.at<uint8_t>(search_y, SEARCH_LEFT);
+        const uint32_t data_right = this->data.at<uint8_t>(search_y, SEARCH_RIGHT);
+        histo_left.add_to_index(i, data_left);
+        histo_right.add_to_index(i, data_right);
+
+#ifdef DRAW_DEBUG_LINE
+        this->data.at<uint8_t>(search_y, SEARCH_LEFT) = 255;
+        this->data.at<uint8_t>(search_y, SEARCH_RIGHT) = 255;
+#endif
     }
 
-    vector<size_t> peaks = histo.get_peaks(5);
-    if (peaks.size() != 2) {
+    //histo.debug_print();
+    vector<size_t> peaks_left = histo_left.get_peaks(20);
+    vector<size_t> peaks_right = histo_right.get_peaks(20);
+    if (peaks_left.size() != 2 && peaks_right.size() != 2) {
         return false;
+    }
+
+    vector<size_t> &peaks = peaks_left;
+    if (peaks_left.size() != 2) {
+        peaks = peaks_right;
     }
 
     // the lower line has the higher y!
