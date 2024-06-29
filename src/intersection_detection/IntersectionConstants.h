@@ -33,11 +33,11 @@ constexpr double CM_PER_PIXEL = 39.9 / 63.0;
 
 namespace intersection_classification {
     // search in both directions to find start and end
-    constexpr std::size_t INITIAL_SEARCH = 20;
+    constexpr std::size_t INITIAL_SEARCH = 15;
 
     constexpr std::size_t INTERSECTION_SQUARE_PX_W = 50;
     constexpr std::size_t INTERSECTION_SQUARE_PX_H = 90;
 
     constexpr std::uint32_t BEV_MID = 197;
-    constexpr std::uint32_t LINETEST_DIFF = 4;
+    constexpr std::uint32_t LINETEST_DIFF = 2;
 }
