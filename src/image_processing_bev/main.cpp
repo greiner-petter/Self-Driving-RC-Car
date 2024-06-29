@@ -161,7 +161,7 @@ int main() {
                         GaussianBlur(dst_lane, dst_lane, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
 
                         GaussianBlur(dst_intersection, dst_intersection, Size_(BLUR_SIZE, BLUR_SIZE), 0);
-                        Canny(dst_intersection, dst_intersection, 50, 200, 3, true);
+                        Canny(dst_intersection, dst_intersection, 40, 170, 3, true);
                         GaussianBlur(dst_intersection, dst_intersection, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
 
                         // notify others about available picture
