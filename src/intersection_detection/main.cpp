@@ -178,6 +178,9 @@ int main() {
 
                     IntersectionPostprocessing proc(image, found_line_y);
                     if (!proc.calculate_result()) {
+#ifdef LOG_NEGATIVE_RESULTS
+                        logger->log("Skipping frame since calculating the result didn't yield the required result");
+#endif
                         continue;
                     }
 
