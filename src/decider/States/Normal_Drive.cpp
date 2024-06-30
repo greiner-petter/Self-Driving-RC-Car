@@ -69,6 +69,7 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
 
                     if(object_found){
                         Driver::stop();
+                        object_found = false;
                     } else{
                         Driver::drive_both_steering_values(speed, steering_front, steering_back);
                     }
