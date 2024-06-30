@@ -102,7 +102,7 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
         drive_left = false;
     }
 
-    
+    /*
     bool object_found = true;
     while(object_found){
         ocPacket recv_packet;
@@ -119,7 +119,7 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
             }
         }
     }
-
+    */
 
     if(drive_left){
         Driver::turn_left();

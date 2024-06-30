@@ -36,6 +36,7 @@ void Approaching_Crossing::on_entry(Statemachine* statemachine){
 
 void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     bool is_at_crossing = false;
+    uint8_t crossing_type;
     ocPacket recv_packet;
 
     uint32_t min_distance = 5;
@@ -61,7 +62,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
                 case ocMessageId::Intersection_Detected:{
                     auto reader = recv_packet.read_from_start();
                     distance = reader.read<uint32_t>();
-                    uint8_t crossing_type = reader.read<uint8_t>();
+                    crossing_type = reader.read<uint8_t>();
                     logger->log("Distance: %d", distance);
                 }break;
 
