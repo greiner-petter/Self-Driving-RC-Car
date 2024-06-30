@@ -10,7 +10,6 @@ class ocIpcSocket;
 class Approaching_Crossing: State {
     public:
         static inline bool is_initialized = false;
-        static inline bool running = true;
 
         static inline ocMember member = ocMember(ocMemberId::Approaching_Crossing, "Approaching_Crossing");
         static inline ocIpcSocket *socket;
@@ -25,7 +24,6 @@ class Approaching_Crossing: State {
         static inline ocLogger    *logger;
 
         static void initialize();
-        static void signal_handler(int);
         Approaching_Crossing(){}
         Approaching_Crossing(const Approaching_Crossing& other);
         Approaching_Crossing& operator=(const Approaching_Crossing& other);
