@@ -20,7 +20,12 @@ void Approaching_Crossing::initialize(){
         socket = member.get_socket();
         logger = member.get_logger();
         
-
+        ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        sup.clear_and_edit()
+            .write(ocMessageId::Intersection_Detected)
+            .write(ocMessageId::Lane_Detection_Values)
+            .write(ocMessageId::Object_Found);
+        socket->send_packet(sup);
         is_initialized = true;
     }
 }
@@ -30,12 +35,11 @@ void Approaching_Crossing::initialize(){
 void Approaching_Crossing::on_entry(Statemachine* statemachine){
     initialize();
 
-    ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
-        sup.clear_and_edit()
-            .write(ocMessageId::Intersection_Detected)
-            .write(ocMessageId::Lane_Detection_Values)
-            .write(ocMessageId::Object_Found);
-        socket->send_packet(sup);
+    ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
+        deafen.clear_and_edit()
+            .write(ocMemberId::Approaching_Crossing)
+            .write(false);
+        socket->send_packet(deafen);
 
     statemachine->run(nullptr);
 }
@@ -161,7 +165,8 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
 void Approaching_Crossing::on_exit(Statemachine* statemachine){
     ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
         deafen.clear_and_edit()
-            .write(ocMessageId::Deafen_Member);
+            .write(ocMemberId::Approaching_Crossing)
+            .write(true);
         socket->send_packet(deafen);
 }
 
