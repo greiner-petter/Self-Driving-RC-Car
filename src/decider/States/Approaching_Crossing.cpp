@@ -2,12 +2,20 @@
 #include "Is_At_Crossing.h"
 #include "../Driver.h"
 #include <math.h>
+#include <signal.h>
+
 
 
 State& Approaching_Crossing::get_instance(){
     static Approaching_Crossing singleton;
     return singleton;
 }
+
+
+void Approaching_Crossing::signal_handler(int){
+    running = false;
+}
+
 
 void Approaching_Crossing::initialize(){
     if(!is_initialized){
@@ -20,6 +28,10 @@ void Approaching_Crossing::initialize(){
             .write(ocMessageId::Lane_Detection_Values)
             .write(ocMessageId::Object_Found);
         socket->send_packet(sup);
+
+        signal(SIGINT, signal_handler);
+        signal(SIGQUIT, signal_handler);
+        signal(SIGTERM, signal_handler);
 
         is_initialized = true;
     }
@@ -49,7 +61,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     int8_t steering_back = 0;
 
 
-    while (!is_at_crossing) {
+    while (running) {
        
         int result = socket->read_packet(recv_packet);
         bool object_found = false;
@@ -93,6 +105,10 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
         //} else{
         if(distance <= min_distance) {
             is_at_crossing = true;
+            logger->log("Decider: Approaching_Crossing: Changing state from Approaching_Crossing to Is_At_Crossing");
+            Is_At_Crossing::get_instance().crossing_type = crossing_type;
+            statemachine->change_state(Is_At_Crossing::get_instance());
+
         } else if (distance > max_distance){
             Driver::drive_both_steering_values(speed, steering_front, steering_back);
             Driver::wait(0.1);
@@ -143,9 +159,9 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     }
 
     
-    logger->log("Decider: Approaching_Crossing: Changing state from Approaching_Crossing to Is_At_Crossing");
-    Is_At_Crossing::get_instance().crossing_type = crossing_type;
-    statemachine->change_state(Is_At_Crossing::get_instance());
+    //logger->log("Decider: Approaching_Crossing: Changing state from Approaching_Crossing to Is_At_Crossing");
+    //Is_At_Crossing::get_instance().crossing_type = crossing_type;
+    //statemachine->change_state(Is_At_Crossing::get_instance());
     
 }
 
