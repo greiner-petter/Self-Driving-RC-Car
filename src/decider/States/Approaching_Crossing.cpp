@@ -17,7 +17,8 @@ void Approaching_Crossing::initialize(){
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
         sup.clear_and_edit()
             .write(ocMessageId::Intersection_Detected)
-            .write(ocMessageId::Lane_Detection_Values);
+            .write(ocMessageId::Lane_Detection_Values)
+            .write(ocMessageId::Object_Found);
         socket->send_packet(sup);
 
         is_initialized = true;
@@ -49,6 +50,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     while (!is_at_crossing) {
        
         int result = socket->read_packet(recv_packet);
+        bool object_found = false;
         ocTime now = ocTime::now();
 
         if (result < 0) {
@@ -67,7 +69,10 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
                     auto reader = recv_packet.read_from_start();
                     speed = reader.read<int16_t>();
                     steering_front = reader.read<int8_t>();
-                    
+                }break;
+
+                case ocMessageId::Object_Found:{
+                    object_found = true;
                 }break;
                 
                 default:{
@@ -78,16 +83,19 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
             }
         }
 
-        if(distance <= min_distance) {
-            is_at_crossing = true;
-        } else if (distance > max_distance){
-            Driver::drive(speed, steering_front);
-            Driver::wait(0.1);
-        } else {
-            Driver::drive(min_speed, steering_front);
-            Driver::wait(0.1);
+        if(object_found){
+            Driver::stop();
+        } else{
+            if(distance <= min_distance) {
+                is_at_crossing = true;
+            } else if (distance > max_distance){
+                Driver::drive(speed, steering_front);
+                Driver::wait(0.1);
+            } else {
+                Driver::drive(min_speed, steering_front);
+                Driver::wait(0.1);
+            }
         }
-
         
         /*
         //algorithm for slowing down towards 2cm/s

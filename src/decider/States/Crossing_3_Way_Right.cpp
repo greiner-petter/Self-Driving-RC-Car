@@ -15,7 +15,8 @@ void Crossing_3_Way_Right::initialize(){
         logger = member.get_logger();
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
         sup.clear_and_edit()
-            .write(ocMessageId::Traffic_Sign_Detected);
+            .write(ocMessageId::Traffic_Sign_Detected)
+            .write(ocMessageId::Object_Found);
         socket->send_packet(sup);
 
         is_initialized = true;
@@ -47,6 +48,7 @@ void Crossing_3_Way_Right::on_entry(Statemachine* statemachine){
                 case ocMessageId::Traffic_Sign_Detected:{
                     auto reader = recv_packet.read_from_start();
                     uint16_t rawValue = reader.read<uint16_t>();
+                    distance = reader.read<uint64_t>();
                     trafficSign = static_cast<TrafficSignType>(rawValue);
                     received_sign_package = true;
                 } break;
@@ -71,29 +73,48 @@ void Crossing_3_Way_Right::run(Statemachine* statemachine, void* data){
     bool drive_forward = false;
 
     
-    //if (trafficSign.distanceCM < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
-    switch(trafficSign){
-        case TrafficSignType::Stop:
-            Driver::stop(2); //stop for 2s
-            break;
-        case TrafficSignType::PriorityRoad:
-            drive_forward = true;
-            break;
-        case TrafficSignType::Left:
-            drive_right = true;
-            break;
-        case TrafficSignType::Right:
-            drive_right = true;
-            break;
+    if (distance < 50){ //50cm == width of crossing; If distance larger, than sign is irrelevant for crossing
+        switch(trafficSign){
+            case TrafficSignType::Stop:
+                Driver::stop(2); //stop for 2s
+                break;
+            case TrafficSignType::PriorityRoad:
+                drive_forward = true;
+                break;
+            case TrafficSignType::Left:
+                drive_right = true;
+                break;
+            case TrafficSignType::Right:
+                drive_right = true;
+                break;
+        }
     }
-    //}
     
 
     if(drive_right && drive_forward){
         drive_forward = false;
     }
 
-    //if obstacle, stop
+    
+
+    bool object_found = true;
+    while(object_found){
+        ocPacket recv_packet;
+        int result = socket->read_packet(recv_packet);
+        if (result >= 0) {
+            switch (recv_packet.get_message_id()){
+                case ocMessageId::Object_Found:{
+                    object_found = true;
+                } break;
+                
+                default:{
+                    object_found = false;
+                } break;
+            }
+        }
+    }
+
+
 
     if(drive_right){
         Driver::turn_right();

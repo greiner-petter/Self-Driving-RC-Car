@@ -15,7 +15,8 @@ void Normal_Drive::initialize(){
         logger = member.get_logger();
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
         sup.clear_and_edit()
-            .write(ocMessageId::Intersection_Detected);
+            .write(ocMessageId::Intersection_Detected)
+            .write(ocMessageId::Object_Found);
         socket->send_packet(sup);
 
         is_initialized = true;
@@ -42,6 +43,7 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
     while (true) {
        
         int result = socket->read_packet(recv_packet, false);
+        bool object_found = false;
         ocTime now = ocTime::now();
 
         if (result < 0) {
@@ -52,6 +54,10 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
                     logger->log("Changing state from Normal_Drive to Approaching_Crossing");
                     statemachine->change_state(Approaching_Crossing::get_instance());  
                 }break;
+
+                case ocMessageId::Object_Found:{
+                    object_found = true;
+                }break;
                 
                 default:{
                     ocMessageId msg_id = recv_packet.get_message_id();
@@ -61,8 +67,11 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
             }
         }
 
-
-        Driver::drive_forward();
+        if(object_found){
+            Driver::stop();
+        } else{
+            Driver::drive_forward();
+        }
 
     }
 
