@@ -13,7 +13,7 @@ class State{
         virtual void on_exit(Statemachine* statemachine);
         virtual ~State(){}
 
-        static void ResetBuffer() {
+        void ResetBuffer() {
             distance = 0;
             trafficSign = TrafficSignType::None;
         }
