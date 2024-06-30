@@ -9,7 +9,7 @@ State& Normal_Drive::get_instance(){
 }
 
 void Normal_Drive::initialize(){
-    if(!is_initialized){
+    if(!Normal_Drive::is_initialized){
         member.attach();
         socket = member.get_socket();
         logger = member.get_logger();
@@ -21,7 +21,7 @@ void Normal_Drive::initialize(){
         socket->send_packet(sup);
         logger->log("Decider: Normal_Drive: send subscribe packet");
 
-        is_initialized = true;
+        Normal_Drive::is_initialized = true;
     }
 }
 
@@ -31,7 +31,7 @@ void Normal_Drive::on_entry(Statemachine* statemachine){
     ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
     deafen.set_sender(ocMemberId::Normal_Drive);
     
-   initialize();
+   Normal_Drive::initialize();
 
     
     deafen.clear_and_edit()

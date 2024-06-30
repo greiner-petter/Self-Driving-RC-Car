@@ -13,7 +13,7 @@ class Normal_Drive: State {
         static inline bool is_initialized = false;
 
         static inline ocMember member = ocMember(ocMemberId::Normal_Drive, "Normal_Drive");
-        static inline ocIpcSocket *socket = nullptr;
+        static inline ocIpcSocket *socket;
         
         void run(Statemachine* statemachine, void* data);
         void on_entry(Statemachine* statemachine);
