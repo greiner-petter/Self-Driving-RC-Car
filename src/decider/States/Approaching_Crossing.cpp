@@ -46,6 +46,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     int16_t speed = 15;
     int16_t min_speed = 15;
     int8_t steering_front = 0;
+    int8_t steering_back = 0;
 
 
     while (!is_at_crossing) {
@@ -70,6 +71,8 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
                     auto reader = recv_packet.read_from_start();
                     speed = reader.read<int16_t>();
                     steering_front = reader.read<int8_t>();
+                    steering_back = reader.read<int8_t>();
+
                 }break;
 
                 case ocMessageId::Object_Found:{
@@ -90,10 +93,10 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
         if(distance <= min_distance) {
             is_at_crossing = true;
         } else if (distance > max_distance){
-            Driver::drive(speed, steering_front);
+            Driver::drive_both_steering_values(speed, steering_front, steering_back);
             Driver::wait(0.1);
         } else {
-            Driver::drive(min_speed, steering_front);
+            Driver::drive_both_steering_values(min_speed, steering_front, steering_back);
             Driver::wait(0.1);
         }
         //}
