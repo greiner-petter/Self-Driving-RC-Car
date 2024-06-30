@@ -29,7 +29,7 @@ static void signal_handler(int)
     running = false;
 }
 
-static void debug_print_directions(uint8_t directions) {
+[[maybe_unused]] static void debug_print_directions(uint8_t directions) {
     std::cout << "Links: " << (directions & 1 ? "true" : "false") << "; Rechts: " << (directions & 2 ? "true" : "false") << "; Geradeaus: " << (directions & 4 ? "true" : "false") << std::endl;
 }
 
