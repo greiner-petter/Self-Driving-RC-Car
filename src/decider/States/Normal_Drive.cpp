@@ -47,9 +47,11 @@ void Normal_Drive::on_entry(Statemachine* statemachine){
         .write(false);
     socket->send_packet(deafen);
 
-   logger->log("Decider: Initialized Normale_Drive. Running the state next");
+    logger->log("Decider: Initialized Normale_Drive. Running the state next");
+    State::distance = 0;
+    State::trafficSign = TrafficSignType::None;  
 
-   statemachine->run(nullptr);
+    statemachine->run(nullptr);
 }
 
 

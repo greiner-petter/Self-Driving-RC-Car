@@ -154,6 +154,6 @@ void Crossing_3_Way_T::on_exit(Statemachine* statemachine){
         .write(true);
     socket->send_packet(deafen);
 
-    distance = 0;
-    trafficSign = TrafficSignType::None;
+    State::distance = 0;
+    State::trafficSign = TrafficSignType::None;
 }
