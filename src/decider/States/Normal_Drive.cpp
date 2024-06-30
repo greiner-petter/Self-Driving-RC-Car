@@ -34,7 +34,7 @@ void Normal_Drive::on_entry(Statemachine* statemachine){
 
     ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
     deafen.clear_and_edit()
-        .write(ocMemberId::Approaching_Crossing)
+        .write(ocMemberId::Normal_Drive)
         .write(false);
     socket->send_packet(deafen);
 
@@ -110,7 +110,7 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
 void Normal_Drive::on_exit(Statemachine* statemachine){
     ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
     deafen.clear_and_edit()
-        .write(ocMemberId::Approaching_Crossing)
+        .write(ocMemberId::Normal_Drive)
         .write(true);
     socket->send_packet(deafen);
 }
