@@ -1,5 +1,6 @@
 #include "IntersectionClassification.h"
 #include "Histogram.h"
+#include <bit>
 #include <vector>
 
 using cv::Mat;
