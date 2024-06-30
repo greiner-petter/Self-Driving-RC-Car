@@ -9,10 +9,13 @@ State& Normal_Drive::get_instance(){
 }
 
 void Normal_Drive::initialize(){
+    member.attach();
+    logger = member.get_logger();
+    logger->log("HERE");
     if(!Normal_Drive::is_initialized){
-        member.attach();
+        //member.attach();
         socket = member.get_socket();
-        logger = member.get_logger();
+        //logger = member.get_logger();
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
         sup.clear_and_edit()
             .write(ocMessageId::Intersection_Detected)
