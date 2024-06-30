@@ -60,7 +60,7 @@ class SquareApproach {
                         continue;
                     }
 
-                    return (400 - x) / 200.0 * 25 + 40; // 40 to 65
+                    return (400 - x) / 200.0 * 40 + 40; // 40 to 80
                 } else if(y == 0 && x <= 200) { // links unten
                     if(!first_intersection) {
                         first_intersection = true;
