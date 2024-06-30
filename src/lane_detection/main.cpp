@@ -160,146 +160,148 @@ int main()
     logger->log("Lane Detection started!");
 
     while(running) {
-        int32_t socket_status;
-        while (0 < (socket_status = socket->read_packet(ipc_packet, true)))
+        int32_t socket_status = socket->read_packet(ipc_packet);
+
+        if(socket_status <= 0) {
+            continue;
+        }
+
+        switch(ipc_packet.get_message_id())
         {
-            switch(ipc_packet.get_message_id())
+            case ocMessageId::Lines_Available:
             {
-                case ocMessageId::Lines_Available:
-                {
-                    cv::Mat camImageMatrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[0].img_buffer);
-                    cv::Mat matrix;
-                    cv::Mat matrix2;
+                cv::Mat camImageMatrix = cv::Mat(400,400,CV_8UC1, shared_memory->bev_data[0].img_buffer);
+                cv::Mat matrix;
+                cv::Mat matrix2;
 
-                    camImageMatrix.copyTo(matrix);
-                    matrix.copyTo(matrix2);
+                camImageMatrix.copyTo(matrix);
+                matrix.copyTo(matrix2);
 
-                    if(std::getenv("CAR_ENV") != NULL) {
-                        cv::imwrite("bev.jpg", matrix);
-                    } 
+                if(std::getenv("CAR_ENV") != NULL) {
+                    cv::imwrite("bev.jpg", matrix);
+                } 
 
-                    int radius;
-                    cv::Point center;
+                int radius;
+                cv::Point center;
 
-                    std::tie(center, radius) = helper.calculate_radius(&matrix, &matrix2);
+                std::tie(center, radius) = helper.calculate_radius(&matrix, &matrix2);
 
-                    float radius_in_cm = 0.6 * radius;
+                float radius_in_cm = 0.6 * radius;
 
-                    float height = 11.0;
-                    float angle = std::clamp<float>(square_approach.calc_angle(center, radius) + ANGLE_OFFSET_FRONT, -65, 65);
+                float height = 11.0;
+                float angle = std::clamp<float>(square_approach.calc_angle(center, radius) + ANGLE_OFFSET_FRONT, -65, 65);
 
-                    //add_last_angle(angle);
+                //add_last_angle(angle);
 
-                    //angle = get_oldest_angle();
+                //angle = get_oldest_angle();
 
-                    float direction = abs(radius_in_cm)/radius_in_cm;
+                float direction = abs(radius_in_cm)/radius_in_cm;
 
-                    /*angle = abs(std::asin(height / radius_in_cm) * (180/3.14)) * direction;
-                    if(abs(radius_in_cm) <= height) {
-                        angle = 450 * direction;
-                    }
+                /*angle = abs(std::asin(height / radius_in_cm) * (180/3.14)) * direction;
+                if(abs(radius_in_cm) <= height) {
+                    angle = 450 * direction;
+                }
 
-                    angle+=ANGLE_OFFSET_FRONT;
-                    angle = std::clamp<float>(std::pow(abs(angle), 1.35)*direction, -65,65);*/
+                angle+=ANGLE_OFFSET_FRONT;
+                angle = std::clamp<float>(std::pow(abs(angle), 1.35)*direction, -65,65);*/
 
 
-                    //add_last_angle(angle);
+                //add_last_angle(angle);
 
-                    //angle = get_oldest_angle();
+                //angle = get_oldest_angle();
 /*
-                    float lowestY = 0;
-                    float destX = 0;
+                float lowestY = 0;
+                float destX = 0;
 
-                    for (double pi = 0; pi < 3.14; pi += 0.01) {
-                        float x = center.x + std::cos(pi) * radius;
-                        float y = center.y + std::sin(pi) * radius;
+                for (double pi = 0; pi < 3.14; pi += 0.01) {
+                    float x = center.x + std::cos(pi) * radius;
+                    float y = center.y + std::sin(pi) * radius;
 
-                        if(x > 400 || x < 0 || y > 400 || y < 0) {
-                            continue;
-                        }
-
-                        if(y < lowestY) {
-                            lowestY = y;
-                            destX = x;
-                        }
+                    if(x > 400 || x < 0 || y > 400 || y < 0) {
+                        continue;
                     }
 
-                    std::cout << "DESTX: " << destX;
+                    if(y < lowestY) {
+                        lowestY = y;
+                        destX = x;
+                    }
+                }
 
-                    cv::line(matrix2, cv::Point(400, lowestY), cv::Point(0, lowestY), cv::Scalar(100,0,255,0), 3);
-                    cv::circle(matrix2, cv::Point(destX, lowestY), 5, cv::Scalar(0,0,255,0), 5);
+                std::cout << "DESTX: " << destX;
+
+                cv::line(matrix2, cv::Point(400, lowestY), cv::Point(0, lowestY), cv::Scalar(100,0,255,0), 3);
+                cv::circle(matrix2, cv::Point(destX, lowestY), 5, cv::Scalar(0,0,255,0), 5);
 */
-                    if(std::getenv("CAR_ENV") != NULL) {
-                        cv::imwrite("bev_lines.jpg", matrix2);
-                    }
+                if(std::getenv("CAR_ENV") != NULL) {
+                    cv::imwrite("bev_lines.jpg", matrix2);
+                }
 
-                    int speed = 60;
+                int speed = 60;
 
-                    /*double speed_multiplikator = 0;
-                    double normalized_radius = std::clamp<double>(std::abs(radius)/1000, 0, 1);
-                    
-                    if(normalized_radius >= 0.5) {
-                        speed_multiplikator = 1-2*std::pow((1-normalized_radius),2);
-                    } else {
-                        speed_multiplikator = 2*std::pow((normalized_radius),2);
-                    }
+                /*double speed_multiplikator = 0;
+                double normalized_radius = std::clamp<double>(std::abs(radius)/1000, 0, 1);
+                
+                if(normalized_radius >= 0.5) {
+                    speed_multiplikator = 1-2*std::pow((1-normalized_radius),2);
+                } else {
+                    speed_multiplikator = 2*std::pow((normalized_radius),2);
+                }
 
-                    speed += speed_multiplikator*20;*/
+                speed += speed_multiplikator*20;*/
 
-                    //auto [front_angle, back_angle] = drive_circle_in_angle(angle);
+                //auto [front_angle, back_angle] = drive_circle_in_angle(angle);
 
-                    //speed = std::clamp(speed, 0, 120);
+                //speed = std::clamp(speed, 0, 120);
 
 
-                    //logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius_in_cm, front_angle, back_angle, destX);
+                //logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius_in_cm, front_angle, back_angle, destX);
 
-                    logger->log("Radius in cm %f, ANGLE: %f", radius_in_cm, angle);
+                logger->log("Radius in cm %f, ANGLE: %f", radius_in_cm, angle);
 
+                ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
+                    ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
+                    ipc_packet.clear_and_edit()
+                        .write<int16_t>(speed)
+                        .write<int8_t>(angle)
+                        .write<int8_t>(-angle);
+                    socket->send_packet(ipc_packet);
+
+            /*
+
+                if((check_if_on_street(histogram_unten) && onStreet)) {
                     ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
-                        ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
-                        ipc_packet.clear_and_edit()
-                            .write<int16_t>(speed)
-                            .write<int8_t>(angle)
-                            .write<int8_t>(-angle);
-                        socket->send_packet(ipc_packet);
-
-                /*
-
-                    if((check_if_on_street(histogram_unten) && onStreet)) {
-                        ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
-                        ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
-                        ipc_packet.clear_and_edit()
-                            .write<int16_t>(30)
-                            .write<int8_t>(front_angle)
-                            .write<int8_t>(back_angle);
-                        socket->send_packet(ipc_packet);
-                    } else if(check_if_on_street(histogram_unten) && !onStreet) {
-                        ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
-                        ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
-                        ipc_packet.clear_and_edit()
-                            .write<int16_t>(-30)
-                            .write<int8_t>(-front_angle)
-                            .write<int8_t>(0); 
-                        socket->send_packet(ipc_packet);
-                        
-                        if(onStreetCount > 15) {
-                            onStreet = true;
-                            onStreetCount = 0;
-                        } else {
-                            onStreetCount++;
-                        }
-                        
-                    } else if (!onStreet){
-                        return_to_street(front_angle, histogram_unten);
-                    }*/
+                    ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
+                    ipc_packet.clear_and_edit()
+                        .write<int16_t>(30)
+                        .write<int8_t>(front_angle)
+                        .write<int8_t>(back_angle);
+                    socket->send_packet(ipc_packet);
+                } else if(check_if_on_street(histogram_unten) && !onStreet) {
+                    ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
+                    ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
+                    ipc_packet.clear_and_edit()
+                        .write<int16_t>(-30)
+                        .write<int8_t>(-front_angle)
+                        .write<int8_t>(0); 
+                    socket->send_packet(ipc_packet);
+                    
+                    if(onStreetCount > 15) {
+                        onStreet = true;
+                        onStreetCount = 0;
+                    } else {
+                        onStreetCount++;
+                    }
+                    
+                } else if (!onStreet){
+                    return_to_street(front_angle, histogram_unten);
+                }*/
+            } break;
+            default:
+                {
+                    ocMessageId msg_id = ipc_packet.get_message_id();
+                    ocMemberId  mbr_id = ipc_packet.get_sender();
+                    logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
                 } break;
-                default:
-                    {
-                        ocMessageId msg_id = ipc_packet.get_message_id();
-                        ocMemberId  mbr_id = ipc_packet.get_sender();
-                        logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
-                    } break;
-            }
         }
     }
 }
