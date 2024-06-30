@@ -95,6 +95,7 @@ int main(int argc,char* argv[])
         {
             logger->warn(std::to_string(percent).c_str());
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(8));
 
     }
 
