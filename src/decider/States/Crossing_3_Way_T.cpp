@@ -105,7 +105,7 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
                 logger->warn("Decider: Crossing_3_Way_T: No sign detected");
                 break;
         }
-        logger->log("Decider: TrafficSign: %s", TrafficSignTypeToString(trafficSign).c_str());
+        logger->error("Decider: TrafficSign: %s", TrafficSignTypeToString(trafficSign).c_str());
     }
 
     if(drive_left && drive_right){
