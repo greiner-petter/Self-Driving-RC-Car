@@ -2,6 +2,7 @@
 #include "../common/ocMember.h"
 #include "Histogram.h"
 #include "IntersectionConstants.h"
+#include "IntersectionClassification.h"
 #include <signal.h>
 #include <csignal>
 #include <bit>
@@ -11,6 +12,10 @@
 using cv::Point2f;
 using cv::Rect;
 using cv::Point;
+using cv::Mat;
+
+using cv::RETR_LIST;
+using cv::CHAIN_APPROX_NONE;
 
 using std::vector;
 
@@ -24,25 +29,8 @@ static void signal_handler(int)
     running = false;
 }
 
-static vector<vector<Point>> read_lines(ocPacket &packet) {
-    vector<vector<Point>> lines;
-    ocBufferReader reader = packet.read_from_start();
-    size_t num_contours;
-    reader.read(&num_contours);
-
-    for (size_t i = 0; i < num_contours; ++i) {
-        vector<Point> points;
-        size_t num_points;
-        reader.read(&num_points);
-        for (size_t j = 0; j < num_points; ++j) {
-            Point p;
-            reader.read(&p.x);
-            reader.read(&p.y);
-            points.push_back(p);
-        }
-        lines.push_back(points);
-    }
-    return lines;
+static void debug_print_directions(uint8_t directions) {
+    std::cout << "Links: " << (directions & 1 ? "true" : "false") << "; Rechts: " << (directions & 2 ? "true" : "false") << "; Geradeaus: " << (directions & 4 ? "true" : "false") << std::endl;
 }
 
 static uint32_t distance_between_points_indexed(const vector<Point> &points, size_t &start_index) {
@@ -89,6 +77,24 @@ static void generate_filtered_histogram(Histogram<INTERSECTION_Y_LENGTH_SIZE> &h
     }
 }
 
+static vector<vector<Point>> detect_lines_in_image(Mat &image) {
+    vector<vector<Point>> contours;
+    findContours(image, contours, RETR_LIST, CHAIN_APPROX_NONE);
+
+    vector<vector<Point>> cleaned_data;
+    for (auto &contour : contours) {
+        double len = cv::arcLength(contour, false);
+        if (len < 30) {
+            continue;
+        }
+        vector<Point> reduced_contour;
+        double epsilon = 0.007 * arcLength(contour, false);
+        approxPolyDP(contour, reduced_contour, epsilon, false);
+        cleaned_data.push_back(reduced_contour);
+    }
+    return cleaned_data;
+}
+
 int main() {
     // Catch some signals to allow us to gracefully shut down the process
     signal(SIGINT, signal_handler);
@@ -101,11 +107,12 @@ int main() {
 
     ocIpcSocket *socket = member.get_socket();
     logger = member.get_logger();
+    ocSharedMemory *shared_memory = member.get_shared_memory();
 
     ocPacket ipc_packet;
     ipc_packet.set_message_id(ocMessageId::Subscribe_To_Messages);
     ipc_packet.clear_and_edit()
-        .write(ocMessageId::Lines_Available);
+        .write(ocMessageId::Birdseye_Image_Available);
     socket->send_packet(ipc_packet);
 
     // Listen for detected Lines
@@ -114,25 +121,29 @@ int main() {
     {
         switch(ipc_packet.get_message_id())
             {
-                case ocMessageId::Lines_Available:
+                case ocMessageId::Birdseye_Image_Available:
                 {
+                    ocBufferReader reader = ipc_packet.read_from_start();
+                    uint8_t bit;
+                    reader.read(&bit);
                     static uint32_t distance;
                     distance = 0;
-                    vector<vector<Point>> lines = read_lines(ipc_packet);
+                    Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2 | bit].img_buffer);
+                    vector<vector<Point>> lines = detect_lines_in_image(image);
                     static Histogram<INTERSECTION_DEGREE_SIZE> angle_length_hist;
                     angle_length_hist.clear();
                     generate_angle_length_histogram(angle_length_hist, lines);
                     angle_length_hist.blur();
                     static uint8_t last_found = 0;
+                    last_found <<= 1;
 
                     // indices of where the peaks are
-                    vector<size_t> histogram_peak_indices = angle_length_hist.get_peaks((uint32_t) ((double) angle_length_hist.get_highest_point_index() * REQUIRED_LENGTH_MULT));
+                    vector<size_t> histogram_peak_indices = angle_length_hist.get_peaks((uint32_t) ((double) angle_length_hist.get_highest_point_value() * REQUIRED_LENGTH_MULT));
 
                     if (histogram_peak_indices.size() > MAX_FOUND_RESULTS) {
 #ifdef LOG_NEGATIVE_RESULTS
                         logger->log("Skipping this frame since we found %llu results", (unsigned long long) histogram_peak_indices.size());
 #endif
-                        last_found <<= 1;
                         continue;
                     }
                     // TODO: Find diagonal (45° and 135°) and if they exist skip due to curve
@@ -147,11 +158,33 @@ int main() {
 #ifdef LOG_NEGATIVE_RESULTS
                         logger->log("Skipping this frame since the length was only %lu", (unsigned long) highest_in_filtered);
 #endif
-                        last_found <<= 1;
                         continue;
                     }
 
-                    last_found <<= 1;
+                    // y in bev
+                    size_t found_line_y = histogram_filtered.get_highest_fulfilling_condition([](const size_t index, const uint32_t val) -> bool {
+                            return index <= 394 && val >= REQUIRED_H_LENGTH_INTERSECTION;
+                    });
+
+                    IntersectionPostprocessing proc(image, found_line_y);
+                    if (!proc.calculate_result()) {
+#ifdef LOG_NEGATIVE_RESULTS
+                        logger->log("Skipping frame since calculating the result didn't yield the required result");
+#endif
+                        continue;
+                    }
+
+                    size_t pixel_height = 399 - proc.get_height();
+                    distance = (uint32_t) (((double) pixel_height) * CM_PER_PIXEL);
+                    if (distance > 40) {
+#ifdef LOG_NEGATIVE_RESULTS
+                        logger->log("Not publishing the distance %lu since it's too high", (unsigned long) distance);
+#endif
+                        continue;
+                    }
+
+            logger->log("Distance in cm: %lu", (unsigned long) distance);
+
                     last_found |= 1;
 
                     if (std::popcount(last_found) < REQUIRED_CONSEC) {
@@ -161,19 +194,8 @@ int main() {
                         continue;
                     }
 
-                    //angle_length_hist.debug_print();
-                    //histogram_filtered.debug_print();
-
-                    size_t pixel_height = 399 - histogram_filtered.get_highest_fulfilling_condition([](const size_t index, const uint32_t val) -> bool {
-                            (void) index;
-                            return val >= REQUIRED_H_LENGTH_INTERSECTION;
-                    });
-                    // we don't have to check, if the original return value is 400 (out of range) since
-
-                    logger->log("Distance in pixels: %lu", (unsigned long) pixel_height);
-
-                    // TODO: Implement possible directions
-                    uint8_t directions = 6;
+                    uint8_t directions = proc.get_possible_directions();
+                    // debug_print_directions(directions);
                     if (distance != 0) {
                         ipc_packet.clear();
                         ipc_packet.set_sender(ocMemberId::Intersection_Detection);

@@ -13,8 +13,6 @@
 // is normally disabled since it requires an entire Matrix copy
 // and adds other graphical overhead by the drawing itself
 
-//#define DRAW_POLYLINES_ON_EMPTY_OUTPUT
-
 // 0 for lane BEV and 2 for intersection BEV
 #define VIDEO_OUTPUT 0
 
@@ -30,11 +28,7 @@ using cv::Point2f;
 using cv::Mat;
 using cv::Point;
 
-using cv::RETR_LIST;
-using cv::CHAIN_APPROX_NONE;
 using cv::Size_;
-
-using std::vector;
 
 static bool running = true;
 ocLogger *logger;
@@ -59,11 +53,11 @@ void initializeTransformParams() {
     src_vertices_lane_detection[2] = Point2f(780, 310);
     src_vertices_lane_detection[3] = Point2f(-380, 310);
 
-    src_vertices_intersection_detection[0] = Point2f(130,190);
-    src_vertices_intersection_detection[1] = Point2f(270,190);
-    src_vertices_intersection_detection[2] = Point2f(1200, 400);
-    src_vertices_intersection_detection[3] = Point2f(-800, 400);
 
+    src_vertices_intersection_detection[0] = Point2f(100,190);
+    src_vertices_intersection_detection[1] = Point2f(290,190);
+    src_vertices_intersection_detection[2] = Point2f(1200, 285);
+    src_vertices_intersection_detection[3] = Point2f(-800, 285);
 
     dst_vertices[0] = Point2f(0, 0);
     dst_vertices[1] = Point2f(400, 0);
@@ -110,9 +104,8 @@ int main() {
                 {
                     case ocMessageId::Camera_Image_Available:
                     {
-                        if(shared_memory->last_written_cam_data_index != 0) {
-                            continue;
-                        }
+                        static uint8_t write_bit = 1;
+                        write_bit ^= 1;
 
                         // Move to shared memory
 
@@ -126,8 +119,8 @@ int main() {
                             .read<uint32_t>(&frameNumber)
                             .read<ptrdiff_t>(&memoryAdressOffset)
                             .read<size_t>(&dataSize);
-                        
-                        ocCamData* tempCamData = (ocCamData*) ((std::byte *)shared_memory + memoryAdressOffset);
+
+                        ocCamData *tempCamData = &shared_memory->cam_data[shared_memory->last_written_cam_data_index];
 
                         shared_memory->bev_data[0] = (ocBevData) {
                             tempCamData->frame_time,
@@ -137,7 +130,7 @@ int main() {
                             {}
                         };
 
-                        shared_memory->bev_data[2] = (ocBevData) {
+                        shared_memory->bev_data[2 | write_bit] = (ocBevData) {
                             tempCamData->frame_time,
                             tempCamData->frame_number,
                             0,(int32_t) 400,
@@ -157,7 +150,7 @@ int main() {
                         Mat src(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
 
                         Mat dst_lane(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
-                        Mat dst_intersection(400, 400, CV_8UC1, shared_memory->bev_data[2].img_buffer);
+                        Mat dst_intersection(400, 400, CV_8UC1, shared_memory->bev_data[2 | write_bit].img_buffer);
 
                         // intersection needs to be calculated first since lane writes to itself!
                         toBirdsEyeView(src, dst_intersection, M_intersection_detection);
@@ -168,63 +161,25 @@ int main() {
                         GaussianBlur(dst_lane, dst_lane, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
 
                         GaussianBlur(dst_intersection, dst_intersection, Size_(BLUR_SIZE, BLUR_SIZE), 0);
-                        Canny(dst_intersection, dst_intersection, 50, 200, 3, true);
+                        Canny(dst_intersection, dst_intersection, 40, 170, 3, true);
                         GaussianBlur(dst_intersection, dst_intersection, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
 
                         // notify others about available picture
                         ipc_packet.set_sender(ocMemberId::Image_Processing);
                         ipc_packet.set_message_id(ocMessageId::Birdseye_Image_Available);
+                        ocBufferWriter writer = ipc_packet.clear_and_edit();
+                        writer.write(write_bit);
                         socket->send_packet(ipc_packet);
                         
 #ifndef hideContours
-                        vector<vector<Point>> contours;
-                        findContours(dst_intersection, contours, RETR_LIST, CHAIN_APPROX_NONE);
-#ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-                        Mat redrewed_image = Mat::zeros(dst_lane.size(), CV_8UC1);
-#endif
-
-                        vector<vector<Point>> cleaned_data;
-                        for (auto &contour : contours) {
-                            double len = cv::arcLength(contour, false);
-                            if (len < 30) {
-                                continue;
-                            }
-                            vector<Point> reduced_contour;
-                            double epsilon = 0.007 * arcLength(contour, false);
-                            approxPolyDP(contour, reduced_contour, epsilon, false);
-                            cleaned_data.push_back(reduced_contour);
-                        }
 
                         ipc_packet.set_sender(ocMemberId::Image_Processing);
                         ipc_packet.set_message_id(ocMessageId::Lines_Available);
-                        ocBufferWriter writer = ipc_packet.clear_and_edit();
-                        writer.write(cleaned_data.size());
-
-                        for (size_t i = 0; i < cleaned_data.size(); ++i)
-                        {
-                            auto &contour = cleaned_data.at(i);
-                            writer.write(contour.size());
-                            for (size_t j = 0; j < contour.size(); ++j) {
-                                Point &point = contour.at(j);
-                                writer.write(point.x);
-                                writer.write(point.y);
-                            }
-#ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-                            cv::Scalar color = cv::Scalar(255);
-                            polylines(redrewed_image, contour, false, color, 1,
-                                      cv::LINE_8, 0);
-#endif
-                        }
 
                         // notify other about found lines in BEV
                         socket->send_packet(ipc_packet);
 
 
-#ifdef DRAW_POLYLINES_ON_EMPTY_OUTPUT
-#if VIDEO_OUTPUT == 2
-                        redrewed_image.copyTo(dst_intersection);
-#endif
-#endif
 #endif
                     } break;
                     default:
