@@ -12,11 +12,6 @@ class State{
         virtual void run(Statemachine* statemachine, void *data) = 0;
         virtual void on_exit(Statemachine* statemachine);
         virtual ~State(){}
-
-        void ResetBuffer() {
-            distance = 0;
-            trafficSign = TrafficSignType::None;
-        }
         
         inline static TrafficSignType trafficSign = TrafficSignType::None;
         inline static uint64_t distance = 0;
