@@ -16,7 +16,8 @@ void Normal_Drive::initialize(){
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
         sup.clear_and_edit()
             .write(ocMessageId::Intersection_Detected)
-            .write(ocMessageId::Object_Found);
+            .write(ocMessageId::Object_Found)
+            .write(ocMessageId::Lane_Detection_Values);
         socket->send_packet(sup);
 
         is_initialized = true;
@@ -42,7 +43,7 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
     
     while (true) {
        
-        int result = socket->read_packet(recv_packet, false);
+        int result = socket->read_packet(recv_packet);
         bool object_found = false;
         ocTime now = ocTime::now();
 
@@ -58,21 +59,38 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
                 case ocMessageId::Object_Found:{
                     object_found = true;
                 }break;
+
+                case ocMessageId::Lane_Detection_Values:{
+                    auto reader = recv_packet.read_from_start();
+
+                    int16_t speed = reader.read<int16_t>();
+                    int8_t steering_front = reader.read<int8_t>();
+                    int8_t steering_back = reader.read<int8_t>();
+
+                    if(object_found){
+                        Driver::stop();
+                        object_found = false;
+                    } else{
+                        Driver::drive_both_steering_values(speed, steering_front, steering_back);
+                    }
+
+                }break;
                 
                 default:{
                     ocMessageId msg_id = recv_packet.get_message_id();
                     ocMemberId mbr_id = recv_packet.get_sender();
-                    logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+                    logger->warn("Normal_Drive: Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
                 }break;
             }
         }
 
+        /*
         if(object_found){
             Driver::stop();
         } else{
             Driver::drive_forward();
         }
-
+        */
     }
 
     
