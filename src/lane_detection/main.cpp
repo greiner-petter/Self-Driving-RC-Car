@@ -191,6 +191,10 @@ int main()
                     float height = 11.0;
                     float angle = std::clamp<float>(square_approach.calc_angle(center, radius) + ANGLE_OFFSET_FRONT, -65, 65);
 
+                    add_last_angle(angle);
+
+                    angle = get_oldest_angle();
+
                     float direction = abs(radius_in_cm)/radius_in_cm;
 
                     /*angle = abs(std::asin(height / radius_in_cm) * (180/3.14)) * direction;
