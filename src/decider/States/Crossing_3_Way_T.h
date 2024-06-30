@@ -3,6 +3,7 @@
 #include "../../common/ocCar.h"
 #include "State.h"
 #include "../Statemachine.h"
+#include "../Driver.h"
 #include "../../traffic_sign_detection/TrafficSign.h"
 
 class ocMember;
@@ -14,6 +15,7 @@ class Crossing_3_Way_T: State {
 
         static inline ocMember member = ocMember(ocMemberId::Crossing_3_Way_T, "Crossing_3_Way_T");
         static inline ocIpcSocket *socket;
+        TrafficSignType trafficSign;
 
         void run(Statemachine* statemachine, void* data);
         void on_entry(Statemachine* statemachine);

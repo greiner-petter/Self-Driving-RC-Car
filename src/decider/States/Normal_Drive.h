@@ -14,6 +14,7 @@ class Normal_Drive: State {
 
         static inline ocMember member = ocMember(ocMemberId::Normal_Drive, "Normal_Drive");
         static inline ocIpcSocket *socket;
+        
         void run(Statemachine* statemachine, void* data);
         void on_entry(Statemachine* statemachine);
         void on_exit(Statemachine* statemachine);

@@ -2,6 +2,7 @@
 #include "../common/ocMember.h"
 
 #include "SignDetector.h"
+#include "HaarSignDetector.h"
 #include <chrono>
 #include <thread>
 #include <string>
@@ -9,17 +10,19 @@
 
 int main(int argc,char* argv[])
 {
+    SignDetector* detector = nullptr;
+
     // Parsing Params
     bool supportGUI = true;
     std::vector<std::string> params{argv, argv+argc};
     for (auto i : params)
     {
-        if (i == "--nogui")
+        if (i == "--nogui" || i == "--headless")
         {
             supportGUI = false;
         }
     }
-        
+    detector = new HaarSignDetector();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(8000));
     // ocMember represents the interface to the IPC system
@@ -35,7 +38,7 @@ int main(int argc,char* argv[])
     ocSharedMemory* shared_memory = member.get_shared_memory();
     ocLogger*    logger = member.get_logger();
 
-    SignDetector::Init(socket, shared_memory, logger, supportGUI);
+    detector->Init(socket, shared_memory, logger, supportGUI);
 
     logger->warn("Traffic-Sign-Detection: Process Shutdown.");
 

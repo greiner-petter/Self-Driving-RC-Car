@@ -6,6 +6,8 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_executable(intersection_detection
     main.cpp
+    Histogram.cpp
+    IntersectionClassification.cpp
     # add other .cpp files here when needed.
 )
 
