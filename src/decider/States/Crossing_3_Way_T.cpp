@@ -41,6 +41,13 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
     initialize();
     ocPacket recv_packet;
 
+    ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
+    deafen.set_sender(ocMemberId::Crossing_3_Way_T);
+    deafen.clear_and_edit()
+        .write(ocMemberId::Crossing_3_Way_T)
+        .write(false);
+    socket->send_packet(deafen);
+
     bool received_sign_package = false;
 
     while (!received_sign_package) {
@@ -137,7 +144,10 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
 
 
 void Crossing_3_Way_T::on_exit(Statemachine* statemachine){
-    /*
-    Code
-    */
+    ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
+    deafen.set_sender(ocMemberId::Crossing_3_Way_T);
+    deafen.clear_and_edit()
+        .write(ocMemberId::Crossing_3_Way_T)
+        .write(true);
+    socket->send_packet(deafen);
 }
