@@ -159,7 +159,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
 
 
 void Approaching_Crossing::on_exit(Statemachine* statemachine){
-    ocPacket deafen = ocPacket(ocMessageId::Subscribe_To_Messages);
+    ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
         deafen.clear_and_edit()
             .write(ocMessageId::Deafen_Member);
         socket->send_packet(deafen);
