@@ -19,7 +19,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
-#define THRESHOLD 0.14
+#define THRESHOLD 0.16
 
 static double CalcObstacleCoverage(const cv::Mat& camData)
 {
