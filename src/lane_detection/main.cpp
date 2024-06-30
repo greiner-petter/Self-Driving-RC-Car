@@ -54,7 +54,7 @@ static void signal_handler(int)
 }
 
 void add_last_angle(float angle) {
-    if (last_angles.size() > 10) {
+    if (last_angles.size() > 3) {
         last_angles.pop_back(); // Remove the oldest angle (from the back)
     }
     last_angles.push_front(angle); // Add the new angle to the front
