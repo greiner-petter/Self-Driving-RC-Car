@@ -6,6 +6,9 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_executable(lane_detection
     main.cpp
+    helper.cpp
+    circle.cpp
+    squareApproach.cpp
 )
 
 target_compile_features(lane_detection PRIVATE cxx_std_20)
