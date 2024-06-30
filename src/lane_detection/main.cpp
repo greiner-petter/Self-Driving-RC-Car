@@ -255,16 +255,17 @@ int main()
 
 
                 //logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius_in_cm, front_angle, back_angle, destX);
-
-                logger->log("Radius in cm %f, ANGLE: %f", radius_in_cm, angle);
+                if(std::getenv("CAR_ENV") != NULL) {
+                    logger->log("Radius in cm %f, ANGLE: %f", radius_in_cm, angle);
+                }
 
                 ipc_packet.set_sender(ocMemberId::Lane_Detection_Values);
-                    ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
-                    ipc_packet.clear_and_edit()
-                        .write<int16_t>(speed)
-                        .write<int8_t>(angle)
-                        .write<int8_t>(-angle);
-                    socket->send_packet(ipc_packet);
+                ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
+                ipc_packet.clear_and_edit()
+                    .write<int16_t>(speed)
+                    .write<int8_t>(angle)
+                    .write<int8_t>(-angle);
+                socket->send_packet(ipc_packet);
 
             /*
 
