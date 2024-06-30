@@ -149,6 +149,7 @@ void Crossing_3_Way_Left::on_exit(Statemachine* statemachine){
         .write(ocMemberId::Crossing_3_Way_Left)
         .write(true);
     socket->send_packet(deafen);
-    
-    State::on_exit(statemachine);
+
+    distance = 0;
+    trafficSign = TrafficSignType::None;    
 }
