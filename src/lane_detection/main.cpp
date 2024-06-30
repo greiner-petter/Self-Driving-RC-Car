@@ -259,8 +259,8 @@ int main()
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
                             .write<int16_t>(speed)
-                            .write<int8_t>(front_angle)
-                            .write<int8_t>(back_angle);
+                            .write<int8_t>(angle)
+                            .write<int8_t>(angle);
                         socket->send_packet(ipc_packet);
 
                 /*
