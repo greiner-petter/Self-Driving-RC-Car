@@ -152,6 +152,6 @@ void Crossing_3_Way_Left::on_exit(Statemachine* statemachine){
 
     State::distance = 0;
     State::trafficSign = TrafficSignType::None;    
-    logger->error("Decider: TrafficSign: %s", TrafficSignTypeToString(trafficSign).c_str());
+    logger->error("RESET TrafficSign: %s", TrafficSignTypeToString(trafficSign).c_str());
 
 }
