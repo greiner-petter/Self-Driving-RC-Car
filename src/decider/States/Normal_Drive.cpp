@@ -28,6 +28,7 @@ void Normal_Drive::initialize(){
 
 void Normal_Drive::on_entry(Statemachine* statemachine){
     ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
+    deafen.set_sender(ocMemberId::Normal_Drive);
     /*
     Code
     */
@@ -110,6 +111,7 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
 
 void Normal_Drive::on_exit(Statemachine* statemachine){
     ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
+    deafen.set_sender(ocMemberId::Normal_Drive);
     deafen.clear_and_edit()
         .write(ocMemberId::Normal_Drive)
         .write(true);
