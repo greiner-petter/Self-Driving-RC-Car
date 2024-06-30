@@ -80,7 +80,7 @@ void HaarSignDetector::Run()
     s_Instances.push_back(std::make_shared<ClassifierInstance>(GetLeftSignXML().string(), "Left", TrafficSignType::Left, 0.2));
     s_Instances.push_back(std::make_shared<ClassifierInstance>(GetRightSignXML().string(), "Right", TrafficSignType::Right, 0.2));
     s_Instances.push_back(std::make_shared<ClassifierInstance>(GetPrioritySignXML().string(), "Priority", TrafficSignType::PriorityRoad, 0.25));
-    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetParkSignXML().string(), "Park", TrafficSignType::Park, 0.3));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetParkSignXML().string(), "Park", TrafficSignType::Park, 0.32));
 
     while (true)
     {
