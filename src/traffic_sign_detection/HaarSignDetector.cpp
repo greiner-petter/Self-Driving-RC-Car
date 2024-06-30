@@ -57,6 +57,7 @@ struct ClassifierInstance
     std::string label;
     TrafficSignType type;
     double signSizeFactor;
+    bool seenLastFrame = false;
 
     ClassifierInstance(const std::string& path, const std::string& signLabel, TrafficSignType signType, double sizeFactor)
     {
@@ -116,9 +117,13 @@ void HaarSignDetector::Run()
                 	cv::putText(cam_image, "Found " + signClassifier->label + " Sign", cv::Point(roi.x, roi.y + roi.height + 30),
                             cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2, cv::LINE_4);
                 }
-                s_Logger->log("Found %s Sign in distance: %d", signClassifier->label.c_str(), distance);
-                SendPacket({signClassifier->type, distance});
+                s_Logger->log("Found %s Sign in distance: %03d  seenLastFrame:%d", signClassifier->label.c_str(), distance, (int)signClassifier->seenLastFrame);
+                if (signClassifier->seenLastFrame)
+                {
+                    SendPacket({signClassifier->type, distance});
+                }
             }
+            signClassifier->seenLastFrame = sign_scaled.size() != 0;
         }
 
         if (s_SupportGUI) 
