@@ -140,6 +140,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
 
     
     logger->log("Changing state from Approaching_Crossing to Is_At_Crossing");
+    Is_At_Crossing::get_instance().crossing_type = crossing_type;
     statemachine->change_state(Is_At_Crossing::get_instance());
     
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "../Statemachine.h"
+#include <stdint.h>
 
 
 class Statemachine;
@@ -10,5 +11,8 @@ class State{
         virtual void run(Statemachine* statemachine, void *data) = 0;
         virtual void on_exit(Statemachine* statemachine) = 0;
         virtual ~State(){}
+
+        
+        uint8_t crossing_type;
 };
 
