@@ -13,7 +13,8 @@ git pull
 
 # Change the commenting on the following lines to switch between
 # debug and release build.
-cmake --warn-uninitialized -B build -DCMAKE_BUILD_TYPE=Debug && \
+#cmake --warn-uninitialized -B build -DCMAKE_BUILD_TYPE=Debug && \
+cmake --warn-uninitialized -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo && \
 #cmake --warn-uninitialized -B build -DCMAKE_BUILD_TYPE=Release && \
 cmake --build build -j6 && \
 cmake --build build -j6 --target test
