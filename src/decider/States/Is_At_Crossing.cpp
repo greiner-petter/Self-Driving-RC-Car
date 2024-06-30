@@ -98,17 +98,23 @@ void Is_At_Crossing::run(Statemachine* statemachine, void* data){
     
    
     if(this->crossing_type & 0b101) {
-        crossing_state = Crossing_3_Way_Left::get_instance();
+        //crossing_state = Crossing_3_Way_Left::get_instance();
         logger->log("Decider: Is_At_Crossing: Changing state from Is_At_Crossing to Crossing_3_Way_Left");
+        statemachine->change_state(Crossing_3_Way_Left::get_instance());
     } else if(this->crossing_type & 0b110) {
-        crossing_state = Crossing_3_Way_Right::get_instance();
+        //crossing_state = Crossing_3_Way_Right::get_instance();
         logger->log("Decider: Is_At_Crossing: Changing state from Is_At_Crossing to Crossing_3_Way_Right");
+        statemachine->change_state(Crossing_3_Way_Right::get_instance());
     } else if(this->crossing_type & 0b011) {
-        crossing_state = Crossing_3_Way_T::get_instance();
+        //crossing_state = Crossing_3_Way_T::get_instance();
         logger->log("Decider: Is_At_Crossing: Changing state from Is_At_Crossing to Crossing_3_Way_T");
+        statemachine->change_state(Crossing_3_Way_T::get_instance());
+    } else{
+        logger->log("Decider: Is_At_Crossing: No correct crossing detected");
+        statemachine->change_state(crossing_state);
     }
 
-    statemachine->change_state(crossing_state);
+    //statemachine->change_state(crossing_state);
     
     
     

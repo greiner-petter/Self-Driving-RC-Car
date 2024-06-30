@@ -21,6 +21,7 @@ void Approaching_Crossing::initialize(){
         logger = member.get_logger();
         
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        sup.set_sender(ocMemberId::Approaching_Crossing);
         sup.clear_and_edit()
             .write(ocMessageId::Intersection_Detected)
             .write(ocMessageId::Lane_Detection_Values)

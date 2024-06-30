@@ -14,6 +14,7 @@ void Driver::initialize(){
         socket = member.get_socket();
         logger = member.get_logger();
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        sup.set_sender(ocMemberId::Driver);
         sup.clear_and_edit()
             .write(ocMessageId::Lane_Detection_Values);
         socket->send_packet(sup);

@@ -15,6 +15,7 @@ void Crossing_3_Way_Left::initialize(){
         socket = member.get_socket();
         logger = member.get_logger();
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        sup.set_sender(ocMemberId::Crossing_3_Way_Left);
         sup.clear_and_edit()
             .write(ocMessageId::Traffic_Sign_Detected);
             //.write(ocMessageId::Object_Found);

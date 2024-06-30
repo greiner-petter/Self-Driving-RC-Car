@@ -15,6 +15,7 @@ void Normal_Drive::initialize(){
         socket = member.get_socket();
         logger = member.get_logger();
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        sup.set_sender(ocMemberId::Normal_Drive);
         sup.clear_and_edit()
             .write(ocMessageId::Intersection_Detected)
             .write(ocMessageId::Object_Found)
