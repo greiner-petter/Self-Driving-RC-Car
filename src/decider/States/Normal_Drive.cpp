@@ -19,6 +19,7 @@ void Normal_Drive::initialize(){
             .write(ocMessageId::Object_Found)
             .write(ocMessageId::Lane_Detection_Values);
         socket->send_packet(sup);
+        logger->log("Decider: Normal_Drive: send subscribe packet");
 
         is_initialized = true;
     }
