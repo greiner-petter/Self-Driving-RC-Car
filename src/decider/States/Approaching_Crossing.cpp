@@ -117,10 +117,10 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
 
         } else if (distance > max_distance){
             Driver::drive_both_steering_values(speed, steering_front, steering_back);
-            Driver::wait(0.1);
+            //Driver::wait(0.1);
         } else {
             Driver::drive_both_steering_values(min_speed, steering_front, steering_back);
-            Driver::wait(0.1);
+            //Driver::wait(0.1);
         }
         /*
         //algorithm for slowing down towards 2cm/s
