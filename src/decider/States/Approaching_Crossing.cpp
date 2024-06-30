@@ -33,9 +33,9 @@ void Approaching_Crossing::initialize(){
 
 
 void Approaching_Crossing::on_entry(Statemachine* statemachine){
+    ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
     initialize();
 
-    ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
     deafen.clear_and_edit()
         .write(ocMemberId::Approaching_Crossing)
         .write(false);
