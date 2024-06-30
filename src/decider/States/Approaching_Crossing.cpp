@@ -105,6 +105,14 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
         //} else{
         if(distance <= min_distance) {
             is_at_crossing = true;
+
+            ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
+            deafen.set_sender(ocMemberId::Approaching_Crossing);
+            deafen.clear_and_edit()
+                .write(ocMemberId::Approaching_Crossing)
+                .write(true);
+            socket->send_packet(deafen);
+
         } else if (distance > max_distance){
             Driver::drive_both_steering_values(speed, steering_front, steering_back);
             Driver::wait(0.1);
