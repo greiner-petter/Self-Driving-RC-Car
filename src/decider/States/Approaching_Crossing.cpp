@@ -101,10 +101,11 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
             }
         }
 
-        //if(object_found){
-        //    Driver::stop();
-        //} else{
-        if(distance <= min_distance) {
+        if(object_found){
+            Driver::stop();
+
+            object_found = false;
+        } else if(distance <= min_distance) {
             is_at_crossing = true;
 
             ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
@@ -121,8 +122,6 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
             Driver::drive_both_steering_values(min_speed, steering_front, steering_back);
             Driver::wait(0.1);
         }
-        //}
-        
         /*
         //algorithm for slowing down towards 2cm/s
         double* arr = smooth_speed(speed);

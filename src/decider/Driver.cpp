@@ -19,6 +19,13 @@ void Driver::initialize(){
             .write(ocMessageId::Lane_Detection_Values);
         socket->send_packet(sup);
 
+        ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
+        deafen.set_sender(ocMemberId::Driver);
+        deafen.clear_and_edit()
+            .write(ocMemberId::Driver)
+            .write(true);
+        socket->send_packet(deafen);
+
         is_initialized = true;
     }
 }
@@ -59,6 +66,13 @@ void Driver::turn_left(){
  * The speed and steering values are received from the lane-detection using the IPC-Hub.
 */
 void Driver::drive_forward(){
+    ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
+    deafen.set_sender(ocMemberId::Driver);
+    deafen.clear_and_edit()
+        .write(ocMemberId::Driver)
+        .write(false);
+    socket->send_packet(deafen);
+
     ocPacket recv_packet;
 
     int result = socket->read_packet(recv_packet);
@@ -94,6 +108,11 @@ void Driver::drive_forward(){
             } break;
         }
     }
+
+    deafen.clear_and_edit()
+        .write(ocMemberId::Driver)
+        .write(true);
+    socket->send_packet(deafen);
 }
 
 
