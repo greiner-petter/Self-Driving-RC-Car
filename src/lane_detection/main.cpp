@@ -235,7 +235,7 @@ int main()
                     int speed = 60;
 
                     double speed_multiplikator = 0;
-                    double normalized_radius = std::abs(radius)/3125;
+                    double normalized_radius = std::clamp<double>(std::abs(radius)/1000, 0, 1);
                     
                     if(normalized_radius >= 0.5) {
                         speed_multiplikator = 1-2*std::pow((1-normalized_radius),2);
@@ -245,7 +245,7 @@ int main()
 
                     speed += speed_multiplikator*60;
 
-                    speed = std::clamp(speed, 0, 120);
+                    //speed = std::clamp(speed, 0, 120);
 
 
                     //logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius_in_cm, front_angle, back_angle, destX);
