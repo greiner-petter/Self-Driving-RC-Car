@@ -1,6 +1,10 @@
 #include "Normal_Drive.h"
 #include "Approaching_Crossing.h"
 #include "../Driver.h"
+#include "../../traffic_sign_detection/TrafficSign.h"
+#include "Crossing_3_Way_Left.h"
+#include "Crossing_3_Way_Right.h"
+#include "Crossing_3_Way_T.h"
 
 
 
@@ -19,7 +23,8 @@ void Normal_Drive::initialize(){
         sup.clear_and_edit()
             .write(ocMessageId::Intersection_Detected)
             .write(ocMessageId::Object_Found)
-            .write(ocMessageId::Lane_Detection_Values);
+            .write(ocMessageId::Lane_Detection_Values)
+            .write(ocMessageId::Traffic_Sign_Detected);
         socket->send_packet(sup);
         logger->log("Decider: Normal_Drive: send subscribe packet");
 
@@ -86,7 +91,16 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
                     } else{
                         Driver::drive_both_steering_values(speed, steering_front, steering_back);
                     }
+                }break;
 
+                case ocMessageId::Traffic_Sign_Detected:{
+                    auto reader = recv_packet.read_from_start();
+                    uint16_t rawValue = reader.read<uint16_t>();
+                    uint64_t distance = reader.read<uint64_t>();
+                    TrafficSignType trafficSign = static_cast<TrafficSignType>(rawValue);
+
+                    State::trafficSign = trafficSign;
+                    State::distance = distance;
                 }break;
                 
                 default:{

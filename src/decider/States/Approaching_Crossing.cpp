@@ -25,7 +25,8 @@ void Approaching_Crossing::initialize(){
         sup.clear_and_edit()
             .write(ocMessageId::Intersection_Detected)
             .write(ocMessageId::Lane_Detection_Values)
-            .write(ocMessageId::Object_Found);
+            .write(ocMessageId::Object_Found)
+            .write(ocMessageId::Traffic_Sign_Detected);
         socket->send_packet(sup);
         is_initialized = true;
     }
@@ -86,6 +87,16 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
                     steering_front = reader.read<int8_t>();
                     steering_back = reader.read<int8_t>();
 
+                }break;
+
+                case ocMessageId::Traffic_Sign_Detected:{
+                    auto reader = recv_packet.read_from_start();
+                    uint16_t rawValue = reader.read<uint16_t>();
+                    uint64_t distance = reader.read<uint64_t>();
+                    TrafficSignType trafficSign = static_cast<TrafficSignType>(rawValue);
+
+                    State::trafficSign = trafficSign;
+                    State::distance = distance;
                 }break;
 
                 case ocMessageId::Object_Found:{

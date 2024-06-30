@@ -152,4 +152,6 @@ void Crossing_3_Way_T::on_exit(Statemachine* statemachine){
         .write(ocMemberId::Crossing_3_Way_T)
         .write(true);
     socket->send_packet(deafen);
+
+    State::on_exit(statemachine);
 }
