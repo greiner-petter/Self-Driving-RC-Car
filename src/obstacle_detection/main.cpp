@@ -46,7 +46,6 @@ static double CalcObstacleCoverage(const cv::Mat& camData)
 
 int main(int argc,char* argv[])
 {
-    // Parsing Params
     bool verbose = false;
     std::vector<std::string> params{argv, argv+argc};
     for (auto i : params)
@@ -73,7 +72,6 @@ int main(int argc,char* argv[])
 
     while (true)
     {
-        // Fetch Camera Data
         ocCamData *cam_data = &shared_memory->cam_data[shared_memory->last_written_cam_data_index];
 
         int type = CV_8UC1;
