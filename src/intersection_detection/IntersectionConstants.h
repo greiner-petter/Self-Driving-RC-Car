@@ -3,7 +3,7 @@
 #include <cstdint>
 
 // allowed +/- for horizontal lines
-#define ALLOWED_DEGREE_RANGE 8
+#define ALLOWED_DEGREE_RANGE 12
 
 // amount of values to take for blurring the histogram; changing this
 // requires manual changes in the code too!
