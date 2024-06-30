@@ -232,8 +232,17 @@ int main()
                         cv::imwrite("bev_lines.jpg", matrix2);
                     }
 
-                    int speed = 60;//std::abs(radius) / 10;
-                    speed = std::clamp(speed, 0, 60);
+                    int speed = 0;
+
+                    if(std::abs(radius) > 1000) {
+                        speed = 120;
+                    } else if(std::abs(radius) > 750) {
+                        speed = 90;
+                    } else if(std::abs(radius) > 500) {
+                        speed = 60;
+                    }
+
+                    speed = std::clamp(speed, 0, 120);
 
 
                     //logger->log("Radius in cm %f, ANGLE: %f, BANGLE: %f, DESTX: %d", radius_in_cm, front_angle, back_angle, destX);
