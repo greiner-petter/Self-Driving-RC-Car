@@ -1,5 +1,8 @@
 #include "HaarSignDetector.h"
 
+#include <chrono>
+#include <thread>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
