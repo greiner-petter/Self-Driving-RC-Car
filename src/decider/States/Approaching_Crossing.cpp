@@ -37,7 +37,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     bool is_at_crossing = false;
     ocPacket recv_packet;
 
-    uint32_t min_distance = 10;
+    uint32_t min_distance = 5;
     uint32_t max_distance = 25;
     uint32_t distance = 0xFFFF;
 

@@ -85,7 +85,7 @@ void Is_At_Crossing::run(Statemachine* statemachine, void* data){
                 logger->log("Changing state from Is_At_Crossing to Crossing_3_Way_T");
             }
         } else {
-            Driver::drive(5, 0);
+            //Driver::drive(5, 0);
         }
 
     }
