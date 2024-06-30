@@ -189,7 +189,7 @@ int main()
                     float radius_in_cm = 0.6 * radius;
 
                     float height = 11.0;
-                    float angle = std::clamp(square_approach.calc_angle(center, radius) + ANGLE_OFFSET_FRONT, -65, 65);
+                    float angle = std::clamp<float>(square_approach.calc_angle(center, radius) + ANGLE_OFFSET_FRONT, -65, 65);
 
                     float direction = abs(radius_in_cm)/radius_in_cm;
 
