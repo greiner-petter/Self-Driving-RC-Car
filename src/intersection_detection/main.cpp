@@ -142,7 +142,7 @@ int main() {
 
                     if (histogram_peak_indices.size() > MAX_FOUND_RESULTS) {
 #ifdef LOG_NEGATIVE_RESULTS
-                        logger->log("Skipping this frame since we found %llu results", (unsigned long long) histogram_peak_indices.size());
+                        logger->warn("Skipping this frame since we found %llu results", (unsigned long long) histogram_peak_indices.size());
 #endif
                         continue;
                     }
@@ -156,7 +156,7 @@ int main() {
                     uint32_t highest_in_filtered = histogram_filtered.get_highest_point_value();
                     if (highest_in_filtered < REQUIRED_H_LENGTH_INTERSECTION) {
 #ifdef LOG_NEGATIVE_RESULTS
-                        logger->log("Skipping this frame since the length was only %lu", (unsigned long) highest_in_filtered);
+                        logger->warn("Skipping this frame since the length was only %lu at position %lu", (unsigned long) highest_in_filtered, (unsigned long) histogram_filtered.get_highest_point_index());
 #endif
                         continue;
                     }
@@ -169,7 +169,7 @@ int main() {
                     IntersectionPostprocessing proc(image, found_line_y);
                     if (!proc.calculate_result()) {
 #ifdef LOG_NEGATIVE_RESULTS
-                        logger->log("Skipping frame since calculating the result didn't yield the required result");
+                        logger->warn("Skipping frame since calculating the result didn't yield the required result");
 #endif
                         continue;
                     }
@@ -178,7 +178,7 @@ int main() {
                     distance = (uint32_t) (((double) pixel_height) * CM_PER_PIXEL);
                     if (distance > 40) {
 #ifdef LOG_NEGATIVE_RESULTS
-                        logger->log("Not publishing the distance %lu since it's too high", (unsigned long) distance);
+                        logger->warn("Not publishing the distance %lu since it's too high", (unsigned long) distance);
 #endif
                         continue;
                     }
