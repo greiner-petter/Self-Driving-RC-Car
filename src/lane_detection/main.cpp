@@ -184,16 +184,14 @@ int main()
 
                     std::tie(center, radius) = helper.calculate_radius(&matrix, &matrix2);
 
-                    //auto [front_angle, back_angle] = drive_circle_in_angle(helper.map(radius));
-
                     float radius_in_cm = 0.6 * radius;
 
                     float height = 11.0;
                     float angle = std::clamp<float>(square_approach.calc_angle(center, radius) + ANGLE_OFFSET_FRONT, -65, 65);
 
-                    add_last_angle(angle);
+                    //add_last_angle(angle);
 
-                    angle = get_oldest_angle();
+                    //angle = get_oldest_angle();
 
                     float direction = abs(radius_in_cm)/radius_in_cm;
 
@@ -249,6 +247,8 @@ int main()
 
                     speed += speed_multiplikator*20;
 
+                    auto [front_angle, back_angle] = drive_circle_in_angle(angle);
+
                     //speed = std::clamp(speed, 0, 120);
 
 
@@ -260,8 +260,8 @@ int main()
                         ipc_packet.set_message_id(ocMessageId::Lane_Detection_Values);
                         ipc_packet.clear_and_edit()
                             .write<int16_t>(speed)
-                            .write<int8_t>(angle)
-                            .write<int8_t>(-angle);
+                            .write<int8_t>(front_angle)
+                            .write<int8_t>(back_angle);
                         socket->send_packet(ipc_packet);
 
                 /*
