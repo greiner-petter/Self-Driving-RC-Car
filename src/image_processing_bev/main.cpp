@@ -48,10 +48,10 @@ static void signal_handler(int)
 }
 
 void initializeTransformParams() {
-    src_vertices_lane_detection[0] = Point2f(70,210);
-    src_vertices_lane_detection[1] = Point2f(330,210);
-    src_vertices_lane_detection[2] = Point2f(780, 310);
-    src_vertices_lane_detection[3] = Point2f(-380, 310);
+    src_vertices_lane_detection[0] = Point2f(150,190);  //  70, 210 //160, 210
+    src_vertices_lane_detection[1] = Point2f(250,190);  // 330, 210 //240, 210
+    src_vertices_lane_detection[2] = Point2f(780, 310); // 780, 310 //345, 310
+    src_vertices_lane_detection[3] = Point2f(-380, 310);  //-380, 310 // 55, 310
 
 
     src_vertices_intersection_detection[0] = Point2f(100,190);
@@ -149,16 +149,32 @@ int main() {
 
                         Mat src(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
 
+                        if(std::getenv("CAR_ENV") != NULL) {
+                            cv::imwrite("cam_image.jpg", src);
+                        } 
+
                         Mat dst_lane(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
                         Mat dst_intersection(400, 400, CV_8UC1, shared_memory->bev_data[2 | write_bit].img_buffer);
+
+                        //cv::Mat camera_matrix = (cv::Mat_<double>(3, 3) << 300, 0, src.cols / 2,
+                          //                             0, 300, src.rows / 2,
+                           //                            0, 0, 1);
+
+                        // Anpassung der Verzerrungskoeffizienten für mehr zentrale Verzerrung
+                        //cv::Mat dist_coeffs = (cv::Mat_<double>(1, 5) << 1.0, -0.5, 0.0, 0.0, 0.0); // Erhöhte Werte für stärkere Verzerrung
+
+                        //cv::Mat new_camera_matrix = getOptimalNewCameraMatrix(camera_matrix, dist_coeffs, cv::Size(400, 400), 1, cv::Size(400, 400));
+
+                        //cv::undistort(src, dst_intersection, camera_matrix, dist_coeffs, new_camera_matrix);
 
                         // intersection needs to be calculated first since lane writes to itself!
                         toBirdsEyeView(src, dst_intersection, M_intersection_detection);
                         toBirdsEyeView(src, dst_lane, M_lane_detection);
 
                         GaussianBlur(dst_lane, dst_lane, Size_(BLUR_SIZE, BLUR_SIZE), 0);
-                        Canny(dst_lane, dst_lane, 10, 50, 3, true);
-                        GaussianBlur(dst_lane, dst_lane, Size_(POST_CANNY_BLUE_SIZE, POST_CANNY_BLUE_SIZE), 0);
+                        if(std::getenv("CAR_ENV") != NULL) {
+                            cv::imwrite("cam_image_gaussian.jpg", dst_lane);
+                        } 
 
                         GaussianBlur(dst_intersection, dst_intersection, Size_(BLUR_SIZE, BLUR_SIZE), 0);
                         Canny(dst_intersection, dst_intersection, 40, 170, 3, true);
