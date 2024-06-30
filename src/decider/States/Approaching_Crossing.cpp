@@ -84,19 +84,19 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
             }
         }
 
-        if(object_found){
-            Driver::stop();
-        } else{
-            if(distance <= min_distance) {
-                is_at_crossing = true;
-            } else if (distance > max_distance){
-                Driver::drive(speed, steering_front);
-                Driver::wait(0.1);
-            } else {
-                Driver::drive(min_speed, steering_front);
-                Driver::wait(0.1);
-            }
+        //if(object_found){
+        //    Driver::stop();
+        //} else{
+        if(distance <= min_distance) {
+            is_at_crossing = true;
+        } else if (distance > max_distance){
+            Driver::drive(speed, steering_front);
+            Driver::wait(0.1);
+        } else {
+            Driver::drive(min_speed, steering_front);
+            Driver::wait(0.1);
         }
+        //}
         
         /*
         //algorithm for slowing down towards 2cm/s
