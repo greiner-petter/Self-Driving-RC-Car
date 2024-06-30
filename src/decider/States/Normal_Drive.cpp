@@ -31,6 +31,13 @@ void Normal_Drive::on_entry(Statemachine* statemachine){
     Code
     */
    initialize();
+
+    ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
+    deafen.clear_and_edit()
+        .write(ocMemberId::Approaching_Crossing)
+        .write(false);
+    socket->send_packet(deafen);
+
    logger->log("Decider: Initialized Normale_Drive. Running the state next");
 
    statemachine->run(nullptr);
@@ -101,7 +108,9 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
 
 
 void Normal_Drive::on_exit(Statemachine* statemachine){
-    /*
-    Code
-    */
+    ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
+    deafen.clear_and_edit()
+        .write(ocMemberId::Approaching_Crossing)
+        .write(true);
+    socket->send_packet(deafen);
 }
