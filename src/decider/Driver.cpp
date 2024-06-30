@@ -13,10 +13,10 @@ void Driver::initialize(){
         member.attach();
         socket = member.get_socket();
         logger = member.get_logger();
-        ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
-        sup.clear_and_edit()
-            .write(ocMessageId::Lane_Detection_Values);
-        socket->send_packet(sup);
+        //ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
+        //sup.clear_and_edit()
+        //    .write(ocMessageId::Lane_Detection_Values);
+        //socket->send_packet(sup);
 
         is_initialized = true;
     }
