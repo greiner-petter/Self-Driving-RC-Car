@@ -43,32 +43,32 @@ void Crossing_3_Way_Right::on_entry(Statemachine* statemachine){
 
     bool received_sign_package = false;
 
-    while (!received_sign_package) {
+    //while (!received_sign_package) {
        
-        int result = socket->read_packet(recv_packet);
-        ocTime now = ocTime::now();
+    int result = socket->read_packet(recv_packet, false);
+    ocTime now = ocTime::now();
 
-        if (result < 0) {
-            logger->error("Decider: Crossing_3_Way_Right: Error reading the IPC socket: (%i) %s", errno, strerror(errno));
-        } else {
-            switch (recv_packet.get_message_id()){
-                case ocMessageId::Traffic_Sign_Detected:{
-                    auto reader = recv_packet.read_from_start();
-                    uint16_t rawValue = reader.read<uint16_t>();
-                    distance = reader.read<uint64_t>();
-                    trafficSign = static_cast<TrafficSignType>(rawValue);
-                    received_sign_package = true;
-                } break;
-                
-                default:{
-                    ocMessageId msg_id = recv_packet.get_message_id();
-                    ocMemberId mbr_id = recv_packet.get_sender();
-                    logger->warn("Decider: Crossing_3_Way_Right: Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
-                } break;
-            }
+    if (result < 0) {
+        logger->error("Decider: Crossing_3_Way_Right: Error reading the IPC socket: (%i) %s", errno, strerror(errno));
+    } else {
+        switch (recv_packet.get_message_id()){
+            case ocMessageId::Traffic_Sign_Detected:{
+                auto reader = recv_packet.read_from_start();
+                uint16_t rawValue = reader.read<uint16_t>();
+                distance = reader.read<uint64_t>();
+                trafficSign = static_cast<TrafficSignType>(rawValue);
+                received_sign_package = true;
+            } break;
+            
+            default:{
+                ocMessageId msg_id = recv_packet.get_message_id();
+                ocMemberId mbr_id = recv_packet.get_sender();
+                logger->warn("Decider: Crossing_3_Way_Right: Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+            } break;
         }
-
     }
+
+    //}
 
    statemachine->run(nullptr);
 }
@@ -93,6 +93,9 @@ void Crossing_3_Way_Right::run(Statemachine* statemachine, void* data){
                 break;
             case TrafficSignType::Right:
                 drive_right = true;
+                break;
+            default:
+                logger->warn("Decider: Crossing_3_Way_Right: No sign detected");
                 break;
         }
     }
