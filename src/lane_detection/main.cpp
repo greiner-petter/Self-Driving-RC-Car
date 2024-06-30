@@ -246,7 +246,7 @@ int main()
 
                     speed += speed_multiplikator*20;
 
-                    auto [front_angle, back_angle] = drive_circle_in_angle(angle);
+                    //auto [front_angle, back_angle] = drive_circle_in_angle(angle);
 
                     //speed = std::clamp(speed, 0, 120);
 
@@ -260,7 +260,7 @@ int main()
                         ipc_packet.clear_and_edit()
                             .write<int16_t>(speed)
                             .write<int8_t>(angle)
-                            .write<int8_t>(angle);
+                            .write<int8_t>(-angle);
                         socket->send_packet(ipc_packet);
 
                 /*
