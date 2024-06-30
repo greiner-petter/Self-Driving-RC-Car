@@ -151,5 +151,7 @@ void Crossing_3_Way_Right::on_exit(Statemachine* statemachine){
     socket->send_packet(deafen);
 
     State::distance = 0;
-    State::trafficSign = TrafficSignType::None;
+    State::trafficSign = TrafficSignType::None;    
+    logger->error("Decider: TrafficSign: %s", TrafficSignTypeToString(trafficSign).c_str());
+
 }
