@@ -238,7 +238,7 @@ int main()
                         speed = 120;
                     } else if(std::abs(radius) > 750) {
                         speed = 90;
-                    } else if(std::abs(radius) > 500) {
+                    } else {
                         speed = 60;
                     }
 
