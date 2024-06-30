@@ -243,7 +243,7 @@ int main()
                         speed_multiplikator = 2*std::pow((normalized_radius),2);
                     }
 
-                    speed += speed_multiplikator*60;
+                    speed += speed_multiplikator*20;
 
                     //speed = std::clamp(speed, 0, 120);
 
