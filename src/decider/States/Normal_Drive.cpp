@@ -52,11 +52,13 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
         } else {
             switch (recv_packet.get_message_id()){
                 case ocMessageId::Intersection_Detected:{
+                    recv_packet.read_from_start();
                     logger->log("Decider: Normal_Drive: Changing state from Normal_Drive to Approaching_Crossing");
                     statemachine->change_state(Approaching_Crossing::get_instance());  
                 }break;
 
                 case ocMessageId::Object_Found:{
+                    recv_packet.read_from_start();
                     object_found = true;
                 }break;
 

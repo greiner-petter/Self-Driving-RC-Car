@@ -76,6 +76,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
                 }break;
 
                 case ocMessageId::Object_Found:{
+                    recv_packet.read_from_start();
                     object_found = true;
                 }break;
                 
