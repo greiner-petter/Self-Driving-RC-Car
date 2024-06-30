@@ -10,27 +10,35 @@ const char *to_string(ocMemberId member_id)
 {
   switch (member_id)
   {
-  case ocMemberId::None:               return "ocMemberId::None";
-  case ocMemberId::Camera:             return "ocMemberId::Camera";
-  case ocMemberId::Image_Processing:   return "ocMemberId::Image_Processing";
-  case ocMemberId::Lane_Detection:     return "ocMemberId::Lane_Detection";
-  case ocMemberId::Ai:                 return "ocMemberId::Ai";
-  case ocMemberId::Sign_Detection:     return "ocMemberId::Sign_Detection";
-  case ocMemberId::Ipc_Hub:            return "ocMemberId::Ipc_Hub";
-  case ocMemberId::Eth_Gateway:        return "ocMemberId::Eth_Gateway";
-  case ocMemberId::Can_Gateway:        return "ocMemberId::Can_Gateway";
-  case ocMemberId::Video_Viewer:       return "ocMemberId::Video_Viewer";
-  case ocMemberId::Video_Input:        return "ocMemberId::Video_Input";
-  case ocMemberId::Video_Recorder:     return "ocMemberId::Video_Recorder";
-  case ocMemberId::Command_Line:       return "ocMemberId::Command_Line";
-  case ocMemberId::Qr_Detection:       return "ocMemberId::Qr_Detection";
-  case ocMemberId::Obstacle_Detection: return "ocMemberId::Obstacle_Detection";
-  case ocMemberId::Virtual_Car:        return "ocMemberId::Virtual_Car";
-  case ocMemberId::Tachometer:         return "ocMemberId::Tachometer";
-  case ocMemberId::Apriltag_Detection: return "ocMemberId::Apriltag_Detection";
-  case ocMemberId::Intersection_Detection: return "ocMemberId::Intersection_Detection";
+  case ocMemberId::None:                      return "ocMemberId::None";
+  case ocMemberId::Camera:                    return "ocMemberId::Camera";
+  case ocMemberId::Image_Processing:          return "ocMemberId::Image_Processing";
+  case ocMemberId::Lane_Detection:            return "ocMemberId::Lane_Detection";
+  case ocMemberId::Ai:                        return "ocMemberId::Ai";
+  case ocMemberId::Sign_Detection:            return "ocMemberId::Sign_Detection";
+  case ocMemberId::Ipc_Hub:                   return "ocMemberId::Ipc_Hub";
+  case ocMemberId::Eth_Gateway:               return "ocMemberId::Eth_Gateway";
+  case ocMemberId::Can_Gateway:               return "ocMemberId::Can_Gateway";
+  case ocMemberId::Video_Viewer:              return "ocMemberId::Video_Viewer";
+  case ocMemberId::Video_Input:               return "ocMemberId::Video_Input";
+  case ocMemberId::Video_Recorder:            return "ocMemberId::Video_Recorder";
+  case ocMemberId::Command_Line:              return "ocMemberId::Command_Line";
+  case ocMemberId::Qr_Detection:              return "ocMemberId::Qr_Detection";
+  case ocMemberId::Obstacle_Detection:        return "ocMemberId::Obstacle_Detection";
+  case ocMemberId::Virtual_Car:               return "ocMemberId::Virtual_Car";
+  case ocMemberId::Tachometer:                return "ocMemberId::Tachometer";
+  case ocMemberId::Apriltag_Detection:        return "ocMemberId::Apriltag_Detection";
+  case ocMemberId::Intersection_Detection:    return "ocMemberId::Intersection_Detection";
 
-  case ocMemberId::Driver:             return "ocMemberId::Driver";
+  case ocMemberId::Driver:                    return "ocMemberId::Driver";
+  case ocMemberId::Normal_Drive:              return "ocMemberId::Normal_Drive";
+  case ocMemberId::Is_At_Crossing:            return "ocMemberId::Is_At_Crossing";
+  case ocMemberId::Approaching_Crossing:      return "ocMemberId::Approaching_Crossing";
+  case ocMemberId::Crossing_3_Way_Left:       return "ocMemberId::Crossing_3_Way_Left";
+  case ocMemberId::Crossing_3_Way_Right:      return "ocMemberId::Crossing_3_Way_Right";
+  case ocMemberId::Crossing_3_Way_T:          return "ocMemberId::Crossing_3_Way_T";
+
+  case ocMemberId::Lane_Detection_Values:     return "ocMemberId::Lane_Detection_Values";
   }
   return "<unknown>";
 }
@@ -75,6 +83,8 @@ const char *to_string(ocMessageId message_id)
   case ocMessageId::Driving_Task_Finished:    return "ocMessageId::Driving_Task_Finished";
   case ocMessageId::Rc_State_Changed:         return "ocMessageId::Rc_State_Changed";
   case ocMessageId::Set_Camera_Parameter:     return "ocMessageId::Set_Camera_Parameter";
+  case ocMessageId::Traffic_Sign_Detected:    return "ocMessageId::Traffic_Sign_Detected";
+  case ocMessageId::Lane_Detection_Values:    return "ocMessageId::Lane_Detection_Values";
   }
   return "<unknown>";
 }
