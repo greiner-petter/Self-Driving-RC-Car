@@ -163,8 +163,7 @@ int main() {
 
                     // y in bev
                     size_t found_line_y = histogram_filtered.get_highest_fulfilling_condition([](const size_t index, const uint32_t val) -> bool {
-                            (void) index;
-                            return val >= REQUIRED_H_LENGTH_INTERSECTION;
+                            return index <= 394 && val >= REQUIRED_H_LENGTH_INTERSECTION;
                     });
 
                     IntersectionPostprocessing proc(image, found_line_y);

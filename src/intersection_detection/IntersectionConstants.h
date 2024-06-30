@@ -23,7 +23,7 @@
 #define REQUIRED_CONSEC 3
 
 
-constexpr std::uint32_t REQUIRED_H_LENGTH_INTERSECTION = 7;
+constexpr std::uint32_t REQUIRED_H_LENGTH_INTERSECTION = 5;
 
 constexpr std::size_t INTERSECTION_DEGREE_SIZE = 180;
 constexpr std::size_t INTERSECTION_Y_LENGTH_SIZE = 400;
