@@ -100,6 +100,10 @@ std::pair<int, int> drive_circle_in_angle(float angle) {
     float front_angle = angle;
     float back_angle = 0;
 
+    if(angle < 0) {
+        return drive_circle_in_angle(-angle/2);
+    }
+
     if(angle == 0) {
         front_angle = angle;
         back_angle = angle;
@@ -115,13 +119,6 @@ std::pair<int, int> drive_circle_in_angle(float angle) {
     } else if(angle < 15 && angle > 0) {
         front_angle = angle;
         back_angle = angle;
-    }
-    
-    if(angle < 0) {
-        std::pair<int, int> pos_result = drive_circle_in_angle(-angle/2);
-
-        front_angle = -pos_result.first;
-        back_angle = -pos_result.second;
     }
 
     return std::pair<int, int>(front_angle+ANGLE_OFFSET_FRONT, back_angle);
