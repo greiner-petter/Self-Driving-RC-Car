@@ -3,19 +3,17 @@
 #include "../Driver.h"
 
 
-State& Normal_Drive::get_instance(){
+
+State& Normal_Drive::get_instance(){    
     static Normal_Drive singleton;
     return singleton;
 }
 
 void Normal_Drive::initialize(){
-    member.attach();
-    logger = member.get_logger();
-    logger->log("HERE");
     if(!Normal_Drive::is_initialized){
-        //member.attach();
+        member.attach();
         socket = member.get_socket();
-        //logger = member.get_logger();
+        logger = member.get_logger();
         ocPacket sup = ocPacket(ocMessageId::Subscribe_To_Messages);
         sup.clear_and_edit()
             .write(ocMessageId::Intersection_Detected)
@@ -33,8 +31,9 @@ void Normal_Drive::initialize(){
 void Normal_Drive::on_entry(Statemachine* statemachine){
     ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
     deafen.set_sender(ocMemberId::Normal_Drive);
+
     
-   Normal_Drive::initialize();
+    Normal_Drive::initialize();
 
     
     deafen.clear_and_edit()

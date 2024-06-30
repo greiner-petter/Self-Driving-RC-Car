@@ -10,7 +10,7 @@
 
 
 Statemachine::Statemachine(){
-    this->current_state = &Normal_Drive::get_instance();
+    this->current_state = nullptr;//&Normal_Drive::get_instance();
 }
 
 
