@@ -232,7 +232,7 @@ int main()
                         cv::imwrite("bev_lines.jpg", matrix2);
                     }
 
-                    int speed = 30;//std::abs(radius) / 10;
+                    int speed = 60;//std::abs(radius) / 10;
                     speed = std::clamp(speed, 0, 60);
 
 
