@@ -232,15 +232,18 @@ int main()
                         cv::imwrite("bev_lines.jpg", matrix2);
                     }
 
-                    int speed = 0;
+                    int speed = 60;
 
-                    if(std::abs(radius) > 1000) {
-                        speed = 120;
-                    } else if(std::abs(radius) > 750) {
-                        speed = 90;
+                    double speed_multiplikator = 0;
+                    double normalized_radius = std::abs(radius)/3125;
+                    
+                    if(normalized_radius >= 0.5) {
+                        speed_multiplikator = 1-2*std::pow((1-normalized_radius),2);
                     } else {
-                        speed = 60;
+                        speed_multiplikator = 2*std::pow((normalized_radius),2);
                     }
+
+                    speed += speed_multiplikator*60;
 
                     speed = std::clamp(speed, 0, 120);
 
