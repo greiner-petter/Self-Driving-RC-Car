@@ -28,7 +28,7 @@ void Driver::initialize(){
  * This method is used to perform a right-turn.
 */
 void Driver::turn_right(){
-    logger->log("Turning right");
+    logger->log("Decider: Driver: Turning right");
     drive_both_steering_values(25, 100, -50);
     wait(1.8);
     stop();
@@ -40,7 +40,7 @@ void Driver::turn_right(){
  * This method is used to perform a left-turn.
 */
 void Driver::turn_left(){
-    logger->log("Turning left");
+    logger->log("Decider: Driver: Turning left");
     //drive forward a little bit
     drive(25, 0);
     wait(0.7);
@@ -63,7 +63,7 @@ void Driver::drive_forward(){
     int result = socket->read_packet(recv_packet);
 
     if (result < 0){
-      logger->error("Error reading the IPC socket: (%i) %s", errno, strerror(errno));
+      logger->error("Decider: Driver: Error reading the IPC socket: (%i) %s", errno, strerror(errno));
     } else {
         switch (recv_packet.get_message_id()){
             case ocMessageId::Lane_Detection_Values:{
@@ -89,7 +89,7 @@ void Driver::drive_forward(){
             default:{
                 ocMessageId msg_id = recv_packet.get_message_id();
                 ocMemberId  mbr_id = recv_packet.get_sender();
-                logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+                logger->warn("Decider: Driver: Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
             } break;
         }
     }
@@ -149,7 +149,7 @@ void Driver::drive_both_steering_values(int16_t speed, int8_t steering_front, in
 */
 void Driver::stop(float duration){
     
-    logger->log("Stopping");
+    logger->log("Decider: Driver: Stopping");
 
     struct start_driving_task_t start_driving_task = {
         .speed          = 0,

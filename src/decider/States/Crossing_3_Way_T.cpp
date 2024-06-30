@@ -49,7 +49,7 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
         ocTime now = ocTime::now();
 
         if (result < 0) {
-            logger->error("Error reading the IPC socket: (%i) %s", errno, strerror(errno));
+            logger->error("Decider: Crossing_3_Way_T: Error reading the IPC socket: (%i) %s", errno, strerror(errno));
         } else {
             switch (recv_packet.get_message_id()){
                 case ocMessageId::Traffic_Sign_Detected:{
@@ -63,7 +63,7 @@ void Crossing_3_Way_T::on_entry(Statemachine* statemachine){
                 default:{
                     ocMessageId msg_id = recv_packet.get_message_id();
                     ocMemberId mbr_id = recv_packet.get_sender();
-                    logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+                    logger->warn("Decider: Crossing_3_Way_T: Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
                 } break;
             }
         }
@@ -129,7 +129,7 @@ void Crossing_3_Way_T::run(Statemachine* statemachine, void* data){
         Driver::turn_right();
     }
 
-    logger->log("Changing state from Crossing_3_Way_T to Normal_Drive");
+    logger->log("Decider: Crossing_3_Way_T: Changing state from Crossing_3_Way_T to Normal_Drive");
     statemachine->change_state(Normal_Drive::get_instance());
     
 }

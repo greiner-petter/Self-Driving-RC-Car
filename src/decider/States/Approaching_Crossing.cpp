@@ -56,7 +56,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
         ocTime now = ocTime::now();
 
         if (result < 0) {
-            logger->error("Error reading the IPC socket: (%i) %s", errno, strerror(errno));
+            logger->error("Decider: Approaching_Crossing: Error reading the IPC socket: (%i) %s", errno, strerror(errno));
         } else {
 
             switch (recv_packet.get_message_id()){
@@ -64,7 +64,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
                     auto reader = recv_packet.read_from_start();
                     distance = reader.read<uint32_t>();
                     crossing_type = reader.read<uint8_t>();
-                    logger->log("Distance: %d", distance);
+                    logger->log("Decider: Approaching_Crossing: Distance: %d", distance);
                 }break;
 
                 case ocMessageId::Lane_Detection_Values:{
@@ -82,7 +82,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
                 default:{
                     ocMessageId msg_id = recv_packet.get_message_id();
                     ocMemberId mbr_id = recv_packet.get_sender();
-                    logger->warn("Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+                    logger->warn("Decider: Approaching_Crossing: Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
                 }break;
             }
         }
@@ -142,7 +142,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     }
 
     
-    logger->log("Changing state from Approaching_Crossing to Is_At_Crossing");
+    logger->log("Decider: Approaching_Crossing: Changing state from Approaching_Crossing to Is_At_Crossing");
     Is_At_Crossing::get_instance().crossing_type = crossing_type;
     statemachine->change_state(Is_At_Crossing::get_instance());
     

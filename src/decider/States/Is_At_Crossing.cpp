@@ -95,13 +95,13 @@ void Is_At_Crossing::run(Statemachine* statemachine, void* data){
    
     if(this->crossing_type & 1) {
         crossing_state = Crossing_3_Way_Left::get_instance();
-        logger->log("Changing state from Is_At_Crossing to Crossing_3_Way_Left");
+        logger->log("Decider: Is_At_Crossing: Changing state from Is_At_Crossing to Crossing_3_Way_Left");
     } else if(this->crossing_type & 2) {
         crossing_state = Crossing_3_Way_Right::get_instance();
-        logger->log("Changing state from Is_At_Crossing to Crossing_3_Way_Right");
+        logger->log("Decider: Is_At_Crossing: Changing state from Is_At_Crossing to Crossing_3_Way_Right");
     } else if(this->crossing_type & 4) {
         crossing_state = Crossing_3_Way_T::get_instance();
-        logger->log("Changing state from Is_At_Crossing to Crossing_3_Way_T");
+        logger->log("Decider: Is_At_Crossing: Changing state from Is_At_Crossing to Crossing_3_Way_T");
     }
 
     statemachine->change_state(crossing_state);

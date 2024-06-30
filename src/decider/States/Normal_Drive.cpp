@@ -31,7 +31,7 @@ void Normal_Drive::on_entry(Statemachine* statemachine){
     Code
     */
    initialize();
-   logger->log("Initialized Normale_Drive. Running the state next");
+   logger->log("Decider: Initialized Normale_Drive. Running the state next");
 
    statemachine->run(nullptr);
 }
@@ -48,11 +48,11 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
         ocTime now = ocTime::now();
 
         if (result < 0) {
-            logger->error("Error reading the IPC socket: (%i) %s", errno, strerror(errno));
+            logger->error("Decider: Normal_Drive: Error reading the IPC socket: (%i) %s", errno, strerror(errno));
         } else {
             switch (recv_packet.get_message_id()){
                 case ocMessageId::Intersection_Detected:{
-                    logger->log("Changing state from Normal_Drive to Approaching_Crossing");
+                    logger->log("Decider: Normal_Drive: Changing state from Normal_Drive to Approaching_Crossing");
                     statemachine->change_state(Approaching_Crossing::get_instance());  
                 }break;
 
@@ -79,7 +79,7 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
                 default:{
                     ocMessageId msg_id = recv_packet.get_message_id();
                     ocMemberId mbr_id = recv_packet.get_sender();
-                    logger->warn("Normal_Drive: Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
+                    logger->warn("Decider: Normal_Drive: Unhandled message_id: %s (0x%x) from sender: %s (%i)", to_string(msg_id), msg_id, to_string(mbr_id), mbr_id);
                 }break;
             }
         }
