@@ -101,7 +101,9 @@ std::pair<int, int> drive_circle_in_angle(float angle) {
     float back_angle = 0;
 
     if(angle < 0) {
-        return drive_circle_in_angle(-angle/2);
+        std::pair<int, int> pos_result = drive_circle_in_angle(-angle/2);
+
+        return std::pair<int, int>(-pos_result.first, -pos_result.second);
     }
 
     if(angle == 0) {
