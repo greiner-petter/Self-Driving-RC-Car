@@ -127,7 +127,7 @@ int main(int argc, const char **argv)
     if (!crop_ver) crop.y = 0;
 
     bool gray  = arg_parser.has_key("-gray");
-    bool bevRecording = true;//arg_parser.has_key("-bev");
+    bool bevRecording = arg_parser.has_key("-bev");
 
     int new_w = -1;
     int new_h = -1;
