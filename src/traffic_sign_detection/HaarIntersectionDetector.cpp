@@ -62,14 +62,11 @@ void HaarIntersectionDetector::Tick()
 {
     cv::Mat image(400, 400, CV_8UC1, s_SharedMemory->bev_data[0].img_buffer);
 
-    cv::Mat gray;
-    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
-
     // Iterate over all the XML Classifier Instances and detect the signs
     for (auto& signClassifier : s_Instances)
     {
         std::vector<cv::Rect> sign_scaled;
-        signClassifier->classifier.detectMultiScale(gray, sign_scaled, 1.3, 5);
+        signClassifier->classifier.detectMultiScale(image, sign_scaled, 1.3, 5);
 
         // Detect the sign, x,y = origin points, w = width, h = height
         for (size_t i = 0; i < sign_scaled.size(); i++)
