@@ -59,7 +59,7 @@ void HaarIntersectionDetector::Init(ocIpcSocket* socket, ocSharedMemory* shared_
     s_SupportGUI = supportGUI;
 
     // Load sign cascade classifiers
-    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetCrossingLeftXML().string(), "Crossing Left", 0b110));
+    //s_Instances.push_back(std::make_shared<ClassifierInstance>(GetCrossingLeftXML().string(), "Crossing Left", 0b110));
     s_Instances.push_back(std::make_shared<ClassifierInstance>(GetCrossingRightXML().string(), "Crossing Right", 0b110));
 }
 
