@@ -210,7 +210,7 @@ int main(int argc, const char **argv)
                 cv::Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2 | bit].img_buffer);
                 if (!video_writer.isOpened())
                 {
-                    video_writer.open(filename.data(), cv::CAP_FFMPEG, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30, new_size, is_color);
+                    video_writer.open(filename.data(), cv::CAP_FFMPEG, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30, new_size, false);
                     if (!video_writer.isOpened())
                     {
                         logger->error("Opening the video writer didn't work. size: (w: %i h: %i) color: %i", new_size.width, new_size.height, is_color);
