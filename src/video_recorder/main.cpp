@@ -210,6 +210,17 @@ int main(int argc, const char **argv)
                 cv::Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2 | bit].img_buffer);
                 if (!video_writer.isOpened())
                 {
+                    if (!crop_hor) crop.width  = width;
+                    if (!crop_ver) crop.height = height;
+
+                    if (width < crop.x + crop.width || height < crop.y + crop.height)
+                    {
+                        logger->error("Crop size (x: %i, y: %i, w: %i, h: %i) does not fit source size (w: %i, h: %i).", crop.x, crop.y, crop.width, crop.height, width, height);
+                        return -1;
+                    }
+
+                    if (-1 == new_w) new_size.width  = crop.width;
+                    if (-1 == new_h) new_size.height = crop.height;
                     video_writer.open(filename.data(), cv::CAP_FFMPEG, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30, new_size, false);
                     if (!video_writer.isOpened())
                     {
