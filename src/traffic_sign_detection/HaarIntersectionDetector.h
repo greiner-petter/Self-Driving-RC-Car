@@ -9,5 +9,6 @@ public:
 
 
     static std::filesystem::path GetCrossingLeftXML();
+    static std::filesystem::path GetCrossingRightXML();
 
 };

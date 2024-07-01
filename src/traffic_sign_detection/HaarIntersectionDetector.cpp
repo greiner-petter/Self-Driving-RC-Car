@@ -26,6 +26,10 @@ std::filesystem::path HaarIntersectionDetector::GetCrossingLeftXML()
 {
     return std::filesystem::current_path().parent_path() / "res" / "cascade_crossing_left.xml";
 }
+std::filesystem::path HaarIntersectionDetector::GetCrossingRightXML()
+{
+    return std::filesystem::current_path().parent_path() / "res" / "cascade_crossing_right.xml";
+}
 
 
 struct ClassifierInstance
@@ -56,6 +60,7 @@ void HaarIntersectionDetector::Init(ocIpcSocket* socket, ocSharedMemory* shared_
 
     // Load sign cascade classifiers
     s_Instances.push_back(std::make_shared<ClassifierInstance>(GetCrossingLeftXML().string(), "Crossing Left", 0b110));
+    s_Instances.push_back(std::make_shared<ClassifierInstance>(GetCrossingRightXML().string(), "Crossing Right", 0b110));
 }
 
 void HaarIntersectionDetector::Tick()
@@ -72,9 +77,7 @@ void HaarIntersectionDetector::Tick()
         for (size_t i = 0; i < sign_scaled.size(); i++)
         {
             cv::Rect roi = sign_scaled[i];
-            const uint32_t distance = std::max(200 - roi.y, 0) / 6;
-
-            if (distance <= 8) continue;
+            const uint32_t distance = std::max(200 - roi.y, 0);
 
             if (s_SupportGUI)
             {
