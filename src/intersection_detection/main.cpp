@@ -153,18 +153,18 @@ int main() {
                     generate_filtered_histogram(histogram_filtered, lines);
                     histogram_filtered.blur();
 
-                    uint32_t highest_in_filtered = histogram_filtered.get_highest_point_value();
-                    if (highest_in_filtered < REQUIRED_H_LENGTH_INTERSECTION) {
+                    // y in bev
+                    size_t found_line_y = histogram_filtered.get_highest_fulfilling_condition([](const size_t index, const uint32_t val) -> bool {
+                            (void) index;
+                            return val >= REQUIRED_H_LENGTH_INTERSECTION;
+                    });
+
+                    if (found_line_y == 400) {
 #ifdef LOG_NEGATIVE_RESULTS
-                        logger->warn("Skipping this frame since the length was only %lu at position %lu", (unsigned long) highest_in_filtered, (unsigned long) histogram_filtered.get_highest_point_index());
+                        logger->warn("Found no line fulfilling the requirement");
 #endif
                         continue;
                     }
-
-                    // y in bev
-                    size_t found_line_y = histogram_filtered.get_highest_fulfilling_condition([](const size_t index, const uint32_t val) -> bool {
-                            return index <= 394 && val >= REQUIRED_H_LENGTH_INTERSECTION;
-                    });
 
                     IntersectionPostprocessing proc(image, found_line_y);
                     if (!proc.calculate_result()) {
