@@ -22,7 +22,7 @@ static ocLogger* s_Logger = nullptr;
 static bool s_SupportGUI = false;
 
 
-std::filesystem::path HaarSignDetector::GetCrossingLeftXML()
+std::filesystem::path HaarIntersectionDetector::GetCrossingLeftXML()
 {
     return std::filesystem::current_path().parent_path() / "res" / "cascade_crossing_left.xml";
 }
@@ -38,8 +38,6 @@ struct ClassifierInstance
     ClassifierInstance(const std::string& path, const std::string& label, int8_t result)
     {
         classifier.load(path);
-        label = signLabel;
-        type = signType;
         this->label = label;
         this->result = result;
     }
@@ -86,7 +84,7 @@ void HaarIntersectionDetector::Tick()
         for (size_t i = 0; i < sign_scaled.size(); i++)
         {
             cv::Rect roi = sign_scaled[i];
-            const uint32_t distance = y;
+            const uint32_t distance = roi.y;
 
             if (distance <= 8) continue;
 
@@ -114,7 +112,7 @@ void HaarIntersectionDetector::Tick()
         if (key == 'q')
         {
             cv::destroyAllWindows();
-            break;
+            return;
         }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(4));
