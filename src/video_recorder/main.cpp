@@ -202,7 +202,8 @@ int main(int argc, const char **argv)
         {
             switch (recv_packet.get_message_id())
             {
-            case ocMessageId::Camera_Image_Available, ocMessageId::Birdseye_Image_Available:
+            case ocMessageId::Camera_Image_Available:
+            case ocMessageId::Birdseye_Image_Available:
             {
                 uint32_t newest_frame_index = shared_memory->last_written_cam_data_index;
                 ocCamData *cam_data = &shared_memory->cam_data[newest_frame_index];
