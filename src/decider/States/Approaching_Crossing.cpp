@@ -1,5 +1,6 @@
 #include "Approaching_Crossing.h"
 #include "Is_At_Crossing.h"
+#include "Obstacle_State.h"
 #include "../Driver.h"
 #include <math.h>
 #include <signal.h>
@@ -50,6 +51,8 @@ void Approaching_Crossing::on_entry(Statemachine* statemachine){
 
 void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     bool is_at_crossing = false;
+    bool object_found = false;
+
     uint8_t crossing_type;
     ocPacket recv_packet;
 
@@ -63,11 +66,9 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
     int8_t steering_back = 0;
 
 
-    while (!is_at_crossing) {
+    while (!is_at_crossing && !object_found) {
        
         int result = socket->read_packet(recv_packet);
-        bool object_found = false;
-        ocTime now = ocTime::now();
 
         if (result < 0) {
             logger->error("Decider: Approaching_Crossing: Error reading the IPC socket: (%i) %s", errno, strerror(errno));
@@ -101,7 +102,7 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
 
                 case ocMessageId::Object_Found:{
                     recv_packet.read_from_start();
-                    object_found = true;
+                    object_found = true; 
                 }break;
                 
                 default:{
@@ -112,11 +113,8 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
             }
         }
 
-        if(object_found){
-            Driver::stop();
-
-            object_found = false;
-        } else if(distance <= min_distance) {
+        
+        if(distance <= min_distance) {
             is_at_crossing = true;
 
             ocPacket deafen = ocPacket(ocMessageId::Deafen_Member);
@@ -126,58 +124,20 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
                 .write(true);
             socket->send_packet(deafen);
 
-        } else if (distance > max_distance){
+        } else{
             Driver::drive_both_steering_values(speed, steering_front, steering_back);
-            //Driver::wait(0.1);
-        } else {
-            Driver::drive_both_steering_values(min_speed, steering_front, steering_back);
-            //Driver::wait(0.1);
         }
-        /*
-        //algorithm for slowing down towards 2cm/s
-        double* arr = smooth_speed(speed);
-        for(int i = 0; i < 100; i++) {
-            int result = socket->read_packet(recv_packet);
-
-            if (result >= 0) {
-                switch (recv_packet.get_message_id()){
-                    case ocMessageId::Intersection_Detected:{
-                        auto reader = recv_packet.read_from_start();
-                        distance = reader.read<uint32_t>();
-                        uint8_t crossing_type = reader.read<uint8_t>();
-                    }break;
-
-                    case ocMessageId::Lane_Detection_Values:{
-                        auto reader = recv_packet.read_from_start();
-                        speed = reader.read<int16_t>();
-                        steering_front = reader.read<int8_t>();
-                    }break;
-
-                    default:
-                        break;
-                }
-
-                int16_t next_speed = arr[i] > min_speed ? arr[i] : min_speed;
-                Driver::drive(next_speed, steering_front);    //drive_forward(arr[i]);
-                Driver::wait(0.1);
-            }
-
-            if(distance <= threshold) {
-                is_at_crossing = true;
-                break;
-            }
-            
-        }
-
-        free(arr);
-        */
     }
 
-    
-    logger->log("Decider: Approaching_Crossing: Changing state from Approaching_Crossing to Is_At_Crossing");
-    Is_At_Crossing::get_instance().crossing_type = crossing_type;
-    statemachine->change_state(Is_At_Crossing::get_instance());
-    
+
+    if(object_found){
+        logger->log("Decider: Approaching_Crossing: Changing state from Approaching_Crossing to Obstacle_State");
+        statemachine->change_state(Obstacle_State::get_instance());
+    } else{
+        logger->log("Decider: Approaching_Crossing: Changing state from Approaching_Crossing to Is_At_Crossing");
+        Is_At_Crossing::get_instance().crossing_type = crossing_type;
+        statemachine->change_state(Is_At_Crossing::get_instance());
+    }
 }
 
 
