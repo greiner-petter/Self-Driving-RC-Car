@@ -127,6 +127,7 @@ int main(int argc, const char **argv)
     if (!crop_ver) crop.y = 0;
 
     bool gray  = arg_parser.has_key("-gray");
+    bool bevRecording = arg_parser.has_key("-bev");
 
     int new_w = -1;
     int new_h = -1;
@@ -182,7 +183,7 @@ int main(int argc, const char **argv)
 
     ocPacket s(ocMessageId::Subscribe_To_Messages);
     s.clear_and_edit()
-        .write(ocMessageId::Camera_Image_Available);
+        .write(bevRecording ? ocMessageId::Birdseye_Image_Available : ocMessageId::Camera_Image_Available);
     socket->send_packet(s);
 
     ocPacket recv_packet;
@@ -201,7 +202,7 @@ int main(int argc, const char **argv)
         {
             switch (recv_packet.get_message_id())
             {
-            case ocMessageId::Camera_Image_Available:
+            case ocMessageId::Camera_Image_Available, ocMessageId::Birdseye_Image_Available:
             {
                 uint32_t newest_frame_index = shared_memory->last_written_cam_data_index;
                 ocCamData *cam_data = &shared_memory->cam_data[newest_frame_index];
