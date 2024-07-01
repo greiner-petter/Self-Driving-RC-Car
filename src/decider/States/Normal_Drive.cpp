@@ -6,6 +6,7 @@
 #include "Crossing_3_Way_Right.h"
 #include "Crossing_3_Way_T.h"
 #include "Obstacle_State.h"
+#include "Is_At_Crossing.h"
 
 
 
@@ -70,9 +71,17 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
         } else {
             switch (recv_packet.get_message_id()){
                 case ocMessageId::Intersection_Detected:{
-                    recv_packet.read_from_start();
-                    logger->log("Decider: Normal_Drive: Changing state from Normal_Drive to Approaching_Crossing");
-                    statemachine->change_state(Approaching_Crossing::get_instance());  
+                    auto reader = recv_packet.read_from_start();
+                    uint32_t distance = reader.read<uint32_t>();
+                    uint8_t crossing_type = reader.read<uint8_t>();
+                    if(distance <= 5){
+                        Is_At_Crossing::get_instance().crossing_type = crossing_type;
+                        logger->log("Decider: Normal_Drive: Changing state from Normal_Drive to Is_At_Crossing");
+                        statemachine->change_state(Is_At_Crossing::get_instance());  
+                    } else{
+                        logger->log("Decider: Normal_Drive: Changing state from Normal_Drive to Approaching_Crossing");
+                        statemachine->change_state(Approaching_Crossing::get_instance());  
+                    }
                 }break;
 
                 case ocMessageId::Object_Found:{
