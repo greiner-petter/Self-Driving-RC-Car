@@ -204,7 +204,7 @@ int main(int argc, const char **argv)
             {
             case ocMessageId::Birdseye_Image_Available:
             {
-                ocBufferReader reader = s.read_from_start();
+                ocBufferReader reader = recv_packet.read_from_start();
                 uint8_t bit;
                 reader.read(&bit);
                 cv::Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2 | bit].img_buffer);
