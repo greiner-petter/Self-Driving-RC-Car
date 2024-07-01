@@ -126,13 +126,17 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
                 .write(true);
             socket->send_packet(deafen);
 
-        } else if (distance > max_distance){
+        } else{
+            Driver::drive_both_steering_values(speed, steering_front, steering_back);
+        }
+        
+        /*else if (distance > max_distance){
             Driver::drive_both_steering_values(speed, steering_front, steering_back);
             //Driver::wait(0.1);
         } else {
             Driver::drive_both_steering_values(min_speed, steering_front, steering_back);
             //Driver::wait(0.1);
-        }
+        }*/
         /*
         //algorithm for slowing down towards 2cm/s
         double* arr = smooth_speed(speed);
