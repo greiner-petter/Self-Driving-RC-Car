@@ -127,6 +127,7 @@ int main(int argc, const char **argv)
     if (!crop_ver) crop.y = 0;
 
     bool gray  = arg_parser.has_key("-gray");
+    bool bevRecording = arg_parser.has_key("-bev");
 
     int new_w = -1;
     int new_h = -1;
@@ -182,7 +183,7 @@ int main(int argc, const char **argv)
 
     ocPacket s(ocMessageId::Subscribe_To_Messages);
     s.clear_and_edit()
-        .write(ocMessageId::Camera_Image_Available);
+        .write(bevRecording ? ocMessageId::Birdseye_Image_Available : ocMessageId::Camera_Image_Available);
     socket->send_packet(s);
 
     ocPacket recv_packet;
@@ -201,7 +202,40 @@ int main(int argc, const char **argv)
         {
             switch (recv_packet.get_message_id())
             {
-            case ocMessageId::Camera_Image_Available:
+            case ocMessageId::Birdseye_Image_Available:
+            {
+                ocBufferReader reader = recv_packet.read_from_start();
+                uint8_t bit;
+                reader.read(&bit);
+                cv::Mat image(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
+                if (!video_writer.isOpened())
+                {
+                    int32_t width    = 400;
+                    int32_t height   = 400;
+
+                    if (!crop_hor) crop.width  = width;
+                    if (!crop_ver) crop.height = height;
+
+                    if (width < crop.x + crop.width || height < crop.y + crop.height)
+                    {
+                        logger->error("Crop size (x: %i, y: %i, w: %i, h: %i) does not fit source size (w: %i, h: %i).", crop.x, crop.y, crop.width, crop.height, width, height);
+                        return -1;
+                    }
+
+                    if (-1 == new_w) new_size.width  = crop.width;
+                    if (-1 == new_h) new_size.height = crop.height;
+                    video_writer.open(filename.data(), cv::CAP_FFMPEG, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30, new_size, false);
+                    if (!video_writer.isOpened())
+                    {
+                        logger->error("Opening the video writer didn't work. size: (w: %i h: %i) color: %i", new_size.width, new_size.height, false);
+                        running = false;
+                    }
+                }
+
+                video_writer << image;
+
+            } break;
+            case ocMessageId::Camera_Image_Available:            
             {
                 uint32_t newest_frame_index = shared_memory->last_written_cam_data_index;
                 ocCamData *cam_data = &shared_memory->cam_data[newest_frame_index];
