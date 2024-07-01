@@ -81,10 +81,10 @@ void HaarIntersectionDetector::Tick()
 
             if (s_SupportGUI)
             {
-                cv::rectangle(cam_image, cv::Point(roi.x, roi.y),
+                cv::rectangle(image, cv::Point(roi.x, roi.y),
                             cv::Point(roi.x + roi.width, roi.y + roi.height),
                             cv::Scalar(0, 255, 0), 3);
-                cv::putText(cam_image, "Found " + signClassifier->label + " Sign", cv::Point(roi.x, roi.y + roi.height + 30),
+                cv::putText(image, "Found " + signClassifier->label + " Sign", cv::Point(roi.x, roi.y + roi.height + 30),
                         cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2, cv::LINE_4);
             }
             s_Logger->log("Found Traffic Intersection in distance: %03d  seenLastFrame:%d", distance, (int)signClassifier->seenLastFrame);
@@ -98,7 +98,7 @@ void HaarIntersectionDetector::Tick()
 
     if (s_SupportGUI) 
     {
-        cv::imshow("Traffic Intersection Detection", cam_image);
+        cv::imshow("Traffic Intersection Detection", image);
         char key = cv::waitKey(30);
         if (key == 'q')
         {
