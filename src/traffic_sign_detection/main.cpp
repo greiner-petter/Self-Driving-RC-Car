@@ -40,6 +40,11 @@ int main(int argc,char* argv[])
 
     detector->Init(socket, shared_memory, logger, supportGUI);
 
+    while (true)
+    {
+        detector->Tick();
+    }
+
     logger->warn("Traffic-Sign-Detection: Process Shutdown.");
 
     return 0;

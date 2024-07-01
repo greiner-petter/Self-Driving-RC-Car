@@ -11,7 +11,7 @@ class SignDetector
 {
 public:
     virtual void Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger, bool supportGUI);
-    virtual void Run() = 0;
+    virtual void Tick() = 0;
 
     static float ConvertRectSizeToEstimatedDistance(float rectSize, double sizeFactor);
     static uint32_t ConvertRectToDistanceInCM(const cv::Rect& rect, const int cam_width, const int cam_height, double sizeFactor);

@@ -5,7 +5,7 @@ class HaarSignDetector : public SignDetector
 {
 public:
     virtual void Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger, bool supportGUI) override;
-    virtual void Run() override;
+    virtual void Tick() override;
 
 
     static std::filesystem::path GetStopSignXML();
