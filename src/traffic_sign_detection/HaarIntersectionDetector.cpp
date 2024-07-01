@@ -70,7 +70,6 @@ void HaarIntersectionDetector::Tick()
     // Iterate over all the XML Classifier Instances and detect the signs
     for (auto& signClassifier : s_Instances)
     {
-        s_Logger->log("%s", signClassifier->label.c_str());
         std::vector<cv::Rect> sign_scaled;
         signClassifier->classifier.detectMultiScale(image, sign_scaled, 1.3, 5);
 
