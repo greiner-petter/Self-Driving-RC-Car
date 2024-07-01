@@ -70,6 +70,7 @@ void HaarIntersectionDetector::Tick()
     // Iterate over all the XML Classifier Instances and detect the signs
     for (auto& signClassifier : s_Instances)
     {
+        s_Logger->log("%s", signClassifier->label.c_str());
         std::vector<cv::Rect> sign_scaled;
         signClassifier->classifier.detectMultiScale(image, sign_scaled, 1.3, 5);
 
@@ -84,7 +85,7 @@ void HaarIntersectionDetector::Tick()
                 cv::rectangle(image, cv::Point(roi.x, roi.y),
                             cv::Point(roi.x + roi.width, roi.y + roi.height),
                             cv::Scalar(0, 255, 0), 3);
-                cv::putText(image, "Found " + signClassifier->label + " Sign", cv::Point(roi.x, roi.y + roi.height + 30),
+                cv::putText(image, "Found " + signClassifier->label + " Intersection", cv::Point(roi.x, roi.y + roi.height + 30),
                         cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2, cv::LINE_4);
             }
             s_Logger->log("Found Traffic Intersection %s in distance: %03d  seenLastFrame:%d", signClassifier->label.c_str(), distance, (int)signClassifier->seenLastFrame);
