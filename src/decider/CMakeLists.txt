@@ -12,6 +12,7 @@ add_executable(decider
     States/Is_At_Crossing.cpp
     States/Normal_Drive.cpp
     States/Approaching_Crossing.cpp
+    States/Obstacle_State.cpp
     # add other .cpp files here when needed.
 )
 

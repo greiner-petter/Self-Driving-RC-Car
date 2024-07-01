@@ -5,6 +5,7 @@
 #include "Crossing_3_Way_Left.h"
 #include "Crossing_3_Way_Right.h"
 #include "Crossing_3_Way_T.h"
+#include "Obstacle_State.h"
 
 
 
@@ -62,7 +63,6 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
     while (true) {
        
         int result = socket->read_packet(recv_packet);
-        bool object_found = false;
         ocTime now = ocTime::now();
 
         if (result < 0) {
@@ -77,22 +77,16 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
 
                 case ocMessageId::Object_Found:{
                     recv_packet.read_from_start();
-                    object_found = true;
+                    logger->log("Decider: Normal_Drive: Changing state from Normal_Drive to Obstacle_State");
+                    statemachine->change_state(Obstacle_State::get_instance());  
                 }break;
 
                 case ocMessageId::Lane_Detection_Values:{
                     auto reader = recv_packet.read_from_start();
-
                     int16_t speed = reader.read<int16_t>();
                     int8_t steering_front = reader.read<int8_t>();
                     int8_t steering_back = reader.read<int8_t>();
-
-                    if(object_found){
-                        Driver::stop();
-                        object_found = false;
-                    } else{
-                        Driver::drive_both_steering_values(speed, steering_front, steering_back);
-                    }
+                    Driver::drive_both_steering_values(speed, steering_front, steering_back);
                 }break;
 
                 case ocMessageId::Traffic_Sign_Detected:{
@@ -112,14 +106,6 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
                 }break;
             }
         }
-
-        /*
-        if(object_found){
-            Driver::stop();
-        } else{
-            Driver::drive_forward();
-        }
-        */
     }
 
     
