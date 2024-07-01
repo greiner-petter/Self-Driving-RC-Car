@@ -202,8 +202,19 @@ int main(int argc, const char **argv)
         {
             switch (recv_packet.get_message_id())
             {
-            case ocMessageId::Camera_Image_Available:
             case ocMessageId::Birdseye_Image_Available:
+            {
+                ocBufferReader reader = ipc_packet.read_from_start();
+                uint8_t bit;
+                reader.read(&bit);
+                static uint32_t distance;
+                distance = 0;
+                Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2 | bit].img_buffer);
+                
+                video_writer << image;
+
+            } break;
+            case ocMessageId::Camera_Image_Available:            
             {
                 uint32_t newest_frame_index = shared_memory->last_written_cam_data_index;
                 ocCamData *cam_data = &shared_memory->cam_data[newest_frame_index];
