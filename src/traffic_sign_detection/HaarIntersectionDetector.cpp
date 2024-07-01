@@ -24,7 +24,7 @@ static bool s_SupportGUI = false;
 
 std::filesystem::path HaarSignDetector::GetCrossingLeftXML()
 {
-    return std::filesystem::current_path().parent_path() / "res" / "cascade_stop_sign.xml";
+    return std::filesystem::current_path().parent_path() / "res" / "cascade_crossing_left.xml";
 }
 
 
