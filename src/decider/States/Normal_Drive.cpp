@@ -112,14 +112,6 @@ void Normal_Drive::run(Statemachine* statemachine, void* data){
                 }break;
             }
         }
-
-        /*
-        if(object_found){
-            Driver::stop();
-        } else{
-            Driver::drive_forward();
-        }
-        */
     }
 
     

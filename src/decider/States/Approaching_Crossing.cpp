@@ -129,52 +129,6 @@ void Approaching_Crossing::run(Statemachine* statemachine, void* data){
         } else{
             Driver::drive_both_steering_values(speed, steering_front, steering_back);
         }
-        
-        /*else if (distance > max_distance){
-            Driver::drive_both_steering_values(speed, steering_front, steering_back);
-            //Driver::wait(0.1);
-        } else {
-            Driver::drive_both_steering_values(min_speed, steering_front, steering_back);
-            //Driver::wait(0.1);
-        }*/
-        /*
-        //algorithm for slowing down towards 2cm/s
-        double* arr = smooth_speed(speed);
-        for(int i = 0; i < 100; i++) {
-            int result = socket->read_packet(recv_packet);
-
-            if (result >= 0) {
-                switch (recv_packet.get_message_id()){
-                    case ocMessageId::Intersection_Detected:{
-                        auto reader = recv_packet.read_from_start();
-                        distance = reader.read<uint32_t>();
-                        uint8_t crossing_type = reader.read<uint8_t>();
-                    }break;
-
-                    case ocMessageId::Lane_Detection_Values:{
-                        auto reader = recv_packet.read_from_start();
-                        speed = reader.read<int16_t>();
-                        steering_front = reader.read<int8_t>();
-                    }break;
-
-                    default:
-                        break;
-                }
-
-                int16_t next_speed = arr[i] > min_speed ? arr[i] : min_speed;
-                Driver::drive(next_speed, steering_front);    //drive_forward(arr[i]);
-                Driver::wait(0.1);
-            }
-
-            if(distance <= threshold) {
-                is_at_crossing = true;
-                break;
-            }
-            
-        }
-
-        free(arr);
-        */
     }
 
     
