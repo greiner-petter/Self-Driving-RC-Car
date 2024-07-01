@@ -50,9 +50,10 @@ void Obstacle_State::on_entry(Statemachine* statemachine){
 void Obstacle_State::run(Statemachine* statemachine, void* data){
     ocPacket recv_packet;
     bool object_found = true;
+    bool object_not_found_again = false;
 
     
-    while (object_found) {
+    while (!object_not_found_again) {
         std::this_thread::sleep_for(std::chrono::milliseconds(40));
         int result = socket->read_packet(recv_packet, false);
 
@@ -66,6 +67,9 @@ void Obstacle_State::run(Statemachine* statemachine, void* data){
                 }break;
 
                 default:{
+                    if(!object_found){
+                        object_not_found_again = true;
+                    }
                     object_found = false; 
                 }break;
             }
