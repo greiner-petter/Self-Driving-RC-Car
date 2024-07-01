@@ -63,7 +63,7 @@ void HaarIntersectionDetector::Init(ocIpcSocket* socket, ocSharedMemory* shared_
     s_Instances.push_back(std::make_shared<ClassifierInstance>(GetCrossingRightXML().string(), "Crossing Right", 0b110));
 }
 
-void HaarIntersectionDetector::Tick()
+bool HaarIntersectionDetector::Tick()
 {
     cv::Mat image(400, 400, CV_8UC1, s_SharedMemory->bev_data[0].img_buffer);
 
@@ -103,11 +103,10 @@ void HaarIntersectionDetector::Tick()
         if (key == 'q')
         {
             cv::destroyAllWindows();
-            return;
+            return false;
         }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(4));
         
-    
-
+    return true;
 }

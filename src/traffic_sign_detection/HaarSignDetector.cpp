@@ -81,7 +81,7 @@ void HaarSignDetector::Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, 
     s_Instances.push_back(std::make_shared<ClassifierInstance>(GetParkSignXML().string(), "Park", TrafficSignType::Park, 0.32));
 }
 
-void HaarSignDetector::Tick()
+bool HaarSignDetector::Tick()
 {
     // Fetch Camera Data
     ocCamData *cam_data = &s_SharedMemory->cam_data[s_SharedMemory->last_written_cam_data_index];
@@ -135,11 +135,10 @@ void HaarSignDetector::Tick()
         if (key == 'q')
         {
             cv::destroyAllWindows();
-            return;
+            return false;
         }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(4));
         
-    
-
+    return true;
 }

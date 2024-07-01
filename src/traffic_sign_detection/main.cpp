@@ -46,8 +46,16 @@ int main(int argc,char* argv[])
 
     while (true)
     {
-        if (signDetector) signDetector->Tick();
-        if (intersectionDetector) intersectionDetector->Tick();
+        if (signDetector) 
+        {
+            bool success = signDetector->Tick();
+            if (!success) break;
+        }
+        if (intersectionDetector)
+        {
+            bool success = intersectionDetector->Tick();
+            if (!success) break;
+        }
     }
 
     logger->warn("Traffic-Sign-Detection: Process Shutdown.");
