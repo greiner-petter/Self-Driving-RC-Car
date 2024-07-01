@@ -3,6 +3,7 @@
 
 #include "SignDetector.h"
 #include "HaarSignDetector.h"
+#include "HaarIntersectionDetector.h"
 #include <chrono>
 #include <thread>
 #include <string>
@@ -11,6 +12,7 @@
 int main(int argc,char* argv[])
 {
     SignDetector* detector = nullptr;
+    SignDetector* detector2 = nullptr;
 
     // Parsing Params
     bool supportGUI = true;
@@ -23,6 +25,7 @@ int main(int argc,char* argv[])
         }
     }
     detector = new HaarSignDetector();
+    detector2 = new HaarIntersectionDetector();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(8000));
     // ocMember represents the interface to the IPC system
@@ -39,10 +42,12 @@ int main(int argc,char* argv[])
     ocLogger*    logger = member.get_logger();
 
     detector->Init(socket, shared_memory, logger, supportGUI);
+    detector2->Init(socket, shared_memory, logger, supportGUI);
 
     while (true)
     {
         detector->Tick();
+        detector2->Tick();
     }
 
     logger->warn("Traffic-Sign-Detection: Process Shutdown.");
