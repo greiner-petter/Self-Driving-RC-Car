@@ -11,8 +11,8 @@
 
 int main(int argc,char* argv[])
 {
-    SignDetector* detector = nullptr;
-    SignDetector* detector2 = nullptr;
+    SignDetector* signDetector = nullptr;
+    SignDetector* intersectionDetector = nullptr;
 
     // Parsing Params
     bool supportGUI = true;
@@ -24,8 +24,8 @@ int main(int argc,char* argv[])
             supportGUI = false;
         }
     }
-    detector = new HaarSignDetector();
-    detector2 = new HaarIntersectionDetector();
+    signDetector = new HaarSignDetector();
+    intersectionDetector = new HaarIntersectionDetector();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(8000));
     // ocMember represents the interface to the IPC system
@@ -41,13 +41,13 @@ int main(int argc,char* argv[])
     ocSharedMemory* shared_memory = member.get_shared_memory();
     ocLogger*    logger = member.get_logger();
 
-    detector->Init(socket, shared_memory, logger, supportGUI);
-    detector2->Init(socket, shared_memory, logger, supportGUI);
+    signDetector->Init(socket, shared_memory, logger, supportGUI);
+    intersectionDetector->Init(socket, shared_memory, logger, supportGUI);
 
     while (true)
     {
-        detector->Tick();
-        detector2->Tick();
+        if (signDetector) signDetector->Tick();
+        if (intersectionDetector) intersectionDetector->Tick();
     }
 
     logger->warn("Traffic-Sign-Detection: Process Shutdown.");
