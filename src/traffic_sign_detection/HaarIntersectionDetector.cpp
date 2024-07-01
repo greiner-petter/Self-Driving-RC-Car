@@ -60,19 +60,10 @@ void HaarIntersectionDetector::Init(ocIpcSocket* socket, ocSharedMemory* shared_
 
 void HaarIntersectionDetector::Tick()
 {
-    // Fetch Camera Data
-    ocCamData *cam_data = &s_SharedMemory->cam_data[s_SharedMemory->last_written_cam_data_index];
-
-    int type = CV_8UC1;
-    if (3 == bytes_per_pixel(cam_data->pixel_format)) type = CV_8UC3;
-    if (4 == bytes_per_pixel(cam_data->pixel_format)) type = CV_8UC4;
-    if (12 == bytes_per_pixel(cam_data->pixel_format)) type = CV_32FC3;
-
-    cv::Mat cam_image((int)cam_data->height, (int)cam_data->width, type);
-    cam_image.data = cam_data->img_buffer;
+    cv::Mat image(400, 400, CV_8UC1, s_SharedMemory->bev_data[0].img_buffer);
 
     cv::Mat gray;
-    cv::cvtColor(cam_image, gray, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
     // Iterate over all the XML Classifier Instances and detect the signs
     for (auto& signClassifier : s_Instances)
