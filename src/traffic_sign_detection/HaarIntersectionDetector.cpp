@@ -72,7 +72,7 @@ void HaarIntersectionDetector::Tick()
         for (size_t i = 0; i < sign_scaled.size(); i++)
         {
             cv::Rect roi = sign_scaled[i];
-            const uint32_t distance = std::max(200 - roi.y, 0) / 5;
+            const uint32_t distance = std::max(200 - roi.y, 0) / 6;
 
             if (distance <= 8) continue;
 
