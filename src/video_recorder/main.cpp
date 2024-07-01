@@ -207,7 +207,7 @@ int main(int argc, const char **argv)
                 ocBufferReader reader = recv_packet.read_from_start();
                 uint8_t bit;
                 reader.read(&bit);
-                cv::Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2 | bit].img_buffer);
+                cv::Mat image(400, 400, CV_8UC1, shared_memory->bev_data[0].img_buffer);
                 if (!video_writer.isOpened())
                 {
                     int32_t width    = 400;
