@@ -72,7 +72,7 @@ void HaarIntersectionDetector::Tick()
         for (size_t i = 0; i < sign_scaled.size(); i++)
         {
             cv::Rect roi = sign_scaled[i];
-            const uint32_t distance = roi.y;
+            const uint32_t distance = std::max(200 - roi.y, 0);
 
             if (distance <= 8) continue;
 
@@ -84,7 +84,7 @@ void HaarIntersectionDetector::Tick()
                 cv::putText(image, "Found " + signClassifier->label + " Sign", cv::Point(roi.x, roi.y + roi.height + 30),
                         cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2, cv::LINE_4);
             }
-            s_Logger->log("Found Traffic Intersection in distance: %03d  seenLastFrame:%d", distance, (int)signClassifier->seenLastFrame);
+            s_Logger->log("Found Traffic Intersection %s in distance: %03d  seenLastFrame:%d", signClassifier->label, distance, (int)signClassifier->seenLastFrame);
             if (signClassifier->seenLastFrame)
             {
                 
