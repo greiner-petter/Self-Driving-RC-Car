@@ -11,6 +11,8 @@ class SignDetector
 {
 public:
     virtual void Init(ocIpcSocket* socket, ocSharedMemory* shared_memory, ocLogger* logger, bool supportGUI);
+
+    // Iterate over all Cascades etc. returns true on succes, if false the process terminates 
     virtual bool Tick() = 0;
 
     static float ConvertRectSizeToEstimatedDistance(float rectSize, double sizeFactor);
