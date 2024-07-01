@@ -22,9 +22,9 @@ static ocLogger* s_Logger = nullptr;
 static bool s_SupportGUI = false;
 
 
-std::filesystem::path HaarSignDetector::GetCrossingLeftXML()
+std::filesystem::path HaarIntersectionDetector::GetCrossingLeftXML()
 {
-    return std::filesystem::current_path().parent_path() / "res" / "cascade_stop_sign.xml";
+    return std::filesystem::current_path().parent_path() / "res" / "cascade_crossing_left.xml";
 }
 
 
@@ -38,8 +38,6 @@ struct ClassifierInstance
     ClassifierInstance(const std::string& path, const std::string& label, int8_t result)
     {
         classifier.load(path);
-        label = signLabel;
-        type = signType;
         this->label = label;
         this->result = result;
     }
@@ -62,43 +60,31 @@ void HaarIntersectionDetector::Init(ocIpcSocket* socket, ocSharedMemory* shared_
 
 void HaarIntersectionDetector::Tick()
 {
-    // Fetch Camera Data
-    ocCamData *cam_data = &s_SharedMemory->cam_data[s_SharedMemory->last_written_cam_data_index];
-
-    int type = CV_8UC1;
-    if (3 == bytes_per_pixel(cam_data->pixel_format)) type = CV_8UC3;
-    if (4 == bytes_per_pixel(cam_data->pixel_format)) type = CV_8UC4;
-    if (12 == bytes_per_pixel(cam_data->pixel_format)) type = CV_32FC3;
-
-    cv::Mat cam_image((int)cam_data->height, (int)cam_data->width, type);
-    cam_image.data = cam_data->img_buffer;
-
-    cv::Mat gray;
-    cv::cvtColor(cam_image, gray, cv::COLOR_BGR2GRAY);
+    cv::Mat image(400, 400, CV_8UC1, s_SharedMemory->bev_data[0].img_buffer);
 
     // Iterate over all the XML Classifier Instances and detect the signs
     for (auto& signClassifier : s_Instances)
     {
         std::vector<cv::Rect> sign_scaled;
-        signClassifier->classifier.detectMultiScale(gray, sign_scaled, 1.3, 5);
+        signClassifier->classifier.detectMultiScale(image, sign_scaled, 1.3, 5);
 
         // Detect the sign, x,y = origin points, w = width, h = height
         for (size_t i = 0; i < sign_scaled.size(); i++)
         {
             cv::Rect roi = sign_scaled[i];
-            const uint32_t distance = y;
+            const uint32_t distance = std::max(200 - roi.y, 0) / 6;
 
             if (distance <= 8) continue;
 
             if (s_SupportGUI)
             {
-                cv::rectangle(cam_image, cv::Point(roi.x, roi.y),
+                cv::rectangle(image, cv::Point(roi.x, roi.y),
                             cv::Point(roi.x + roi.width, roi.y + roi.height),
                             cv::Scalar(0, 255, 0), 3);
-                cv::putText(cam_image, "Found " + signClassifier->label + " Sign", cv::Point(roi.x, roi.y + roi.height + 30),
+                cv::putText(image, "Found " + signClassifier->label + " Sign", cv::Point(roi.x, roi.y + roi.height + 30),
                         cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2, cv::LINE_4);
             }
-            s_Logger->log("Found Traffic Intersection in distance: %03d  seenLastFrame:%d", distance, (int)signClassifier->seenLastFrame);
+            s_Logger->log("Found Traffic Intersection %s in distance: %03d  seenLastFrame:%d", signClassifier->label.c_str(), distance, (int)signClassifier->seenLastFrame);
             if (signClassifier->seenLastFrame)
             {
                 
@@ -109,12 +95,12 @@ void HaarIntersectionDetector::Tick()
 
     if (s_SupportGUI) 
     {
-        cv::imshow("Traffic Intersection Detection", cam_image);
+        cv::imshow("Traffic Intersection Detection", image);
         char key = cv::waitKey(30);
         if (key == 'q')
         {
             cv::destroyAllWindows();
-            break;
+            return;
         }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(4));

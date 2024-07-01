@@ -135,7 +135,7 @@ void HaarSignDetector::Tick()
         if (key == 'q')
         {
             cv::destroyAllWindows();
-            break;
+            return;
         }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(4));
