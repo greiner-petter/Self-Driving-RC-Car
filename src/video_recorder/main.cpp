@@ -208,7 +208,8 @@ int main(int argc, const char **argv)
                 uint8_t bit;
                 reader.read(&bit);
                 cv::Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2 | bit].img_buffer);
-                
+                logger->log("HERE");
+
                 video_writer << image;
 
             } break;
