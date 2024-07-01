@@ -213,7 +213,7 @@ int main(int argc, const char **argv)
                     video_writer.open(filename.data(), cv::CAP_FFMPEG, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30, new_size, false);
                     if (!video_writer.isOpened())
                     {
-                        logger->error("Opening the video writer didn't work. size: (w: %i h: %i) color: %i", new_size.width, new_size.height, is_color);
+                        logger->error("Opening the video writer didn't work. size: (w: %i h: %i) color: %i", new_size.width, new_size.height, false);
                         running = false;
                     }
                 }
