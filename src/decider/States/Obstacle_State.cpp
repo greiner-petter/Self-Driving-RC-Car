@@ -53,7 +53,7 @@ void Obstacle_State::run(Statemachine* statemachine, void* data){
 
     
     while (object_found) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(40));
         int result = socket->read_packet(recv_packet, false);
 
         if (result < 0) {
