@@ -210,8 +210,8 @@ int main(int argc, const char **argv)
                 cv::Mat image(400, 400, CV_8UC1, shared_memory->bev_data[2 | bit].img_buffer);
                 if (!video_writer.isOpened())
                 {
-                    if (!crop_hor) crop.width  = width;
-                    if (!crop_ver) crop.height = height;
+                    if (!crop_hor) crop.width  = 400;
+                    if (!crop_ver) crop.height = 400;
 
                     if (width < crop.x + crop.width || height < crop.y + crop.height)
                     {
