@@ -37,6 +37,7 @@ const char *to_string(ocMemberId member_id)
   case ocMemberId::Crossing_3_Way_Left:       return "ocMemberId::Crossing_3_Way_Left";
   case ocMemberId::Crossing_3_Way_Right:      return "ocMemberId::Crossing_3_Way_Right";
   case ocMemberId::Crossing_3_Way_T:          return "ocMemberId::Crossing_3_Way_T";
+  case ocMemberId::Obstacle_State:            return "ocMemberId::Obstacle_State";
 
   case ocMemberId::Lane_Detection_Values:     return "ocMemberId::Lane_Detection_Values";
   }
