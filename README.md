@@ -4,7 +4,7 @@ Custom RC Car that only uses a camera to navigate a road course. It recognizes a
 This is a group project for my Autonomous Vehicles University Course (This project recieved a grade of 100%)
 
 ## Watch it in action!
-<iframe width="560" height="315" src="https://www.youtube.com/embed/9W9BECBnpRw?si=p0_Ra0JVgi8HikCO" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+[![](https://markdown-videos-api.jorgenkh.no/youtube/9W9BECBnpRw)](https://youtu.be/9W9BECBnpRw)
 
 ## Architecture
 <img src="img/architecture.png" width=300>
