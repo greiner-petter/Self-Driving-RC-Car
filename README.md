@@ -4,9 +4,9 @@ Custom RC Car that only uses a camera to navigate a road course. It recognizes a
 This is a group project for my Autonomous Vehicles University Course (This project recieved a grade of 100%)
 
 ## Watch it in action!
-<a href="https://youtu.be/9W9BECBnpRw" target="_blank"><img src="img/youtube.jpg" width=500></a>
+<a href="https://youtu.be/9W9BECBnpRw" target=_blank><img src="img/youtube.jpg" width=500></a>
 
-https://youtu.be/9W9BECBnpRw
+Click <a href="https://youtu.be/9W9BECBnpRw" target=_blank>here</a> or on the Video.
 
 ## Architecture
 <img src="img/architecture.png" width=300>
@@ -39,9 +39,11 @@ If an intersection is detected the decider plans its path based upon the interse
 Finally, if an obstacle is detected, the car stops (I know, amazing). This lasts until the obstacle is removed and the car continues regularly.
 
 ## Photo gallery
-<img src="img/action1.jpg" width=300>
-<img src="img/action2.jpg" width=300>
-<img src="img/lanedetection.png" width=300>
-<img src="img/signdetection.png" width=300>
-<img src="img/car1.jpg" width=300>
-<img src="img/car2.jpg" width=300>
+<div>
+  <img src="img/action1.jpg" width=300>
+  <img src="img/action2.jpg" width=300>
+  <img src="img/lanedetection.png" width=300>
+  <img src="img/signdetection.png" width=300>
+  <img src="img/car1.jpg" width=300>
+  <img src="img/car2.jpg" width=300>
+</div>
